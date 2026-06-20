@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>로그인 테스트 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+<style>
+body { background: #f5f5f0; }
+.test-wrap { max-width: 430px; margin: 0 auto; padding: 16px; }
+.test-card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.test-title { font-size: 1rem; font-weight: 700; color: #7C2D12; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.test-badge { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.badge-active { background: #DCFCE7; color: #166534; }
+.badge-wait { background: #FEF3C7; color: #92400E; }
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: .8rem; font-weight: 600; color: #57534E; margin-bottom: 5px; display: block; }
+.form-input { width: 100%; height: 44px; border: 1.5px solid #D6D3D1; border-radius: 10px; padding: 0 12px; font-size: .9rem; outline: none; }
+.form-input:focus { border-color: #7C2D12; box-shadow: 0 0 0 3px rgba(124,45,18,.08); }
+.btn-test { width: 100%; height: 48px; background: #7C2D12; color: #fff; border: none; border-radius: 12px; font-size: .95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
+.btn-test:hover { background: #5C1E08; }
+.btn-test:disabled { opacity: .6; cursor: not-allowed; }
+.btn-test.success { background: #16A34A; }
+.btn-test.fail { background: #DC2626; }
+.result-box { margin-top: 12px; background: #F5F5F4; border-radius: 10px; padding: 12px; font-size: .8rem; font-family: monospace; white-space: pre-wrap; word-break: break-all; line-height: 1.6; max-height: 200px; overflow-y: auto; display: none; }
+.result-box.ok { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+.result-box.err { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; }
+.spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.server-status { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #F5F5F4; border-radius: 10px; font-size: .82rem; color: #57534E; margin-bottom: 12px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-ok { background: #16A34A; }
+.dot-err { background: #DC2626; }
+.dot-loading { background: #F59E0B; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.tab-row { display: flex; gap: 6px; margin-bottom: 16px; }
+.tab { flex: 1; padding: 8px; border: 1.5px solid #D6D3D1; border-radius: 8px; text-align: center; font-size: .84rem; font-weight: 600; cursor: pointer; color: #78716C; background: #fff; }
+.tab.active { border-color: #7C2D12; background: #FFF7ED; color: #7C2D12; }
+.section { display: none; }
+.section.active { display: block; }
+.divider { height: 1px; background: #E7E5E4; margin: 14px 0; }
+.info-row { display: flex; justify-content: space-between; font-size: .82rem; padding: 5px 0; border-bottom: 1px solid #F5F5F4; }
+.info-key { color: #78716C; }
+.info-val { font-weight: 600; color: #1C0A00; word-break: break-all; text-align: right; max-width: 65%; }
+</style>
+</head>
+<body>
+<div class="test-wrap">
+
+  <div style="text-align:center; padding: 20px 0 10px">
+    <div style="font-size:2rem">🥩</div>
+    <div style="font-family:'Noto Serif KR',serif; font-size:1.2rem; font-weight:700; color:#7C2D12; margin-top:6px">정육본가 로그인 테스트</div>
+    <div style="font-size:.78rem; color:#78716C; margin-top:4px">실제 API 서버 연동 확인</div>
+  </div>
+
+  <!-- 서버 상태 -->
+  <div class="test-card">
+    <div class="test-title">🔌 서버 연결 상태</div>
+    <div class="server-status">
+      <div class="dot dot-loading" id="status-dot"></div>
+      <div id="status-msg">서버 확인 중...</div>
+    </div>
+    <div style="font-size:.75rem; color:#78716C">API 서버: <strong>https://meatmall.vercel.app/api</strong></div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tab-row">
+    <div class="tab active" onclick="switchTab('signup', this)">회원가입</div>
+    <div class="tab" onclick="switchTab('login', this)">로그인</div>
+    <div class="tab" onclick="switchTab('me', this)">내 정보</div>
+  </div>
+
+  <!-- 회원가입 -->
+  <div class="section active" id="tab-signup">
+    <div class="test-card">
+      <div class="test-title">📝 이메일 회원가입 <span class="test-badge badge-active">테스트</span></div>
+      <div class="form-group">
+        <label class="form-label">이름</label>
+        <input class="form-input" id="su-name" type="text" placeholder="홍길동" value="테스트유저">
+      </div>
+      <div class="form-group">
+        <label class="form-label">이메일</label>
+        <input class="form-input" id="su-email" type="email" placeholder="test@example.com" value="">
+      </div>
+      <div class="form-group">
+        <label class="form-label">비밀번호 (8자 이상)</label>
+        <input class="form-input" id="su-pw" type="password" placeholder="Test1234!" value="Test1234!">
+      </div>
+      <div class="form-group">
+        <label class="form-label">휴대폰</label>
+        <input class="form-input" id="su-phone" type="tel" placeholder="010-0000-0000" value="010-1234-5678">
+      </div>
+      <button class="btn-test" id="btn-signup" onclick="doSignup()">회원가입 테스트</button>
+      <div class="result-box" id="result-signup"></div>
+    </div>
+  </div>
+
+  <!-- 로그인 -->
+  <div class="section" id="tab-login">
+    <div class="test-card">
+      <div class="test-title">🔑 이메일 로그인 <span class="test-badge badge-active">테스트</span></div>
+      <div class="form-group">
+        <label class="form-label">이메일</label>
+        <input class="form-input" id="li-email" type="email" placeholder="가입한 이메일">
+      </div>
+      <div class="form-group">
+        <label class="form-label">비밀번호</label>
+        <input class="form-input" id="li-pw" type="password" placeholder="비밀번호" value="Test1234!">
+      </div>
+      <button class="btn-test" id="btn-login" onclick="doLogin()">로그인 테스트</button>
+      <div class="result-box" id="result-login"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">🚪 로그아웃 <span class="test-badge badge-wait">로그인 후 가능</span></div>
+      <button class="btn-test" id="btn-logout" onclick="doLogout()" style="background:#78716C">로그아웃</button>
+      <div class="result-box" id="result-logout"></div>
+    </div>
+  </div>
+
+  <!-- 내 정보 -->
+  <div class="section" id="tab-me">
+    <div class="test-card">
+      <div class="test-title">👤 토큰으로 내 정보 조회</div>
+      <button class="btn-test" id="btn-me" onclick="doMe()">내 정보 조회</button>
+      <div class="result-box" id="result-me"></div>
+      <div id="user-info" style="margin-top:12px; display:none"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">🔄 토큰 갱신 테스트</div>
+      <button class="btn-test" id="btn-refresh" onclick="doRefresh()" style="background:#B45309">토큰 갱신</button>
+      <div class="result-box" id="result-refresh"></div>
+    </div>
+  </div>
+
+  <div style="text-align:center; padding:16px 0; font-size:.75rem; color:#A8A29E">
+    정육본가 API v1.0 · 2026.06
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+const API = 'https://meatmall.vercel.app/api';
+
+// 탭 전환
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// 결과 표시
+function showResult(id, data, isOk) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  el.className = 'result-box ' + (isOk ? 'ok' : 'err');
+  el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+}
+
+// 버튼 상태
+function setBtnState(id, state, text) {
+  const btn = document.getElementById(id);
+  btn.disabled = state === 'loading';
+  btn.className = 'btn-test' + (state === 'success' ? ' success' : state === 'fail' ? ' fail' : '');
+  btn.innerHTML = state === 'loading'
+    ? '<div class="spinner"></div>'
+    : text;
+  if (state !== 'loading') setTimeout(() => { btn.className = 'btn-test'; btn.innerHTML = text; btn.disabled = false; }, 2500);
+}
+
+// 서버 상태 확인
+async function checkServer() {
+  try {
+    const r = await fetch(API + '/health');
+    const d = await r.json();
+    document.getElementById('status-dot').className = 'dot dot-ok';
+    document.getElementById('status-msg').innerHTML = `<strong style="color:#16A34A">정상 작동 중</strong> — ${d.service}`;
+  } catch(e) {
+    document.getElementById('status-dot').className = 'dot dot-err';
+    document.getElementById('status-msg').innerHTML = `<strong style="color:#DC2626">연결 실패</strong> — 서버를 확인해주세요`;
+  }
+}
+
+// 회원가입
+async function doSignup() {
+  const name  = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const pw    = document.getElementById('su-pw').value;
+  const phone = document.getElementById('su-phone').value.trim();
+
+  if (!name || !email || !pw) { alert('이름, 이메일, 비밀번호를 입력해주세요'); return; }
+
+  setBtnState('btn-signup', 'loading', '');
+  try {
+    const r = await fetch(API + '/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name, email, password: pw, phone, marketing_agree: true })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      localStorage.setItem('mm_token', d.accessToken);
+      localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
+      setBtnState('btn-signup', 'success', '✅ 회원가입 성공!');
+      showResult('result-signup', {
+        성공: true,
+        메시지: '회원가입 완료! 로그인 탭에서 로그인해보세요',
+        유저ID: d.user?.id,
+        이름: d.user?.name,
+        이메일: d.user?.email,
+        등급: d.user?.grade,
+        포인트: d.user?.point + 'P',
+        AccessToken: d.accessToken?.slice(0,40) + '...'
+      }, true);
+    } else {
+      setBtnState('btn-signup', 'fail', '❌ 실패');
+      showResult('result-signup', { 오류: d.error }, false);
+    }
+  } catch(e) {
+    setBtnState('btn-signup', 'fail', '❌ 오류');
+    showResult('result-signup', { 오류: e.message }, false);
+  }
+}
+
+// 로그인
+async function doLogin() {
+  const email = document.getElementById('li-email').value.trim();
+  const pw    = document.getElementById('li-pw').value;
+  if (!email || !pw) { alert('이메일과 비밀번호를 입력해주세요'); return; }
+
+  setBtnState('btn-login', 'loading', '');
+  try {
+    const r = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password: pw })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      localStorage.setItem('mm_token', d.accessToken);
+      localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
+      setBtnState('btn-login', 'success', '✅ 로그인 성공!');
+      showResult('result-login', {
+        성공: true,
+        이름: d.user?.name,
+        이메일: d.user?.email,
+        등급: d.user?.grade,
+        포인트: d.user?.point + 'P',
+        관리자: d.user?.is_admin,
+        AccessToken: d.accessToken?.slice(0,40) + '...'
+      }, true);
+    } else {
+      setBtnState('btn-login', 'fail', '❌ 로그인 실패');
+      showResult('result-login', { 오류: d.error }, false);
+    }
+  } catch(e) {
+    setBtnState('btn-login', 'fail', '❌ 오류');
+    showResult('result-login', { 오류: e.message }, false);
+  }
+}
+
+// 로그아웃
+async function doLogout() {
+  const token = localStorage.getItem('mm_token');
+  setBtnState('btn-logout', 'loading', '');
+  try {
+    const r = await fetch(API + '/auth/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      credentials: 'include'
+    });
+    const d = await r.json();
+    localStorage.removeItem('mm_token');
+    localStorage.removeItem('mm_user_cache');
+    setBtnState('btn-logout', 'success', '✅ 로그아웃 완료');
+    showResult('result-logout', { 성공: true, 메시지: d.message }, true);
+  } catch(e) {
+    setBtnState('btn-logout', 'fail', '❌ 오류');
+    showResult('result-logout', { 오류: e.message }, false);
+  }
+}
+
+// 내 정보
+async function doMe() {
+  const token = localStorage.getItem('mm_token');
+  if (!token) { alert('먼저 로그인해주세요'); return; }
+
+  setBtnState('btn-me', 'loading', '');
+  try {
+    const r = await fetch(API + '/auth/me', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const d = await r.json();
+    if (r.ok) {
+      setBtnState('btn-me', 'success', '✅ 조회 성공!');
+      showResult('result-me', d.user, true);
+      const info = document.getElementById('user-info');
+      info.style.display = 'block';
+      info.innerHTML = `
+        <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px">
+          <div style="font-weight:700;color:#7C2D12;margin-bottom:10px">👤 ${d.user.name} 님</div>
+          ${[
+            ['이메일', d.user.email],
+            ['등급', d.user.grade],
+            ['포인트', d.user.point + 'P'],
+            ['관리자', d.user.is_admin ? '✅ 예' : '❌ 아니오'],
+            ['가입일', d.user.created_at?.slice(0,10)],
+          ].map(([k,v]) => `<div class="info-row"><span class="info-key">${k}</span><span class="info-val">${v}</span></div>`).join('')}
+        </div>`;
+    } else {
+      setBtnState('btn-me', 'fail', '❌ 실패');
+      showResult('result-me', { 오류: d.error }, false);
+    }
+  } catch(e) {
+    setBtnState('btn-me', 'fail', '❌ 오류');
+    showResult('result-me', { 오류: e.message }, false);
+  }
+}
+
+// 토큰 갱신
+async function doRefresh() {
+  setBtnState('btn-refresh', 'loading', '');
+  try {
+    const r = await fetch(API + '/auth/refresh', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const d = await r.json();
+    if (r.ok) {
+      localStorage.setItem('mm_token', d.accessToken);
+      setBtnState('btn-refresh', 'success', '✅ 갱신 성공!');
+      showResult('result-refresh', {
+        성공: true,
+        새토큰: d.accessToken?.slice(0,40) + '...'
+      }, true);
+    } else {
+      setBtnState('btn-refresh', 'fail', '❌ 실패 (재로그인 필요)');
+      showResult('result-refresh', { 오류: d.error }, false);
+    }
+  } catch(e) {
+    setBtnState('btn-refresh', 'fail', '❌ 오류');
+    showResult('result-refresh', { 오류: e.message }, false);
+  }
+}
+
+// 초기화
+checkServer();
+
+// 이전에 가입한 이메일 자동 채우기
+const cached = localStorage.getItem('mm_user_cache');
+if (cached) {
+  try {
+    const u = JSON.parse(cached);
+    if (u.email) document.getElementById('li-email').value = u.email;
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
