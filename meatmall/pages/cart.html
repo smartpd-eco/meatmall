@@ -6,84 +6,54 @@
 <title>장바구니 · 정육본가</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
+<!-- 나이스페이먼츠 SDK -->
+<script src="https://pay.nicepay.co.kr/v1/js/"></script>
 <style>
-.cart-item {
-  display: flex; gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--gray-100);
-  background: var(--white);
-}
-.cart-check { display: flex; align-items: center; padding-top: 2px; }
-.cart-check input { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; }
-.cart-thumb {
-  width: 72px; height: 72px;
-  border-radius: var(--radius-md);
-  background: var(--cream);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2.2rem;
-  flex-shrink: 0;
-}
-.cart-info { flex: 1; min-width: 0; }
-.cart-name { font-size: .9rem; font-weight: 600; color: var(--dark); margin-bottom: 3px;
-  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.cart-option { font-size: .76rem; color: var(--gray-500); margin-bottom: 8px; }
-.cart-price-row { display: flex; align-items: center; justify-content: space-between; }
-.cart-price { font-size: 1rem; font-weight: 800; color: var(--primary); }
-.qty-control { display: flex; align-items: center; gap: 0; }
-.qty-btn {
-  width: 28px; height: 28px;
-  border: 1.5px solid var(--gray-300);
-  background: var(--white);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; cursor: pointer; font-weight: 700;
-  color: var(--gray-700); transition: all .1s;
-}
-.qty-btn:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
-.qty-btn:last-child  { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
-.qty-btn:active { background: var(--gray-100); }
-.qty-val { width: 36px; height: 28px; border-top: 1.5px solid var(--gray-300); border-bottom: 1.5px solid var(--gray-300); display: flex; align-items: center; justify-content: center; font-size: .88rem; font-weight: 700; }
-.cart-del { color: var(--gray-400); font-size: 1.2rem; cursor: pointer; padding: 4px; align-self: flex-start; margin-left: 4px; }
+.cart-item{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--gray-100);background:var(--white)}
+.cart-check{display:flex;align-items:center}
+.cart-check input{width:20px;height:20px;accent-color:var(--primary);cursor:pointer}
+.cart-thumb{width:72px;height:72px;border-radius:var(--radius-md);background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0}
+.cart-info{flex:1;min-width:0}
+.cart-name{font-size:.9rem;font-weight:600;color:var(--dark);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-option{font-size:.76rem;color:var(--gray-500);margin-bottom:8px}
+.cart-price-row{display:flex;align-items:center;justify-content:space-between}
+.cart-price{font-size:1rem;font-weight:800;color:var(--primary)}
+.qty-control{display:flex;align-items:center}
+.qty-btn{width:28px;height:28px;border:1.5px solid var(--gray-300);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;font-weight:700;color:var(--gray-700)}
+.qty-btn:first-child{border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
+.qty-btn:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+.qty-val{width:36px;height:28px;border-top:1.5px solid var(--gray-300);border-bottom:1.5px solid var(--gray-300);display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:700}
+.cart-del{color:var(--gray-400);font-size:1.2rem;cursor:pointer;padding:4px;align-self:flex-start;margin-left:4px}
 
-/* 요약 */
-.order-summary {
-  background: var(--white);
-  padding: 16px;
-  border-top: 8px solid var(--gray-100);
-}
-.summary-row { display: flex; justify-content: space-between; font-size: .88rem; color: var(--gray-700); margin-bottom: 8px; }
-.summary-total { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 800; color: var(--dark); padding-top: 10px; border-top: 1px solid var(--gray-200); margin-top: 4px; }
-.summary-total .price { color: var(--primary); font-size: 1.1rem; }
+.order-summary{background:var(--white);padding:16px;border-top:8px solid var(--gray-100)}
+.sum-row{display:flex;justify-content:space-between;font-size:.88rem;color:var(--gray-700);margin-bottom:8px}
+.sum-total{display:flex;justify-content:space-between;font-size:1.05rem;font-weight:800;color:var(--dark);padding-top:10px;border-top:1px solid var(--gray-200);margin-top:4px}
+.sum-total .price{color:var(--primary);font-size:1.1rem}
 
-/* 결제수단 */
-.pay-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-.pay-chip {
-  padding: 10px 6px; border: 1.5px solid var(--gray-300); border-radius: var(--radius-md);
-  text-align: center; font-size: .8rem; font-weight: 700; color: var(--gray-700);
-  cursor: pointer; transition: all .15s;
-}
-.pay-chip.selected { border-color: var(--primary); background: var(--cream); color: var(--primary); }
-.pay-chip:active { transform: scale(.95); }
+/* 결제수단 선택 */
+.pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.pay-chip{padding:10px 4px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);text-align:center;font-size:.8rem;font-weight:700;color:var(--gray-700);cursor:pointer;transition:all .15s}
+.pay-chip.on{border-color:var(--primary);background:var(--cream);color:var(--primary)}
+.pay-chip:active{transform:scale(.95)}
 
-/* 쿠폰 */
-.coupon-row { display: flex; gap: 8px; align-items: center; }
+/* 배송지 */
+.addr-box{background:var(--gray-100);border-radius:var(--radius-md);padding:14px;font-size:.85rem;line-height:1.7;cursor:pointer}
+.addr-name{font-weight:700;color:var(--dark);margin-bottom:2px}
+.addr-detail{color:var(--gray-700)}
 
-/* 고정 하단 결제 버튼 */
-.checkout-bar {
-  position: fixed;
-  bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: var(--max-w);
-  background: var(--white);
-  border-top: 1px solid var(--gray-200);
-  padding: 12px 16px;
-  z-index: 200;
-}
-.checkout-total { font-size: .82rem; color: var(--gray-500); margin-bottom: 6px; text-align: center; }
-.checkout-total strong { color: var(--primary); font-size: 1rem; font-weight: 800; }
+/* 고정 하단 */
+.checkout-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--white);border-top:1px solid var(--gray-200);padding:12px 16px;z-index:200;padding-bottom:env(safe-area-inset-bottom,12px)}
+.checkout-info{font-size:.82rem;color:var(--gray-500);text-align:center;margin-bottom:8px}
+.checkout-info strong{color:var(--primary);font-size:1rem;font-weight:800}
 
-/* 빈 장바구니 */
-.empty-cart { text-align: center; padding: 80px 24px; }
-.empty-cart .icon { font-size: 4rem; margin-bottom: 16px; }
-.empty-cart p { font-size: .9rem; color: var(--gray-500); margin-bottom: 24px; }
+.empty-cart{text-align:center;padding:80px 24px}
+.empty-cart .icon{font-size:4rem;margin-bottom:16px}
+.empty-cart p{font-size:.9rem;color:var(--gray-500);margin-bottom:24px}
+
+/* 포인트 입력 */
+.point-row{display:flex;gap:8px;align-items:center}
+.point-inp{flex:1;height:40px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);padding:0 12px;font-size:.9rem;outline:none}
+.point-inp:focus{border-color:var(--primary)}
 </style>
 </head>
 <body>
@@ -91,89 +61,124 @@
 
   <header class="header">
     <button class="header__icon-btn" onclick="history.back()">←</button>
-    <div style="font-size:1rem; font-weight:700">장바구니 <span id="cart-count-label" style="color:var(--gray-400); font-weight:400; font-size:.88rem"></span></div>
-    <button class="header__icon-btn" id="select-all-btn" onclick="toggleSelectAll()" style="font-size:.78rem; font-weight:700; color:var(--primary); width:auto; padding:0 4px">전체선택</button>
+    <div style="font-size:1rem;font-weight:700">장바구니 <span id="cart-cnt" style="color:var(--gray-400);font-weight:400;font-size:.88rem"></span></div>
+    <button style="font-size:.78rem;font-weight:700;color:var(--primary);background:none;border:none;cursor:pointer" onclick="toggleSelectAll()">전체선택</button>
   </header>
 
-  <div id="cart-main" style="padding-bottom:120px"></div>
+  <div id="cart-main" style="padding-bottom:130px"></div>
 
-  <!-- 결제 바텀바 -->
+  <!-- 고정 결제 버튼 -->
   <div class="checkout-bar" id="checkout-bar" style="display:none">
-    <div class="checkout-total">선택 상품 합계 <strong id="checkout-total-price">0원</strong></div>
-    <button class="btn btn-primary btn-full btn-lg" onclick="checkout()">결제하기</button>
+    <div class="checkout-info">선택 상품 합계 <strong id="checkout-price">0원</strong></div>
+    <button class="btn btn-primary btn-full btn-lg" id="checkout-btn" onclick="openCheckout()">결제하기</button>
   </div>
 
 </div>
 
-<!-- 결제수단 바텀시트 -->
-<div class="overlay" id="pay-overlay" onclick="closeSheet('pay-sheet','pay-overlay')"></div>
+<!-- 결제 바텀시트 -->
+<div class="overlay" id="pay-overlay" onclick="closePaySheet()"></div>
 <div class="bottom-sheet" id="pay-sheet">
   <div class="sheet-handle"></div>
   <div class="sheet-header">
-    <div class="sheet-title">결제 수단 선택</div>
-    <span class="sheet-close" onclick="closeSheet('pay-sheet','pay-overlay')">✕</span>
+    <div class="sheet-title">결제하기</div>
+    <span class="sheet-close" onclick="closePaySheet()">✕</span>
   </div>
-  <div style="padding:16px; display:flex; flex-direction:column; gap:14px">
-    <div class="form-group">
-      <div class="form-label">결제 방법</div>
-      <div class="pay-grid" id="pay-grid">
-        <div class="pay-chip selected" onclick="selectPay(this,'kakao')">💬 카카오페이</div>
-        <div class="pay-chip" onclick="selectPay(this,'naver')">🟢 네이버페이</div>
-        <div class="pay-chip" onclick="selectPay(this,'toss')">🔵 토스</div>
-        <div class="pay-chip" onclick="selectPay(this,'card')">💳 신용카드</div>
-        <div class="pay-chip" onclick="selectPay(this,'bank')">🏦 무통장</div>
-        <div class="pay-chip" onclick="selectPay(this,'point')">💎 포인트</div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:16px;max-height:70vh;overflow-y:auto">
+
+    <!-- 배송지 -->
+    <div>
+      <div style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:8px">📍 배송지</div>
+      <div class="addr-box" onclick="changeAddr()">
+        <div class="addr-name" id="addr-name">배송지를 선택해주세요</div>
+        <div class="addr-detail" id="addr-detail">+ 배송지 추가</div>
       </div>
     </div>
-    <div class="form-group">
-      <div class="form-label">쿠폰</div>
-      <div class="coupon-row">
-        <select class="form-input" style="flex:1; height:44px">
-          <option value="">쿠폰 선택 (2장 보유)</option>
-          <option value="10">첫 구매 10% 할인</option>
-          <option value="free">무료배송 쿠폰</option>
-        </select>
+
+    <!-- 결제수단 -->
+    <div>
+      <div style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:8px">💳 결제수단</div>
+      <div class="pay-methods">
+        <div class="pay-chip on" onclick="selPay(this,'CARD')" data-method="CARD">💳 카드</div>
+        <div class="pay-chip" onclick="selPay(this,'KAKAO')" data-method="KAKAO">💬 카카오</div>
+        <div class="pay-chip" onclick="selPay(this,'NAVER')" data-method="NAVER">🟢 네이버</div>
+        <div class="pay-chip" onclick="selPay(this,'TOSS')" data-method="TOSS">🔵 토스</div>
+        <div class="pay-chip" onclick="selPay(this,'VBANK')" data-method="VBANK">🏦 무통장</div>
+        <div class="pay-chip" onclick="selPay(this,'PHONE')" data-method="PHONE">📱 휴대폰</div>
       </div>
     </div>
-    <div class="form-group">
-      <div class="form-label">포인트 사용</div>
-      <div style="display:flex; gap:8px">
-        <input class="form-input" id="point-use" type="number" placeholder="0" style="flex:1; height:44px">
-        <button class="btn btn-outline btn-sm" onclick="useAllPoint()">전액사용</button>
+
+    <!-- 포인트 -->
+    <div>
+      <div style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:6px">
+        💎 포인트 사용
+        <span style="font-size:.76rem;font-weight:400;color:var(--secondary);margin-left:6px" id="avail-pt">보유: 0P</span>
       </div>
-      <div class="form-hint">보유 포인트: <strong style="color:var(--primary)" id="avail-point">0P</strong></div>
+      <div class="point-row">
+        <input class="point-inp" type="number" id="point-use" placeholder="0" min="0" oninput="calcFinal()">
+        <button class="btn btn-sm btn-outline" onclick="useAllPoint()">전액사용</button>
+      </div>
     </div>
-    <div class="order-summary" style="border:1px solid var(--gray-200); border-radius:var(--radius-md); margin:0">
-      <div class="summary-row"><span>상품금액</span><span id="sheet-product-price">0원</span></div>
-      <div class="summary-row"><span>배송비</span><span id="sheet-delivery">0원</span></div>
-      <div class="summary-row"><span>쿠폰 할인</span><span style="color:var(--blue)">-0원</span></div>
-      <div class="summary-row"><span>포인트 사용</span><span id="sheet-point" style="color:var(--blue)">-0원</span></div>
-      <div class="summary-total"><span>최종 결제금액</span><span class="price" id="sheet-final">0원</span></div>
+
+    <!-- 최종 금액 -->
+    <div style="background:var(--gray-100);border-radius:var(--radius-md);padding:14px">
+      <div class="sum-row"><span>상품금액</span><span id="sh-product">0원</span></div>
+      <div class="sum-row"><span>배송비</span><span id="sh-delivery">0원</span></div>
+      <div class="sum-row"><span>포인트 사용</span><span id="sh-point" style="color:var(--blue)">-0원</span></div>
+      <div class="sum-total"><span>최종 결제금액</span><span class="price" id="sh-final">0원</span></div>
     </div>
-    <button class="btn btn-primary btn-full btn-lg" onclick="finalPay()">결제하기</button>
+
+    <button class="btn btn-primary btn-full btn-lg" id="pay-btn" onclick="doPay()">
+      <span id="pay-btn-text">결제하기</span>
+    </button>
+    <p style="text-align:center;font-size:.76rem;color:var(--gray-400)">
+      나이스페이먼츠 안전 결제 · SSL 암호화
+    </p>
   </div>
 </div>
 
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
+const API = 'https://meatmall.vercel.app/api';
 function go(url) { window.location.href = url; }
-Store.load();
+function fmt(n) { return Number(n).toLocaleString('ko-KR'); }
+function toast(msg) {
+  const el = document.getElementById('toast-global');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'),2200);
+}
 
-// 데모 장바구니 데이터 주입
+Store.load();
+updateCartBadge();
+
+// 데모 장바구니 (실제 상품 페이지 구현 후 연동)
 if (Store.cart.length === 0) {
   Store.cart = [
-    { productId:1, emoji:'🥩', name:'국내산 한우 1++ 등심 (냉장)', option:'300g', price:28900, qty:1 },
-    { productId:2, emoji:'🥓', name:'제주 흑돼지 삼겹살 (냉장)', option:'500g', price:15900, qty:2 },
-    { productId:3, emoji:'🌭', name:'수제 프랑크소시지 PB', option:'200g×3', price:8900, qty:1 },
+    { productId:'p1', emoji:'🥩', name:'국내산 한우 1++ 등심 (냉장)', option:'300g', price:28900, qty:1 },
+    { productId:'p2', emoji:'🥓', name:'제주 흑돼지 삼겹살 (냉장)', option:'500g', price:15900, qty:2 },
+    { productId:'p3', emoji:'🌭', name:'수제 프랑크소시지 PB', option:'200g×3', price:8900, qty:1 },
   ];
 }
 
 let selected = new Set(Store.cart.map(c => c.productId));
+let payMethod = 'CARD';
+let userPoint = 0;
+
+// 유저 포인트 로드
+(async function loadPoint() {
+  const token = localStorage.getItem('mm_access_token');
+  if (!token) return;
+  try {
+    const r = await fetch(API + '/auth/me', { headers:{ Authorization:'Bearer '+token } });
+    if (r.ok) { const d = await r.json(); userPoint = d.user?.point || 0; }
+  } catch(e) {}
+})();
 
 function renderCart() {
-  const total = Store.cart.reduce((s, c) => s + c.price * c.qty, 0);
-  document.getElementById('cart-count-label').textContent = `(${Store.cart.length}개)`;
+  const selItems = Store.cart.filter(c => selected.has(c.productId));
+  const selTotal = selItems.reduce((s,c) => s + c.price * c.qty, 0);
+  const delivery = selTotal >= 50000 ? 0 : (selTotal > 0 ? 3500 : 0);
+  document.getElementById('cart-cnt').textContent = `(${Store.cart.length}개)`;
 
   if (Store.cart.length === 0) {
     document.getElementById('cart-main').innerHTML = `
@@ -186,114 +191,226 @@ function renderCart() {
     return;
   }
 
-  const selectedItems = Store.cart.filter(c => selected.has(c.productId));
-  const selectedTotal = selectedItems.reduce((s, c) => s + c.price * c.qty, 0);
-  const delivery = selectedTotal >= 50000 ? 0 : 3500;
-
   document.getElementById('cart-main').innerHTML = `
-  <!-- 선택 액션 -->
-  <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:var(--white); border-bottom:1px solid var(--gray-100)">
-    <label style="display:flex; align-items:center; gap:8px; font-size:.84rem; font-weight:600; cursor:pointer">
-      <input type="checkbox" id="all-check" ${selected.size === Store.cart.length ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--primary)" onchange="toggleAll(this.checked)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--white);border-bottom:1px solid var(--gray-100)">
+    <label style="display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:600;cursor:pointer">
+      <input type="checkbox" id="all-chk" ${selected.size===Store.cart.length?'checked':''} style="width:18px;height:18px;accent-color:var(--primary)" onchange="toggleAll(this.checked)">
       전체 선택 (${selected.size}/${Store.cart.length})
     </label>
-    <span style="font-size:.8rem; color:var(--red); cursor:pointer; font-weight:600" onclick="deleteSelected()">선택 삭제</span>
+    <span style="font-size:.8rem;color:var(--red);cursor:pointer;font-weight:600" onclick="deleteSel()">선택 삭제</span>
   </div>
-
-  <!-- 상품 목록 -->
   ${Store.cart.map(c => `
   <div class="cart-item">
     <div class="cart-check">
       <input type="checkbox" ${selected.has(c.productId)?'checked':''} style="width:20px;height:20px;accent-color:var(--primary)"
-        onchange="toggleItem(${c.productId}, this.checked)">
+        onchange="toggleItem('${c.productId}',this.checked)">
     </div>
-    <div class="cart-thumb">${c.emoji || '🥩'}</div>
+    <div class="cart-thumb">${c.emoji||'🥩'}</div>
     <div class="cart-info">
       <div class="cart-name">${c.name}</div>
       <div class="cart-option">옵션: ${c.option}</div>
       <div class="cart-price-row">
         <div class="qty-control">
-          <div class="qty-btn" onclick="changeQty(${c.productId},-1)">−</div>
+          <div class="qty-btn" onclick="changeQty('${c.productId}',-1)">−</div>
           <div class="qty-val">${c.qty}</div>
-          <div class="qty-btn" onclick="changeQty(${c.productId},+1)">+</div>
+          <div class="qty-btn" onclick="changeQty('${c.productId}',+1)">+</div>
         </div>
         <div class="cart-price">${fmt(c.price * c.qty)}원</div>
       </div>
     </div>
-    <div class="cart-del" onclick="removeItem(${c.productId})">✕</div>
+    <div class="cart-del" onclick="removeItem('${c.productId}')">✕</div>
   </div>`).join('')}
-
-  <!-- 배송비 안내 -->
-  ${selectedTotal < 50000 && selectedTotal > 0 ? `
-  <div style="padding:12px 16px; background:#FFFBF5; border-top:1px solid var(--peach); font-size:.82rem; color:var(--secondary)">
-    🚚 <strong>${fmt(50000 - selectedTotal)}원</strong> 더 담으면 무료배송!
-  </div>` : selectedTotal >= 50000 ? `
-  <div style="padding:12px 16px; background:var(--green-light); font-size:.82rem; color:var(--green); font-weight:700">
-    ✅ 무료배송 혜택이 적용됩니다!
-  </div>` : ''}
-
-  <!-- 주문 요약 -->
+  ${selTotal > 0 && selTotal < 50000 ? `
+  <div style="padding:12px 16px;background:#FFFBF5;border-top:1px solid var(--peach);font-size:.82rem;color:var(--secondary)">
+    🚚 <strong>${fmt(50000-selTotal)}원</strong> 더 담으면 무료배송!
+  </div>` : selTotal >= 50000 ? `
+  <div style="padding:12px 16px;background:var(--green-light);font-size:.82rem;color:var(--green);font-weight:700">✅ 무료배송 혜택 적용!</div>` : ''}
   <div class="order-summary">
-    <div class="summary-row"><span>상품금액 (${selectedItems.length}개)</span><span>${fmt(selectedTotal)}원</span></div>
-    <div class="summary-row"><span>배송비</span><span>${delivery === 0 ? '<span style="color:var(--green)">무료</span>' : fmt(delivery)+'원'}</span></div>
-    <div class="summary-total">
-      <span>결제 예정금액</span>
-      <span class="price">${fmt(selectedTotal + delivery)}원</span>
-    </div>
+    <div class="sum-row"><span>상품금액 (${selItems.length}개)</span><span>${fmt(selTotal)}원</span></div>
+    <div class="sum-row"><span>배송비</span><span>${delivery===0?'<span style="color:var(--green)">무료</span>':fmt(delivery)+'원'}</span></div>
+    <div class="sum-total"><span>결제 예정금액</span><span class="price">${fmt(selTotal+delivery)}원</span></div>
   </div>`;
 
-  // 결제 버튼
+  // 결제 바
   const bar = document.getElementById('checkout-bar');
-  if (selectedItems.length > 0) {
+  if (selItems.length > 0) {
     bar.style.display = 'block';
-    document.getElementById('checkout-total-price').textContent = fmt(selectedTotal + delivery) + '원';
+    document.getElementById('checkout-price').textContent = fmt(selTotal+delivery)+'원';
   } else {
     bar.style.display = 'none';
   }
 
-  // 시트 가격 업데이트
-  document.getElementById('sheet-product-price').textContent = fmt(selectedTotal) + '원';
-  document.getElementById('sheet-delivery').textContent = delivery === 0 ? '무료' : fmt(delivery) + '원';
-  document.getElementById('sheet-final').textContent = fmt(selectedTotal + delivery) + '원';
-  document.getElementById('avail-point').textContent = fmt(Store.user?.point || 0) + 'P';
+  // 시트 금액 업데이트
+  document.getElementById('sh-product').textContent = fmt(selTotal)+'원';
+  document.getElementById('sh-delivery').textContent = delivery===0?'무료':fmt(delivery)+'원';
+  calcFinal();
 }
 
-function toggleAll(checked) { if (checked) Store.cart.forEach(c => selected.add(c.productId)); else selected.clear(); renderCart(); }
+function toggleAll(checked) {
+  if (checked) Store.cart.forEach(c => selected.add(c.productId));
+  else selected.clear();
+  renderCart();
+}
 function toggleItem(pid, checked) { checked ? selected.add(pid) : selected.delete(pid); renderCart(); }
-function toggleSelectAll() { if (selected.size === Store.cart.length) selected.clear(); else Store.cart.forEach(c => selected.add(c.productId)); renderCart(); }
-function changeQty(pid, delta) { const i = Store.cart.findIndex(c=>c.productId===pid); if(i>-1){Store.cart[i].qty=Math.max(1,Store.cart[i].qty+delta); renderCart();} }
+function toggleSelectAll() {
+  if (selected.size === Store.cart.length) selected.clear();
+  else Store.cart.forEach(c => selected.add(c.productId));
+  renderCart();
+}
+function changeQty(pid, d) {
+  const i = Store.cart.findIndex(c => c.productId===pid);
+  if (i>-1) { Store.cart[i].qty = Math.max(1, Store.cart[i].qty+d); Store.save(); renderCart(); }
+}
 function removeItem(pid) { Store.cart = Store.cart.filter(c=>c.productId!==pid); selected.delete(pid); Store.save(); renderCart(); updateCartBadge(); }
-function deleteSelected() { Store.cart = Store.cart.filter(c=>!selected.has(c.productId)); selected.clear(); Store.save(); renderCart(); updateCartBadge(); }
+function deleteSel() { Store.cart = Store.cart.filter(c=>!selected.has(c.productId)); selected.clear(); Store.save(); renderCart(); updateCartBadge(); }
 
-let selectedPay = 'kakao';
-function selectPay(el, type) {
-  document.querySelectorAll('.pay-chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedPay = type;
+// ── 결제 시트 ─────────────────────────────────────────
+function openCheckout() {
+  if (!localStorage.getItem('mm_access_token')) {
+    toast('로그인이 필요합니다'); go('../login.html'); return;
+  }
+  document.getElementById('avail-pt').textContent = `보유: ${fmt(userPoint)}P`;
+  document.getElementById('pay-overlay').classList.add('open');
+  document.getElementById('pay-sheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
+function closePaySheet() {
+  document.getElementById('pay-overlay').classList.remove('open');
+  document.getElementById('pay-sheet').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function selPay(el, method) {
+  document.querySelectorAll('.pay-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); payMethod = method;
+}
+
 function useAllPoint() {
-  document.getElementById('point-use').value = Store.user?.point || 0;
+  const selItems = Store.cart.filter(c => selected.has(c.productId));
+  const selTotal = selItems.reduce((s,c) => s + c.price*c.qty, 0);
+  const delivery = selTotal >= 50000 ? 0 : 3500;
+  const max = Math.min(userPoint, selTotal + delivery - 100);
+  document.getElementById('point-use').value = Math.max(0, max);
+  calcFinal();
 }
 
-function checkout() {
-  if (!Store.user) { toast('로그인이 필요합니다'); go('../login.html'); return; }
-  openSheet('pay-sheet','pay-overlay');
+function calcFinal() {
+  const selItems = Store.cart.filter(c => selected.has(c.productId));
+  const selTotal = selItems.reduce((s,c) => s + c.price*c.qty, 0);
+  const delivery = selTotal >= 50000 ? 0 : 3500;
+  const pt = Math.min(Number(document.getElementById('point-use').value)||0, userPoint, selTotal+delivery-100);
+  const final = selTotal + delivery - pt;
+  document.getElementById('sh-point').textContent = `-${fmt(pt)}원`;
+  document.getElementById('sh-final').textContent = fmt(Math.max(0,final))+'원';
+  document.getElementById('pay-btn-text').textContent = `${fmt(Math.max(0,final))}원 결제하기`;
 }
 
-function finalPay() {
-  closeSheet('pay-sheet','pay-overlay');
-  const btn = document.querySelector('.checkout-bar .btn');
-  if (btn) { btn.textContent = '결제 처리 중...'; btn.disabled = true; }
-  setTimeout(() => {
-    toast('결제가 완료되었습니다! 🎉');
-    Store.cart = [];
-    Store.save();
-    setTimeout(() => go('../pages/mypage.html'), 1200);
-  }, 1800);
+// ── 주소 (데모) ───────────────────────────────────────
+let currentAddr = null;
+function changeAddr() {
+  // 실제: 배송지 관리 페이지 연동
+  currentAddr = {
+    recipient: '홍길동', phone: '010-1234-5678',
+    zipCode: '06234', address1: '서울시 강남구 테헤란로 123',
+    address2: '45층'
+  };
+  document.getElementById('addr-name').textContent = `${currentAddr.recipient} · ${currentAddr.phone}`;
+  document.getElementById('addr-detail').textContent = `[${currentAddr.zipCode}] ${currentAddr.address1} ${currentAddr.address2||''}`;
+  toast('배송지가 선택됐습니다');
+}
+
+// ── 실제 결제 실행 ─────────────────────────────────────
+async function doPay() {
+  if (!currentAddr) { toast('배송지를 선택해주세요'); return; }
+
+  const selItems = Store.cart.filter(c => selected.has(c.productId));
+  if (selItems.length === 0) { toast('상품을 선택해주세요'); return; }
+
+  const pt = Number(document.getElementById('point-use').value) || 0;
+  const token = localStorage.getItem('mm_access_token');
+
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    // 1. 서버에 주문 생성
+    const readyRes = await fetch(API + '/payment/ready', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      credentials: 'include',
+      body: JSON.stringify({
+        items: selItems.map(i => ({
+          productId: i.productId, name: i.name,
+          price: i.price, qty: i.qty, option: i.option
+        })),
+        ...currentAddr,
+        zipCode: currentAddr.zipCode,
+        pointUse: pt,
+        paymentMethod: payMethod,
+      })
+    });
+    const readyData = await readyRes.json();
+    if (!readyRes.ok) throw new Error(readyData.error);
+
+    const { order, nice } = readyData;
+
+    // 2. 나이스페이먼츠 결제창 호출
+    AUTHNICE.requestPay({
+      clientId:    nice.clientKey,
+      method:      payMethod === 'CARD' ? 'card' :
+                   payMethod === 'KAKAO' ? 'kakao' :
+                   payMethod === 'NAVER' ? 'naverpay' :
+                   payMethod === 'TOSS'  ? 'tosspay' :
+                   payMethod === 'VBANK' ? 'vbank' : 'cellphone',
+      orderId:     order.orderId,
+      amount:      order.amount,
+      goodsName:   order.orderName,
+      returnUrl:   `https://meatmall.vercel.app/api/payment/nice-callback`,
+      fnError: function(result) {
+        console.error('[nice error]', result);
+        btn.disabled = false;
+        btn.innerHTML = '<span id="pay-btn-text">결제하기</span>';
+        toast('결제에 실패했습니다: ' + (result.errorMsg || '알 수 없는 오류'));
+      },
+      fnSuccess: async function(result) {
+        // 3. 서버에서 결제 검증 및 승인
+        try {
+          const confirmRes = await fetch(API + '/payment/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+            credentials: 'include',
+            body: JSON.stringify({
+              paymentKey: result.tid || result.paymentKey,
+              orderId:    order.orderId,
+              amount:     order.amount,
+            })
+          });
+          const confirmData = await confirmRes.json();
+          if (!confirmRes.ok) throw new Error(confirmData.error);
+
+          // 결제 성공 → 장바구니 비우기 → 완료 페이지
+          selItems.forEach(i => { Store.cart = Store.cart.filter(c=>c.productId!==i.productId); });
+          Store.save();
+          updateCartBadge();
+
+          window.location.href = `../pages/order-complete.html?orderId=${order.orderId}&amount=${order.amount}&point=${confirmData.pointEarned||0}`;
+        } catch(e) {
+          toast('결제 검증 실패: ' + e.message);
+          btn.disabled = false;
+          btn.innerHTML = '<span id="pay-btn-text">결제하기</span>';
+        }
+      }
+    });
+
+  } catch(err) {
+    toast(err.message || '결제 준비 중 오류가 발생했습니다');
+    btn.disabled = false;
+    btn.innerHTML = '<span id="pay-btn-text">결제하기</span>';
+  }
 }
 
 renderCart();
-updateCartBadge();
 </script>
 </body>
 </html>
