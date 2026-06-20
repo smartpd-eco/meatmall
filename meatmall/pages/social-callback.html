@@ -9,13 +9,9 @@
 <style>
 .callback-wrap {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
-  text-align: center;
-  gap: 20px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px; text-align: center; gap: 20px;
 }
 .callback-logo { font-size: 3rem; }
 .callback-spinner {
@@ -28,14 +24,9 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 .callback-msg { font-size: .95rem; color: var(--gray-700); line-height: 1.6; }
 .callback-error {
-  background: var(--red-light);
-  border: 1px solid #FCA5A5;
-  border-radius: var(--radius-md);
-  padding: 14px 18px;
-  color: var(--red);
-  font-size: .88rem;
-  line-height: 1.6;
-  display: none;
+  background: var(--red-light); border: 1px solid #FCA5A5;
+  border-radius: var(--radius-md); padding: 14px 18px;
+  color: var(--red); font-size: .88rem; line-height: 1.6; display: none;
 }
 </style>
 </head>
@@ -48,27 +39,48 @@
   <div class="callback-error" id="error-box"></div>
 </div>
 </div>
-<script src="../js/app.js"></script>
-<script src="../js/api.js"></script>
-<script>
-(async function handleCallback() {
-  try {
-    const result = AuthAPI.handleSocialCallback();
 
-    if (!result.ok) {
+<script>
+(function handleCallback() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const token  = params.get('token');
+    const name   = params.get('name');
+    const grade  = params.get('grade') || 'BASIC';
+    const point  = params.get('point') || '0';
+    const error  = params.get('error');
+
+    if (error) {
+      const msgs = {
+        kakao_failed:  '카카오 로그인에 실패했습니다',
+        naver_failed:  '네이버 로그인에 실패했습니다',
+        google_failed: '구글 로그인에 실패했습니다',
+        inactive:      '비활성화된 계정입니다. 고객센터에 문의해주세요'
+      };
       document.getElementById('spinner').style.display = 'none';
       document.getElementById('msg').textContent = '';
       const errBox = document.getElementById('error-box');
-      errBox.textContent = '⚠️ ' + result.error;
+      errBox.textContent = '⚠️ ' + (msgs[error] || '로그인 오류가 발생했습니다');
       errBox.style.display = 'block';
       setTimeout(() => { window.location.href = '../login.html'; }, 2500);
       return;
     }
 
-    document.getElementById('msg').innerHTML =
-      `환영합니다, <strong style="color:var(--primary)">${Auth.getUser()?.name || ''}</strong>님!<br>홈으로 이동합니다...`;
+    if (token) {
+      // 토큰 & 유저 정보 저장
+      localStorage.setItem('mm_access_token', token);
+      localStorage.setItem('mm_user_cache', JSON.stringify({
+        name, grade, point: Number(point)
+      }));
 
-    setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+      document.getElementById('msg').innerHTML =
+        `환영합니다, <strong style="color:#7C2D12">${name || ''}</strong>님!<br>홈으로 이동합니다...`;
+
+      setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+      return;
+    }
+
+    throw new Error('토큰 없음');
   } catch (err) {
     document.getElementById('spinner').style.display = 'none';
     const errBox = document.getElementById('error-box');
