@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>회원가입 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.signup-header {
+  background: var(--primary);
+  padding: 20px 16px 24px;
+  text-align: center;
+}
+.signup-header h1 { font-family:var(--font-display); font-size:1.3rem; font-weight:700; color:var(--white); }
+.signup-header p  { font-size:.82rem; color:rgba(255,255,255,.75); margin-top:4px; }
+
+/* 진행 단계 */
+.step-bar {
+  display: flex; align-items: center;
+  padding: 16px 24px 8px;
+}
+.step-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 800;
+  flex-shrink: 0;
+}
+.step-dot.active { background: var(--primary); color: var(--white); }
+.step-dot.done   { background: var(--green); color: var(--white); }
+.step-dot.inactive { background: var(--gray-200); color: var(--gray-500); }
+.step-line { flex: 1; height: 2px; background: var(--gray-200); margin: 0 6px; }
+.step-line.done { background: var(--green); }
+.step-label {
+  font-size: .68rem; font-weight: 600;
+  color: var(--gray-500); text-align: center; margin-top: 4px;
+}
+
+/* 약관 동의 */
+.agree-all {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  background: var(--cream);
+  border-radius: var(--radius-md);
+  margin: 0 16px;
+  cursor: pointer;
+  border: 1.5px solid var(--peach);
+}
+.agree-all-text { font-size: .92rem; font-weight: 700; color: var(--dark); }
+.agree-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.agree-left { display: flex; align-items: center; gap: 10px; }
+.agree-text { font-size: .86rem; color: var(--gray-700); }
+.agree-req  { font-size: .72rem; font-weight: 700; color: var(--red); margin-left: 4px; }
+.agree-opt  { font-size: .72rem; font-weight: 600; color: var(--gray-400); margin-left: 4px; }
+.agree-view { font-size: .78rem; color: var(--gray-400); text-decoration: underline; }
+
+/* 소셜 가입 힌트 */
+.social-hint {
+  background: #FEF9C3;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: .82rem;
+  color: #78350F;
+  margin: 0 16px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+
+  <header class="header">
+    <button class="header__icon-btn" onclick="history.back()">←</button>
+    <div style="font-size:1rem; font-weight:700; color:var(--dark)">회원가입</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <!-- 진행 단계 -->
+  <div>
+    <div class="step-bar" id="step-bar"></div>
+  </div>
+
+  <div id="signup-content" style="padding-bottom:40px"></div>
+
+</div>
+<div id="toast-global" class="toast"></div>
+<script src="../js/app.js"></script>
+<script>
+function go(url) { window.location.href = url; }
+Store.load();
+
+let step = 1;
+const formData = { name:'', email:'', phone:'', password:'', agreements:{} };
+
+function renderStepBar() {
+  const steps = ['약관 동의','정보 입력','완료'];
+  document.getElementById('step-bar').innerHTML = steps.map((s, i) => {
+    const n = i + 1;
+    const cls = n < step ? 'done' : n === step ? 'active' : 'inactive';
+    const label = n < step ? '✓' : n;
+    return `
+    ${i > 0 ? `<div class="step-line ${n <= step ? 'done':''}"></div>` : ''}
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div class="step-dot ${cls}">${label}</div>
+      <div class="step-label">${s}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── STEP 1: 약관 동의 ─────────────────────────────────────
+function renderStep1() {
+  renderStepBar();
+  document.getElementById('signup-content').innerHTML = `
+  <div style="padding:16px; display:flex; flex-direction:column; gap:14px">
+
+    <div class="social-hint">
+      💡 카카오·네이버·구글로 간편 가입하면<br>아래 정보 입력을 건너뛸 수 있어요!
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:8px">
+      <button class="btn btn-social btn-kakao-login" style="background:#FEE500;color:#391B1B;height:48px;border-radius:var(--radius-md);font-weight:700;font-size:.92rem" onclick="socialSignup('kakao')">💬 카카오로 간편가입</button>
+      <button class="btn btn-social" style="background:#03C75A;color:white;height:48px;border-radius:var(--radius-md);font-weight:700;font-size:.92rem" onclick="socialSignup('naver')">네이버로 간편가입</button>
+    </div>
+
+    <div class="divider-or" style="display:flex;align-items:center;gap:12px;color:var(--gray-400);font-size:.82rem">
+      <div style="flex:1;height:1px;background:var(--gray-200)"></div>
+      또는 이메일로 가입
+      <div style="flex:1;height:1px;background:var(--gray-200)"></div>
+    </div>
+
+    <div style="font-size:.88rem; font-weight:700; color:var(--dark)">서비스 이용 약관 동의</div>
+
+    <!-- 전체 동의 -->
+    <div class="agree-all" onclick="toggleAll()">
+      <input type="checkbox" id="agree-all" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer">
+      <div class="agree-all-text">전체 동의 (필수+선택 포함)</div>
+    </div>
+
+    <!-- 개별 약관 -->
+    <div style="border:1.5px solid var(--gray-200); border-radius:var(--radius-md); overflow:hidden">
+      ${[
+        { id:'terms',   text:'이용약관', req:true },
+        { id:'privacy', text:'개인정보 수집 및 이용', req:true },
+        { id:'age',     text:'만 14세 이상 확인', req:true },
+        { id:'mkt',     text:'마케팅 정보 수신 (카카오 알림톡)', req:false },
+        { id:'push',    text:'앱 푸시 알림 수신', req:false },
+      ].map(a => `
+      <div class="agree-item">
+        <div class="agree-left">
+          <input type="checkbox" id="agree-${a.id}" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer" onchange="checkAll()">
+          <span class="agree-text">${a.text}<span class="${a.req?'agree-req':'agree-opt'}">(${a.req?'필수':'선택'})</span></span>
+        </div>
+        <span class="agree-view" onclick="viewTerms('${a.id}')">보기</span>
+      </div>`).join('')}
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg" onclick="nextStep1()">다음</button>
+  </div>`;
+}
+
+function toggleAll() {
+  const all = document.getElementById('agree-all').checked;
+  ['terms','privacy','age','mkt','push'].forEach(id => {
+    document.getElementById(`agree-${id}`).checked = all;
+  });
+}
+function checkAll() {
+  const ids = ['terms','privacy','age','mkt','push'];
+  document.getElementById('agree-all').checked = ids.every(id => document.getElementById(`agree-${id}`).checked);
+}
+function viewTerms(id) { toast(`${id} 약관 내용 로드`); }
+
+function socialSignup(provider) {
+  Store.user = { id:'u_'+Date.now(), name:provider+'회원', email:'', phone:'', grade:'BASIC', point:1000, loginType:provider };
+  Store.save();
+  step = 3; renderStep3();
+}
+
+function nextStep1() {
+  const required = ['terms','privacy','age'];
+  if (!required.every(id => document.getElementById(`agree-${id}`).checked)) {
+    toast('필수 약관에 동의해주세요'); return;
+  }
+  formData.agreements = {
+    mkt:  document.getElementById('agree-mkt').checked,
+    push: document.getElementById('agree-push').checked,
+  };
+  step = 2; renderStep2();
+}
+
+// ── STEP 2: 정보 입력 ─────────────────────────────────────
+function renderStep2() {
+  renderStepBar();
+  document.getElementById('signup-content').innerHTML = `
+  <div style="padding:16px; display:flex; flex-direction:column; gap:14px">
+
+    <div class="form-group">
+      <div class="form-label">이름</div>
+      <input class="form-input" id="su-name" type="text" placeholder="실명 입력" value="${formData.name}">
+    </div>
+    <div class="form-group">
+      <div class="form-label">이메일</div>
+      <input class="form-input" id="su-email" type="email" placeholder="email@example.com" value="${formData.email}">
+      <span class="form-error" id="email-err">이메일 형식을 확인해주세요</span>
+    </div>
+    <div class="form-group">
+      <div class="form-label">휴대폰 번호</div>
+      <div style="display:flex; gap:8px">
+        <input class="form-input" id="su-phone" type="tel" placeholder="010-0000-0000" style="flex:1" value="${formData.phone}" oninput="formatPhone(this)">
+        <button class="btn btn-outline btn-sm" onclick="sendSMS()">인증번호</button>
+      </div>
+    </div>
+    <div class="form-group" id="sms-group" style="display:none">
+      <div class="form-label">인증번호</div>
+      <div style="display:flex; gap:8px">
+        <input class="form-input" id="su-sms" type="number" placeholder="6자리 입력" style="flex:1">
+        <button class="btn btn-primary btn-sm" onclick="verifySMS()">확인</button>
+      </div>
+      <span class="form-hint" id="sms-timer">03:00 남음</span>
+    </div>
+    <div class="form-group">
+      <div class="form-label">비밀번호</div>
+      <div class="input-wrap">
+        <input class="form-input" id="su-pw" type="password" placeholder="8자 이상, 영문+숫자 조합" oninput="checkPwStrength()">
+        <span class="input-action" onclick="togglePw('su-pw')">👁</span>
+      </div>
+      <div id="pw-strength" style="height:4px; border-radius:2px; margin-top:6px; transition:all .3s"></div>
+      <span class="form-hint" id="pw-hint" style="margin-top:3px"></span>
+    </div>
+    <div class="form-group">
+      <div class="form-label">비밀번호 확인</div>
+      <div class="input-wrap">
+        <input class="form-input" id="su-pw2" type="password" placeholder="비밀번호 재입력">
+        <span class="input-action" onclick="togglePw('su-pw2')">👁</span>
+      </div>
+      <span class="form-error" id="pw-err">비밀번호가 일치하지 않습니다</span>
+    </div>
+
+    <!-- 추천인 -->
+    <div class="form-group">
+      <div class="form-label" style="display:flex; justify-content:space-between">
+        추천인 코드 <span style="font-size:.75rem; color:var(--secondary); font-weight:600">적립금 1,000P 증정</span>
+      </div>
+      <input class="form-input" id="su-ref" type="text" placeholder="추천인 코드 (선택)">
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg" onclick="nextStep2()">가입 완료</button>
+  </div>`;
+}
+
+function formatPhone(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length > 3 && v.length <= 7) v = v.slice(0,3)+'-'+v.slice(3);
+  else if (v.length > 7) v = v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);
+  el.value = v;
+}
+
+let smsVerified = false;
+function sendSMS() {
+  const phone = document.getElementById('su-phone').value;
+  if (!phone) { toast('휴대폰 번호를 입력해주세요'); return; }
+  document.getElementById('sms-group').style.display = 'block';
+  toast('인증번호가 발송되었습니다 (데모: 123456)');
+  let t = 180;
+  const timer = setInterval(() => {
+    t--;
+    const m = String(Math.floor(t/60)).padStart(2,'0');
+    const s = String(t%60).padStart(2,'0');
+    const el = document.getElementById('sms-timer');
+    if (el) el.textContent = `${m}:${s} 남음`;
+    if (t <= 0) clearInterval(timer);
+  }, 1000);
+}
+function verifySMS() {
+  const code = document.getElementById('su-sms').value;
+  if (code === '123456') { smsVerified = true; toast('인증되었습니다 ✅'); }
+  else toast('인증번호가 올바르지 않습니다');
+}
+
+let pwStrengths = ['','weak','medium','strong','very-strong'];
+function checkPwStrength() {
+  const pw = document.getElementById('su-pw').value;
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Za-z]/.test(pw) && /[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (pw.length >= 12) score++;
+  const colors = ['','#DC2626','#F59E0B','#22C55E','#15803D'];
+  const labels = ['','약함','보통','강함','매우 강함'];
+  const bar = document.getElementById('pw-strength');
+  const hint = document.getElementById('pw-hint');
+  bar.style.width = `${score*25}%`; bar.style.background = colors[score];
+  hint.textContent = pw.length ? `비밀번호 강도: ${labels[score]}` : '';
+}
+
+function togglePw(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function nextStep2() {
+  const name  = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const pw    = document.getElementById('su-pw').value;
+  const pw2   = document.getElementById('su-pw2').value;
+  if (!name || !email || !pw) { toast('모든 필수 항목을 입력해주세요'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('email-err').classList.add('show'); return;
+  }
+  if (pw !== pw2) { document.getElementById('pw-err').classList.add('show'); return; }
+
+  Store.user = { id:'u_'+Date.now(), name, email, phone: document.getElementById('su-phone').value, grade:'BASIC', point:1000, loginType:'email' };
+  Store.save();
+  step = 3; renderStep3();
+}
+
+// ── STEP 3: 완료 ──────────────────────────────────────────
+function renderStep3() {
+  renderStepBar();
+  document.getElementById('signup-content').innerHTML = `
+  <div style="padding:48px 24px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:16px">
+    <div style="font-size:4rem; animation:bounce .6s">🎉</div>
+    <div style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:var(--dark)">
+      환영합니다!<br>${Store.user?.name || ''}님
+    </div>
+    <p style="font-size:.88rem; color:var(--gray-500); line-height:1.7">
+      정육본가 회원이 되셨습니다.<br>
+      가입 축하 포인트 <strong style="color:var(--primary)">1,000P</strong>가 지급되었습니다.
+    </p>
+    <div style="background:var(--cream); border:1px solid var(--peach); border-radius:var(--radius-md); padding:16px; width:100%; text-align:left; font-size:.84rem; line-height:1.8">
+      🎁 <strong>가입 혜택</strong><br>
+      · 웰컴 쿠폰 10% (1만원 이상 사용)<br>
+      · 첫 구매 무료배송<br>
+      · 축하 포인트 1,000P
+    </div>
+    <button class="btn btn-primary btn-full btn-lg" onclick="go('../index.html')">쇼핑 시작하기 →</button>
+    <button class="btn btn-outline btn-full" onclick="go('../pages/subscribe.html')">정기배송 알아보기</button>
+  </div>`;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+renderStep1();
+</script>
+</body>
+</html>

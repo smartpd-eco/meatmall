@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>정육본가 — 신선한 육가공 D2C</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+<style>
+/* ── 배너 슬라이더 ── */
+.banner-slider {
+  position: relative;
+  overflow: hidden;
+  height: 200px;
+  background: var(--primary);
+}
+.banner-track {
+  display: flex;
+  transition: transform .45s cubic-bezier(.25,.46,.45,.94);
+  height: 100%;
+}
+.banner-slide {
+  min-width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  position: relative;
+  overflow: hidden;
+}
+.banner-slide:nth-child(1) { background: linear-gradient(135deg, #5C1E08, #B45309); }
+.banner-slide:nth-child(2) { background: linear-gradient(135deg, #1C3A5E, #2D6A8F); }
+.banner-slide:nth-child(3) { background: linear-gradient(135deg, #1A4731, #2D8A5E); }
+.banner-emoji {
+  position: absolute;
+  right: 20px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 6rem;
+  opacity: .25;
+}
+.banner-tag {
+  display: inline-block;
+  background: rgba(255,255,255,.2);
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 10px;
+  letter-spacing: .05em;
+}
+.banner-title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+.banner-sub { font-size: 0.82rem; color: rgba(255,255,255,.78); margin-bottom: 14px; }
+.banner-cta {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--white);
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+}
+.banner-dots {
+  position: absolute;
+  bottom: 12px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 5px;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.4);
+  transition: all .3s;
+}
+.dot.active { width: 18px; border-radius: 3px; background: var(--white); }
+
+/* ── 이벤트 배지 바 ── */
+.event-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.event-bar::-webkit-scrollbar { display: none; }
+.event-chip {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .12s;
+  display: flex; align-items: center; gap: 5px;
+}
+.event-chip:active { transform: scale(.95); }
+.chip-red    { background: #FEE2E2; color: var(--red); }
+.chip-amber  { background: #FEF3C7; color: #92400E; }
+.chip-green  { background: var(--green-light); color: var(--green); }
+.chip-blue   { background: #DBEAFE; color: var(--blue); }
+
+/* ── 카테고리 그리드 ── */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 4px 16px 16px;
+}
+.cat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.cat-icon {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  transition: transform .15s;
+}
+.cat-item:active .cat-icon { transform: scale(.9); }
+.cat-label { font-size: 0.7rem; font-weight: 600; color: var(--gray-700); text-align: center; }
+.cat-icon-1 { background: linear-gradient(135deg, #FEE2E2, #FCA5A5); }
+.cat-icon-2 { background: linear-gradient(135deg, #FEF3C7, #FCD34D); }
+.cat-icon-3 { background: linear-gradient(135deg, #D1FAE5, #6EE7B7); }
+.cat-icon-4 { background: linear-gradient(135deg, #DBEAFE, #93C5FD); }
+.cat-icon-5 { background: linear-gradient(135deg, #EDE9FE, #C4B5FD); }
+.cat-icon-6 { background: linear-gradient(135deg, #FFE4E6, #FDA4AF); }
+.cat-icon-7 { background: linear-gradient(135deg, #FFF7ED, #FED7AA); }
+.cat-icon-8 { background: linear-gradient(135deg, #F0FDF4, #86EFAC); }
+.cat-icon-9 { background: linear-gradient(135deg, #FEF9C3, #FDE047); }
+.cat-icon-0 { background: linear-gradient(135deg, #F1F5F9, #CBD5E1); }
+
+/* ── 구독 배너 ── */
+.subscribe-banner {
+  margin: 4px 16px 4px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+}
+.sub-text h3 { font-size: 1rem; font-weight: 800; color: var(--white); margin-bottom: 4px; }
+.sub-text p  { font-size: 0.78rem; color: rgba(255,255,255,.8); }
+.sub-btn {
+  background: var(--white);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── 상품 그리드 ── */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 16px;
+}
+
+/* ── 수평 스크롤 상품 ── */
+.product-row {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.product-row::-webkit-scrollbar { display: none; }
+.product-row .product-card { min-width: 150px; width: 150px; flex-shrink: 0; }
+
+/* ── 오늘의 특가 타이머 ── */
+.flash-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 20px 16px 12px;
+}
+.flash-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.timer-box {
+  display: flex; gap: 4px; align-items: center;
+  margin-left: auto;
+}
+.timer-unit {
+  background: var(--primary);
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-variant-numeric: tabular-nums;
+  min-width: 28px;
+  text-align: center;
+}
+.timer-sep { color: var(--primary); font-weight: 800; font-size: 0.9rem; }
+
+/* ── 리뷰 미니 ── */
+.review-mini {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.74rem; color: var(--gray-500);
+  margin-top: 4px;
+}
+.stars { color: var(--amber); font-size: 0.74rem; }
+
+/* ── 포인트/등급 배너 ── */
+.grade-banner {
+  margin: 0 16px 4px;
+  background: var(--cream);
+  border: 1px solid var(--peach);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.grade-avatar {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.grade-info { flex: 1; }
+.grade-name { font-size: 0.9rem; font-weight: 700; color: var(--dark); }
+.grade-point { font-size: 0.8rem; color: var(--secondary); font-weight: 600; margin-top: 2px; }
+.grade-arrow { color: var(--gray-400); font-size: 1.1rem; }
+
+/* ── HACCP 신뢰 배너 ── */
+.trust-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px;
+  background: var(--cream);
+  border-top: 1px solid var(--peach);
+  border-bottom: 1px solid var(--peach);
+  margin: 8px 0;
+}
+.trust-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.trust-icon { font-size: 1.5rem; }
+.trust-label { font-size: 0.68rem; font-weight: 700; color: var(--primary); text-align: center; }
+</style>
+</head>
+<body>
+<div class="app-wrap">
+
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="header__logo">
+      <span>🥩</span>정육본가
+    </div>
+    <div class="header__actions">
+      <button class="header__icon-btn" onclick="go('pages/search.html')">🔍</button>
+      <button class="header__icon-btn" onclick="go('pages/notifications.html')">
+        🔔<span class="badge">2</span>
+      </button>
+      <button class="header__icon-btn" onclick="go('pages/cart.html')">
+        🛒<span class="badge cart-badge" id="cart-badge" style="display:none">0</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="main-content">
+
+    <!-- 배너 슬라이더 -->
+    <div class="banner-slider" id="banner">
+      <div class="banner-track" id="bannerTrack">
+
+        <div class="banner-slide">
+          <div>
+            <div class="banner-tag">🔥 지금 특가</div>
+            <div class="banner-title">공장에서<br>식탁까지 48시간</div>
+            <div class="banner-sub">직접 가공, 유통마진 제로</div>
+            <span class="banner-cta" onclick="go('pages/category.html')">쇼핑하기 →</span>
+          </div>
+          <div class="banner-emoji">🥩</div>
+        </div>
+
+        <div class="banner-slide">
+          <div>
+            <div class="banner-tag">📬 구독 할인</div>
+            <div class="banner-title">매주 달라지는<br>고기 큐레이션</div>
+            <div class="banner-sub">정기배송 구독 시 10% 할인</div>
+            <span class="banner-cta" onclick="go('pages/subscribe.html')">구독 신청 →</span>
+          </div>
+          <div class="banner-emoji">📦</div>
+        </div>
+
+        <div class="banner-slide">
+          <div>
+            <div class="banner-tag">✅ HACCP 인증</div>
+            <div class="banner-title">국내산 원육만<br>사용합니다</div>
+            <div class="banner-sub">HACCP 인증 공장 직접 운영</div>
+            <span class="banner-cta" onclick="go('pages/about.html')">브랜드 스토리 →</span>
+          </div>
+          <div class="banner-emoji">🏭</div>
+        </div>
+
+      </div>
+      <div class="banner-dots" id="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <!-- 이벤트 칩 바 -->
+    <div class="event-bar">
+      <div class="event-chip chip-red"   onclick="go('pages/category.html?type=sale')">🔥 오늘특가</div>
+      <div class="event-chip chip-amber" onclick="go('pages/category.html?type=new')">✨ 신상품</div>
+      <div class="event-chip chip-green" onclick="go('pages/category.html?type=haccp')">✅ HACCP</div>
+      <div class="event-chip chip-blue"  onclick="go('pages/category.html?type=set')">🎁 선물세트</div>
+      <div class="event-chip chip-amber" onclick="go('pages/subscribe.html')">📬 구독박스</div>
+    </div>
+
+    <!-- 카테고리 -->
+    <div class="section-header">
+      <div class="section-title">카테고리</div>
+    </div>
+    <div class="cat-grid">
+      <div class="cat-item" onclick="go('pages/category.html?cat=beef')">
+        <div class="cat-icon cat-icon-1">🐄</div>
+        <div class="cat-label">소고기</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/category.html?cat=pork')">
+        <div class="cat-icon cat-icon-2">🐷</div>
+        <div class="cat-label">돼지고기</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/category.html?cat=chicken')">
+        <div class="cat-icon cat-icon-3">🐔</div>
+        <div class="cat-label">닭/오리</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/category.html?cat=processed')">
+        <div class="cat-icon cat-icon-4">🌭</div>
+        <div class="cat-label">가공육PB</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/category.html?cat=sausage')">
+        <div class="cat-icon cat-icon-5">🥓</div>
+        <div class="cat-label">소시지</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/category.html?cat=giftset')">
+        <div class="cat-icon cat-icon-6">🎁</div>
+        <div class="cat-label">선물세트</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/category.html?cat=mealkit')">
+        <div class="cat-icon cat-icon-7">🍱</div>
+        <div class="cat-label">밀키트</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/subscribe.html')">
+        <div class="cat-icon cat-icon-8">📬</div>
+        <div class="cat-label">정기배송</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/category.html?cat=sale')">
+        <div class="cat-icon cat-icon-9">🔥</div>
+        <div class="cat-label">특가</div>
+      </div>
+      <div class="cat-item" onclick="go('pages/category.html')">
+        <div class="cat-icon cat-icon-0">📋</div>
+        <div class="cat-label">전체보기</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 오늘의 특가 (타이머) -->
+    <div class="flash-header">
+      <div class="flash-title">⚡ 오늘의 특가</div>
+      <div class="timer-box">
+        <span class="timer-unit" id="th">04</span>
+        <span class="timer-sep">:</span>
+        <span class="timer-unit" id="tm">23</span>
+        <span class="timer-sep">:</span>
+        <span class="timer-unit" id="ts">11</span>
+      </div>
+    </div>
+    <div class="product-row" id="flash-products"></div>
+
+    <div class="divider"></div>
+
+    <!-- 구독 배너 -->
+    <div class="subscribe-banner" onclick="go('pages/subscribe.html')">
+      <div class="sub-text">
+        <h3>📬 정기배송 구독하기</h3>
+        <p>매주 신선한 고기를 10% 할인가로<br>받아보세요. 언제든 변경·해지 가능</p>
+      </div>
+      <div class="sub-btn">구독하기</div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="divider"></div>
+
+    <!-- 신뢰 배지 -->
+    <div class="trust-bar">
+      <div class="trust-item"><div class="trust-icon">✅</div><div class="trust-label">HACCP<br>인증</div></div>
+      <div class="trust-item"><div class="trust-icon">🏭</div><div class="trust-label">자체<br>공장</div></div>
+      <div class="trust-item"><div class="trust-icon">❄️</div><div class="trust-label">냉동<br>배송</div></div>
+      <div class="trust-item"><div class="trust-icon">🇰🇷</div><div class="trust-label">국내산<br>원육</div></div>
+      <div class="trust-item"><div class="trust-icon">⏱️</div><div class="trust-label">48시간<br>배송</div></div>
+    </div>
+
+    <!-- 베스트셀러 -->
+    <div class="section-header">
+      <div class="section-title">🏆 베스트셀러</div>
+      <div class="section-more" onclick="go('pages/category.html?sort=best')">전체보기 ›</div>
+    </div>
+    <div class="product-grid" id="best-products"></div>
+
+    <div style="height:8px"></div>
+    <div class="divider"></div>
+
+    <!-- 마이 포인트 배너 (로그인 시) -->
+    <div id="grade-area"></div>
+
+    <!-- 신상품 -->
+    <div class="section-header">
+      <div class="section-title">✨ 신상품</div>
+      <div class="section-more" onclick="go('pages/category.html?sort=new')">전체보기 ›</div>
+    </div>
+    <div class="product-row" id="new-products"></div>
+
+    <div style="height:8px"></div>
+
+  </div><!-- /main-content -->
+
+  <!-- 하단 내비 -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="go('index.html')"><span class="nav-icon">🏠</span><span>홈</span></div>
+    <div class="nav-item" onclick="go('pages/category.html')"><span class="nav-icon">📦</span><span>카테고리</span></div>
+    <div class="nav-item" onclick="go('pages/subscribe.html')"><span class="nav-icon">🔄</span><span>정기배송</span></div>
+    <div class="nav-item" onclick="go('pages/mypage.html')"><span class="nav-icon">👤</span><span>마이</span></div>
+    <div class="nav-item" onclick="go('pages/cs.html')"><span class="nav-icon">💬</span><span>CS</span></div>
+  </nav>
+
+</div><!-- /app-wrap -->
+
+<div id="toast-global" class="toast"></div>
+
+<script src="js/app.js"></script>
+<script>
+// ── 샘플 상품 데이터 ─────────────────────────────────────
+const PRODUCTS = {
+  flash: [
+    { id:1, emoji:'🥩', name:'국내산 한우 1++ 등심 (냉장)', weight:'300g', price:28900, originPrice:36000, discount:20, tags:['한우','냉장'], badge:[{type:'accent',text:'특가'}] },
+    { id:2, emoji:'🥓', name:'제주 흑돼지 삼겹살 (냉장)', weight:'500g', price:15900, originPrice:19900, discount:20, tags:['흑돼지'] },
+    { id:3, emoji:'🌭', name:'수제 프랑크소시지 PB', weight:'200g×3', price:8900, originPrice:11000, discount:19, tags:['PB','소시지'], badge:[{type:'primary',text:'PB'}] },
+    { id:4, emoji:'🍗', name:'닭가슴살 소분 세트', weight:'100g×10', price:12900, originPrice:15900, discount:19, tags:['닭','소분'] },
+  ],
+  best: [
+    { id:1, emoji:'🥩', name:'국내산 한우 1++ 등심 (냉장)', weight:'300g', price:28900, originPrice:36000, discount:20, tags:['한우','냉장'], badge:[{type:'accent',text:'특가'}] },
+    { id:5, emoji:'🐷', name:'앞다리살 제육용 (냉장)', weight:'500g', price:7900, originPrice:9900, discount:20, tags:['돼지'] },
+    { id:6, emoji:'🥓', name:'수제 베이컨 (PB)', weight:'200g', price:9500, originPrice:12000, discount:21, tags:['PB','베이컨'], badge:[{type:'primary',text:'PB'}] },
+    { id:7, emoji:'🍱', name:'소불고기 밀키트', weight:'400g (2인분)', price:13900, originPrice:17000, discount:18, tags:['밀키트'] },
+    { id:3, emoji:'🌭', name:'수제 프랑크소시지 PB', weight:'200g×3', price:8900, originPrice:11000, discount:19, tags:['PB'] },
+    { id:8, emoji:'🎁', name:'한우 선물세트 (명절)', weight:'1.2kg', price:89000, originPrice:110000, discount:19, tags:['선물','한우'] },
+  ],
+  newItems: [
+    { id:9,  emoji:'🦆', name:'훈제오리 슬라이스 PB', weight:'200g', price:10900, tags:['PB','훈제'], badge:[{type:'accent',text:'NEW'}] },
+    { id:10, emoji:'🐔', name:'닭가슴살 스테이크', weight:'120g×4', price:11900, originPrice:14500, discount:18, tags:['닭'] },
+    { id:11, emoji:'🥩', name:'소 갈비살 (냉동)', weight:'500g', price:22900, tags:['소','냉동'] },
+    { id:12, emoji:'🌭', name:'체더치즈 소시지', weight:'180g', price:7500, tags:['PB','치즈'], badge:[{type:'accent',text:'NEW'}] },
+  ]
+};
+
+// ── 상품 렌더 ─────────────────────────────────────────────
+function renderProducts(containerId, products) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = products.map(renderProductCard).join('');
+}
+
+renderProducts('flash-products',  PRODUCTS.flash);
+renderProducts('best-products',   PRODUCTS.best);
+renderProducts('new-products',    PRODUCTS.newItems);
+
+// ── 타이머 ───────────────────────────────────────────────
+(function timer() {
+  let total = 4 * 3600 + 23 * 60 + 11;
+  setInterval(() => {
+    total = Math.max(0, total - 1);
+    const h = String(Math.floor(total / 3600)).padStart(2,'0');
+    const m = String(Math.floor((total % 3600) / 60)).padStart(2,'0');
+    const s = String(total % 60).padStart(2,'0');
+    document.getElementById('th').textContent = h;
+    document.getElementById('tm').textContent = m;
+    document.getElementById('ts').textContent = s;
+  }, 1000);
+})();
+
+// ── 배너 자동 슬라이드 ───────────────────────────────────
+(function banner() {
+  let cur = 0;
+  const track = document.getElementById('bannerTrack');
+  const dots  = document.querySelectorAll('.dot');
+  const total = 3;
+  function go(n) {
+    cur = (n + total) % total;
+    track.style.transform = `translateX(-${cur * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === cur));
+  }
+  setInterval(() => go(cur + 1), 3500);
+  // 스와이프
+  let sx = 0;
+  track.addEventListener('touchstart', e => sx = e.touches[0].clientX, {passive:true});
+  track.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1));
+  });
+})();
+
+// ── 로그인 여부에 따라 포인트 배너 ──────────────────────
+const gradeArea = document.getElementById('grade-area');
+if (Store.user) {
+  gradeArea.innerHTML = `
+  <div class="grade-banner" onclick="go('pages/mypage.html')">
+    <div class="grade-avatar">👤</div>
+    <div class="grade-info">
+      <div class="grade-name">${Store.user.name}님 환영합니다!</div>
+      <div class="grade-point">💎 보유 포인트 ${fmt(Store.user.point || 0)}P</div>
+    </div>
+    <div class="grade-arrow">›</div>
+  </div>`;
+}
+
+// 장바구니 배지
+updateCartBadge();
+</script>
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>관리자 대시보드 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+/* 관리자 전용 오버라이드 */
+:root { --max-w: 480px; }
+body { background: #F1F0EF; }
+
+/* ── 관리자 헤더 ── */
+.admin-header {
+  background: var(--primary-dark);
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+  position: sticky; top: 0; z-index: 100;
+}
+.admin-logo { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--white); }
+.admin-logo small { font-size: .68rem; font-weight: 400; opacity: .7; margin-left: 6px; }
+.admin-header-actions { display: flex; gap: 6px; }
+.admin-hbtn {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: var(--white); cursor: pointer;
+}
+
+/* ── 관리자 탭 내비 ── */
+.admin-tabs {
+  display: flex;
+  background: var(--primary);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.admin-tabs::-webkit-scrollbar { display: none; }
+.admin-tab {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.65);
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  white-space: nowrap;
+  transition: all .2s;
+}
+.admin-tab.active { color: var(--white); border-bottom-color: var(--amber); }
+
+/* ── KPI 카드 ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+.kpi-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-label { font-size: 0.75rem; color: var(--gray-500); margin-bottom: 6px; }
+.kpi-value { font-size: 1.4rem; font-weight: 800; color: var(--dark); }
+.kpi-delta {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 0.75rem; font-weight: 700;
+  margin-top: 4px;
+}
+.delta-up   { color: var(--red); }
+.delta-down { color: var(--blue); }
+
+/* ── 섹션 카드 ── */
+.admin-section {
+  background: var(--white);
+  margin: 0 14px 12px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.admin-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.admin-section-title { font-size: 0.92rem; font-weight: 700; color: var(--dark); }
+.admin-section-action { font-size: 0.78rem; color: var(--primary); font-weight: 600; cursor: pointer; }
+
+/* ── 주문 테이블 ── */
+.order-table { width: 100%; }
+.order-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background .1s;
+}
+.order-row:last-child { border-bottom: none; }
+.order-row:active { background: var(--gray-100); }
+.order-id { font-weight: 700; color: var(--dark); min-width: 80px; font-size: .78rem; }
+.order-name-col { flex: 1; color: var(--gray-700); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.order-price-col { font-weight: 700; color: var(--dark); min-width: 60px; text-align: right; white-space: nowrap; }
+
+/* ── 재고 테이블 ── */
+.stock-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.82rem;
+}
+.stock-row:last-child { border-bottom: none; }
+.stock-emoji { font-size: 1.3rem; flex-shrink: 0; }
+.stock-name  { flex: 1; font-weight: 600; color: var(--dark); }
+.stock-bar-wrap { width: 70px; }
+.stock-bar-bg {
+  height: 6px; background: var(--gray-200);
+  border-radius: 3px; overflow: hidden;
+}
+.stock-bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+.stock-qty { font-size: .78rem; color: var(--gray-500); min-width: 36px; text-align: right; }
+.stock-alert {
+  font-size: .7rem; font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}
+.alert-low  { background: var(--red-light); color: var(--red); }
+.alert-ok   { background: var(--green-light); color: var(--green); }
+.alert-warn { background: #FEF3C7; color: #92400E; }
+
+/* ── CS 티켓 ── */
+.ticket-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+}
+.ticket-row:last-child { border-bottom: none; }
+.ticket-row:active { background: var(--gray-100); }
+.ticket-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.ticket-title  { font-size: .88rem; font-weight: 600; color: var(--dark); flex: 1; }
+.ticket-meta   { font-size: .75rem; color: var(--gray-500); display: flex; gap: 8px; }
+.ticket-type   { font-size: .72rem; font-weight: 600; color: var(--secondary); }
+
+/* ── 매출 차트 (SVG) ── */
+.chart-wrap {
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+.revenue-bars { display: flex; gap: 6px; align-items: flex-end; height: 100px; }
+.rev-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 28px; }
+.rev-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--primary);
+  transition: height .4s ease;
+  cursor: pointer;
+  min-height: 4px;
+}
+.rev-bar:hover { background: var(--accent); }
+.rev-label { font-size: .62rem; color: var(--gray-500); }
+.rev-value { font-size: .65rem; font-weight: 700; color: var(--dark); }
+
+/* ── 빠른 액션 ── */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+.qa-btn {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 14px 8px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform .15s;
+}
+.qa-btn:active { transform: scale(.95); }
+.qa-icon { font-size: 1.5rem; margin-bottom: 6px; }
+.qa-label { font-size: 0.68rem; font-weight: 700; color: var(--gray-700); }
+
+/* ── 알림 배너 ── */
+.admin-alert {
+  margin: 14px 14px 0;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: .82rem;
+}
+.admin-alert.alert-urgent {
+  background: var(--red-light);
+  border-left: 3px solid var(--red);
+}
+.admin-alert.alert-warn {
+  background: #FEF3C7;
+  border-left: 3px solid var(--amber);
+}
+.admin-alert-text { flex: 1; color: var(--gray-700); line-height: 1.4; }
+.admin-alert-text strong { font-weight: 700; }
+.admin-alert-btn {
+  font-size: .75rem; font-weight: 700;
+  color: var(--primary); cursor: pointer;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+}
+
+/* ── 로그인 화면 ── */
+.admin-login-wrap {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px;
+  background: linear-gradient(160deg, var(--primary-dark), var(--primary));
+}
+.admin-login-box {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: var(--shadow-lg);
+}
+</style>
+</head>
+<body>
+<div class="app-wrap" id="app">
+  <!-- JS로 렌더 -->
+</div>
+<div id="toast-global" class="toast"></div>
+<script src="../js/app.js"></script>
+<script>
+function go(url) { window.location.href = url; }
+
+// ── 관리자 인증 상태 ──────────────────────────────────────
+let adminAuth = sessionStorage.getItem('mm_admin') === 'true';
+
+function render() {
+  if (!adminAuth) { renderLoginPage(); return; }
+  renderDashboard();
+}
+
+// ── 관리자 로그인 ────────────────────────────────────────
+function renderLoginPage() {
+  document.getElementById('app').innerHTML = `
+  <div class="admin-login-wrap">
+    <div style="text-align:center; margin-bottom:28px">
+      <div style="font-size:3rem; margin-bottom:10px">🥩</div>
+      <div style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:var(--white)">정육본가</div>
+      <div style="font-size:.85rem; color:rgba(255,255,255,.7); margin-top:4px">관리자 시스템</div>
+    </div>
+    <div class="admin-login-box">
+      <div style="font-size:1.05rem; font-weight:800; color:var(--dark); margin-bottom:20px">🔐 관리자 로그인</div>
+      <div class="form-group" style="margin-bottom:12px">
+        <div class="form-label">관리자 ID</div>
+        <input class="form-input" id="aid" type="text" placeholder="admin" autocomplete="off">
+      </div>
+      <div class="form-group" style="margin-bottom:20px">
+        <div class="form-label">비밀번호</div>
+        <input class="form-input" id="apw" type="password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-full btn-lg" onclick="adminLogin()">로그인</button>
+      <div style="margin-top:16px; text-align:center; font-size:.78rem; color:var(--gray-500)">
+        데모: admin / admin1234
+      </div>
+    </div>
+  </div>`;
+}
+
+function adminLogin() {
+  const id = document.getElementById('aid').value;
+  const pw = document.getElementById('apw').value;
+  if (id === 'admin' && pw === 'admin1234') {
+    sessionStorage.setItem('mm_admin', 'true');
+    adminAuth = true;
+    toast('관리자로 로그인했습니다');
+    setTimeout(renderDashboard, 400);
+  } else {
+    toast('아이디 또는 비밀번호가 틀렸습니다');
+  }
+}
+
+// ── 관리자 대시보드 렌더 ─────────────────────────────────
+let activeTab = 'dashboard';
+
+function renderDashboard() {
+  document.getElementById('app').innerHTML = `
+  <div class="admin-header">
+    <div class="admin-logo">🥩 정육본가 <small>관리자</small></div>
+    <div class="admin-header-actions">
+      <div class="admin-hbtn" title="알림">🔔</div>
+      <div class="admin-hbtn" onclick="adminLogout()" title="로그아웃">🚪</div>
+    </div>
+  </div>
+
+  <div class="admin-tabs">
+    <div class="admin-tab active" onclick="switchTab('dashboard',this)">📊 대시보드</div>
+    <div class="admin-tab" onclick="switchTab('orders',this)">📦 주문관리</div>
+    <div class="admin-tab" onclick="switchTab('inventory',this)">🗄️ 재고관리</div>
+    <div class="admin-tab" onclick="switchTab('revenue',this)">💰 매출/정산</div>
+    <div class="admin-tab" onclick="switchTab('cs',this)">💬 CS관리</div>
+  </div>
+
+  <div id="tab-content" style="min-height:80vh; padding-bottom:32px"></div>`;
+
+  renderTab('dashboard');
+}
+
+function switchTab(name, el) {
+  activeTab = name;
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTab(name);
+}
+
+function renderTab(name) {
+  const content = document.getElementById('tab-content');
+  const tabs = { dashboard: renderDashboardTab, orders: renderOrdersTab, inventory: renderInventoryTab, revenue: renderRevenueTab, cs: renderCSTab };
+  content.innerHTML = tabs[name] ? tabs[name]() : '';
+}
+
+// ── 대시보드 탭 ───────────────────────────────────────────
+function renderDashboardTab() {
+  return `
+  <!-- 긴급 알림 -->
+  <div class="admin-alert alert-urgent">
+    <span style="font-size:1.2rem">🚨</span>
+    <div class="admin-alert-text"><strong>재고 부족 알림</strong><br>삼겹살 500g – 재고 8개 남음 (안전재고 이하)</div>
+    <span class="admin-alert-btn" onclick="switchTab('inventory', document.querySelectorAll('.admin-tab')[2])">확인</span>
+  </div>
+  <div class="admin-alert alert-warn" style="margin-top:8px">
+    <span style="font-size:1.2rem">⚠️</span>
+    <div class="admin-alert-text"><strong>미답변 CS 3건</strong><br>가장 오래된 문의: 18시간 경과</div>
+    <span class="admin-alert-btn" onclick="switchTab('cs', document.querySelectorAll('.admin-tab')[4])">처리</span>
+  </div>
+
+  <!-- KPI 카드 -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">오늘 매출</div>
+      <div class="kpi-value" style="font-size:1.2rem">${fmt(1843000)}원</div>
+      <div class="kpi-delta delta-up">▲ 23% vs 어제</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">오늘 주문</div>
+      <div class="kpi-value">47건</div>
+      <div class="kpi-delta delta-up">▲ 12% vs 어제</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">이번달 매출</div>
+      <div class="kpi-value" style="font-size:1.1rem">${fmt(28470000)}원</div>
+      <div class="kpi-delta delta-up">▲ 18% vs 지난달</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">활성 구독자</div>
+      <div class="kpi-value">183명</div>
+      <div class="kpi-delta delta-up">▲ 11명 증가</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">미처리 주문</div>
+      <div class="kpi-value" style="color:var(--red)">12건</div>
+      <div class="kpi-delta" style="color:var(--gray-500)">처리 필요</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">평균 ROAS</div>
+      <div class="kpi-value">3.4x</div>
+      <div class="kpi-delta delta-up">▲ 목표초과</div>
+    </div>
+  </div>
+
+  <!-- 매출 바 차트 (주간) -->
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <div class="admin-section-title">📈 최근 7일 매출</div>
+      <span class="admin-section-action" onclick="switchTab('revenue', document.querySelectorAll('.admin-tab')[3])">상세보기</span>
+    </div>
+    <div class="chart-wrap">
+      ${renderBarChart([820,1250,980,1640,2100,1380,1843], ['월','화','수','목','금','토','일'])}
+    </div>
+  </div>
+
+  <!-- 빠른 액션 -->
+  <div class="quick-actions">
+    <div class="qa-btn" onclick="switchTab('orders', document.querySelectorAll('.admin-tab')[1])">
+      <div class="qa-icon">📦</div><div class="qa-label">주문처리</div>
+    </div>
+    <div class="qa-btn" onclick="switchTab('inventory', document.querySelectorAll('.admin-tab')[2])">
+      <div class="qa-icon">🗄️</div><div class="qa-label">재고확인</div>
+    </div>
+    <div class="qa-btn" onclick="switchTab('cs', document.querySelectorAll('.admin-tab')[4])">
+      <div class="qa-icon">💬</div><div class="qa-label">CS처리</div>
+    </div>
+    <div class="qa-btn" onclick="toast('상품 등록 페이지로 이동')">
+      <div class="qa-icon">➕</div><div class="qa-label">상품등록</div>
+    </div>
+  </div>`;
+}
+
+function renderBarChart(values, labels) {
+  const max = Math.max(...values);
+  return `<div class="revenue-bars">
+    ${values.map((v, i) => {
+      const h = Math.round((v / max) * 90);
+      return `<div class="rev-bar-wrap">
+        <div class="rev-value">${(v/10000).toFixed(0)}만</div>
+        <div class="rev-bar" style="height:${h}px" title="${fmt(v*100)}원"></div>
+        <div class="rev-label">${labels[i]}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ── 주문관리 탭 ───────────────────────────────────────────
+const ORDERS = [
+  { id:'ORD-2606-0047', name:'국내산 한우 등심 300g 외 2건', buyer:'김민수', price:67800, status:'preparing', statusText:'준비중', statusClass:'status-preparing' },
+  { id:'ORD-2606-0046', name:'수제 프랑크소시지 × 3', buyer:'이지연', price:26700, status:'preparing', statusText:'준비중', statusClass:'status-preparing' },
+  { id:'ORD-2606-0045', name:'흑돼지 삼겹살 500g', buyer:'박철수', price:15900, status:'shipping', statusText:'배송중', statusClass:'status-shipping' },
+  { id:'ORD-2606-0044', name:'밀키트 소불고기 (2인분)', buyer:'최영희', price:13900, status:'shipping', statusText:'배송중', statusClass:'status-shipping' },
+  { id:'ORD-2606-0043', name:'한우 선물세트 1.2kg', buyer:'정다은', price:89000, status:'done', statusText:'완료', statusClass:'status-done' },
+  { id:'ORD-2606-0042', name:'구독박스 6월 3주차', buyer:'강준호', price:34500, status:'done', statusText:'완료', statusClass:'status-done' },
+];
+
+function renderOrdersTab() {
+  return `
+  <div style="padding:14px 14px 8px; display:flex; gap:8px; align-items:center">
+    <input class="form-input" style="flex:1; height:38px; font-size:.84rem" placeholder="🔍 주문번호·고객명 검색">
+    <button class="btn btn-sm btn-primary" onclick="toast('피킹리스트 출력')">🖨️ 출력</button>
+  </div>
+  <div style="display:flex; gap:6px; padding:0 14px 10px; overflow-x:auto; scrollbar-width:none">
+    <span class="tag tag-gray" style="cursor:pointer; padding:5px 10px">전체 47건</span>
+    <span class="tag tag-amber" style="cursor:pointer; padding:5px 10px">준비중 12</span>
+    <span class="tag tag-green" style="cursor:pointer; padding:5px 10px">배송중 23</span>
+    <span class="tag tag-gray" style="cursor:pointer; padding:5px 10px">완료 12</span>
+  </div>
+  <div class="admin-section" style="margin-top:0">
+    ${ORDERS.map(o => `
+    <div class="order-row" onclick="orderDetail('${o.id}')">
+      <div>
+        <div class="order-id">${o.id}</div>
+        <div style="font-size:.72rem; color:var(--gray-500); margin-top:1px">${o.buyer}</div>
+      </div>
+      <div class="order-name-col">${o.name}</div>
+      <div style="text-align:right; flex-shrink:0">
+        <span class="status-chip ${o.statusClass}" style="display:block; margin-bottom:3px; font-size:.7rem">${o.statusText}</span>
+        <span class="order-price-col">${fmt(o.price)}원</span>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function orderDetail(id) {
+  toast(`${id} 주문 상세 확인`);
+}
+
+// ── 재고관리 탭 ───────────────────────────────────────────
+const INVENTORY = [
+  { emoji:'🥩', name:'한우 등심 1++ (냉장)', qty:34, total:100, unit:'300g', status:'ok' },
+  { emoji:'🐷', name:'흑돼지 삼겹살 (냉장)', qty:8, total:50, unit:'500g', status:'low' },
+  { emoji:'🌭', name:'수제 프랑크소시지 PB', qty:22, total:60, unit:'200g×3', status:'ok' },
+  { emoji:'🥓', name:'수제 베이컨 PB', qty:15, total:40, unit:'200g', status:'warn' },
+  { emoji:'🦆', name:'훈제오리 슬라이스 PB', qty:28, total:50, unit:'200g', status:'ok' },
+  { emoji:'🍱', name:'소불고기 밀키트', qty:11, total:30, unit:'400g', status:'warn' },
+  { emoji:'🐔', name:'닭가슴살 소분 세트', qty:41, total:80, unit:'100g×10', status:'ok' },
+];
+
+function renderInventoryTab() {
+  return `
+  <div style="padding:14px 14px 8px; display:flex; gap:8px">
+    <input class="form-input" style="flex:1; height:38px; font-size:.84rem" placeholder="🔍 상품 검색">
+    <button class="btn btn-sm btn-primary" onclick="toast('발주서 생성')">📋 발주</button>
+  </div>
+  <div class="admin-section" style="margin-top:0">
+    <div class="admin-section-header">
+      <div class="admin-section-title">재고 현황 (${INVENTORY.length}개 SKU)</div>
+      <span style="font-size:.75rem; color:var(--gray-500)">안전재고: 재고/총량 20% 이하</span>
+    </div>
+    ${INVENTORY.map(item => {
+      const pct = Math.round((item.qty / item.total) * 100);
+      const barColor = item.status === 'low' ? 'var(--red)' : item.status === 'warn' ? 'var(--amber)' : 'var(--green)';
+      const alertClass = item.status === 'low' ? 'alert-low' : item.status === 'warn' ? 'alert-warn' : 'alert-ok';
+      const alertText = item.status === 'low' ? '부족' : item.status === 'warn' ? '주의' : '정상';
+      return `
+      <div class="stock-row">
+        <span class="stock-emoji">${item.emoji}</span>
+        <div style="flex:1; min-width:0">
+          <div class="stock-name" style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:130px">${item.name}</div>
+          <div style="font-size:.7rem; color:var(--gray-500)">${item.unit}</div>
+        </div>
+        <div class="stock-bar-wrap">
+          <div class="stock-bar-bg">
+            <div class="stock-bar-fill" style="width:${pct}%; background:${barColor}"></div>
+          </div>
+          <div style="font-size:.65rem; color:var(--gray-500); margin-top:2px; text-align:right">${pct}%</div>
+        </div>
+        <div class="stock-qty">${item.qty}개</div>
+        <span class="stock-alert ${alertClass}">${alertText}</span>
+      </div>`;
+    }).join('')}
+  </div>
+  <div style="padding:0 14px 14px">
+    <div style="font-size:.78rem; color:var(--gray-500); line-height:1.7">
+      ⚠️ 소비기한 D-3일 임박 상품: <strong style="color:var(--red)">훈제오리 12개</strong> → 자동 할인(15%) 처리됨
+    </div>
+  </div>`;
+}
+
+// ── 매출/정산 탭 ─────────────────────────────────────────
+function renderRevenueTab() {
+  return `
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">이번달 총 매출</div>
+      <div class="kpi-value" style="font-size:1.1rem">${fmt(28470000)}원</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">PG 수수료 합계</div>
+      <div class="kpi-value" style="font-size:1.1rem; color:var(--red)">${fmt(1048000)}원</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">광고비</div>
+      <div class="kpi-value" style="font-size:1.1rem; color:var(--red)">${fmt(7000000)}원</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">순이익 (추정)</div>
+      <div class="kpi-value" style="font-size:1.1rem; color:var(--green)">${fmt(5220000)}원</div>
+    </div>
+  </div>
+
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <div class="admin-section-title">채널별 매출</div>
+    </div>
+    ${[
+      {ch:'스마트스토어', amt:16800000, pct:59, color:'var(--primary)'},
+      {ch:'자사몰 (준비중)', amt:8200000, pct:29, color:'var(--secondary)'},
+      {ch:'기타', amt:3470000, pct:12, color:'var(--gray-400)'},
+    ].map(r => `
+    <div style="padding:12px 16px; border-bottom:1px solid var(--gray-100)">
+      <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:.85rem">
+        <span style="font-weight:600">${r.ch}</span>
+        <span style="font-weight:800">${fmt(r.amt)}원</span>
+      </div>
+      <div style="height:6px; background:var(--gray-200); border-radius:3px; overflow:hidden">
+        <div style="width:${r.pct}%; height:100%; background:${r.color}; border-radius:3px"></div>
+      </div>
+    </div>`).join('')}
+  </div>
+
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <div class="admin-section-title">PG사별 정산 내역</div>
+      <span class="admin-section-action" onclick="toast('엑셀 내보내기')">📥 내보내기</span>
+    </div>
+    ${[
+      {pg:'네이버페이', amt:12400000, fee:463760, rate:'3.74%'},
+      {pg:'카카오페이', amt:8200000,  fee:287000, rate:'3.5%'},
+      {pg:'토스페이',  amt:4800000,  fee:158400, rate:'3.3%'},
+      {pg:'카드/무통장', amt:3070000, fee:138150, rate:'4.5%'},
+    ].map(p => `
+    <div style="display:flex; align-items:center; padding:11px 16px; border-bottom:1px solid var(--gray-100); font-size:.82rem">
+      <span style="flex:1; font-weight:600">${p.pg}</span>
+      <span style="color:var(--gray-500); margin-right:10px">수수료 ${p.rate}</span>
+      <span style="font-weight:700; color:var(--red); margin-right:8px">-${fmt(p.fee)}원</span>
+      <span style="font-weight:800">${fmt(p.amt)}원</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── CS 관리 탭 ────────────────────────────────────────────
+const TICKETS = [
+  { id:'CS-0048', type:'배송문의', title:'주문한 상품이 아직 도착하지 않았어요', buyer:'이영수', time:'18시간 전', status:'대기', urgent:true },
+  { id:'CS-0047', type:'환불요청', title:'제품이 변질된 것 같습니다 환불 원합니다', buyer:'박지현', time:'12시간 전', status:'대기', urgent:true },
+  { id:'CS-0046', type:'상품문의', title:'삼겹살 원산지가 궁금합니다', buyer:'김도윤', time:'6시간 전', status:'대기', urgent:false },
+  { id:'CS-0045', type:'결제문의', title:'카카오페이 결제 오류가 났어요', buyer:'최수진', time:'3시간 전', status:'처리중', urgent:false },
+  { id:'CS-0044', type:'정기배송', title:'다음달 배송 일정 변경 가능한가요?', buyer:'장민아', time:'1시간 전', status:'답변완료', urgent:false },
+];
+
+function renderCSTab() {
+  return `
+  <div style="padding:14px 14px 8px; display:flex; gap:8px">
+    <input class="form-input" style="flex:1; height:38px; font-size:.84rem" placeholder="🔍 티켓 검색">
+    <select class="form-input" style="width:90px; height:38px; font-size:.82rem">
+      <option>전체</option><option>대기</option><option>처리중</option><option>완료</option>
+    </select>
+  </div>
+  <div class="admin-section" style="margin-top:0">
+    <div class="admin-section-header">
+      <div class="admin-section-title">CS 티켓 (${TICKETS.length}건)</div>
+      <span style="font-size:.75rem; color:var(--red); font-weight:700">미답변 3건 ⚠️</span>
+    </div>
+    ${TICKETS.map(t => `
+    <div class="ticket-row" onclick="handleTicket('${t.id}')">
+      <div class="ticket-header">
+        <span class="ticket-type">[${t.type}]</span>
+        <div class="ticket-title">${t.urgent ? '🔴 ' : ''}${t.title}</div>
+        <span class="tag ${t.status==='답변완료'?'tag-green':t.status==='처리중'?'tag-amber':'tag-primary'}" style="flex-shrink:0; font-size:.68rem">${t.status}</span>
+      </div>
+      <div class="ticket-meta">
+        <span>👤 ${t.buyer}</span>
+        <span>⏱️ ${t.time}</span>
+        <span style="font-weight:700; color:var(--primary)">${t.id}</span>
+      </div>
+    </div>`).join('')}
+  </div>
+  <div style="padding:0 14px">
+    <button class="btn btn-primary btn-full" onclick="toast('CS 템플릿 라이브러리 열기')">📋 답변 템플릿 사용</button>
+  </div>`;
+}
+
+function handleTicket(id) {
+  const t = TICKETS.find(t => t.id === id);
+  if (!t) return;
+  toast(`${id} — ${t.title}`);
+}
+
+function adminLogout() {
+  if (confirm('로그아웃 하시겠습니까?')) {
+    sessionStorage.removeItem('mm_admin');
+    adminAuth = false;
+    renderLoginPage();
+  }
+}
+
+// 초기화
+render();
+</script>
+</body>
+</html>
