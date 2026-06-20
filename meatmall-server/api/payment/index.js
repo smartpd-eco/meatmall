@@ -4,6 +4,8 @@ const fetch    = require('node-fetch');
 const { v4: uuidv4 } = require('uuid');
 const supabase = require('../../lib/supabase');
 const { requireAuth } = require('../../middleware/auth');
+const notify = require('../notify/index');
+const { notifyOrderComplete } = require('../notify/index');
 
 // ── 나이스페이먼츠 설정 ──────────────────────────────────
 const NICE = {
@@ -178,6 +180,20 @@ router.post('/confirm', requireAuth, async (req, res) => {
         p_amount:  pointEarned
       }).catch(() => {}); // 함수 없으면 무시
     }
+
+    // 결제 완료 알림톡 (비동기 - 실패해도 응답에 영향 없음)
+    supabase.from('users').select('name,phone').eq('id',order.user_id).single()
+      .then(({data:u}) => {
+        if (u?.phone) {
+          const d = new Date(); d.setDate(d.getDate()+2);
+          notify.notifyOrderComplete({
+            phone: u.phone, name: u.name,
+            orderId, amount: Number(amount),
+            items: '주문 상품',
+            deliveryDate: d.toLocaleDateString('ko-KR')
+          }).catch(()=>{});
+        }
+      }).catch(()=>{});
 
     res.json({
       ok: true,

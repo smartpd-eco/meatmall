@@ -35,14 +35,25 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login',  authLimiter);
 app.use('/api/auth/signup', authLimiter);
 
-// ── 라우터 ────────────────────────────────────────────
-app.use('/api/auth',    require('./api/auth/email'));
-app.use('/api/auth',    require('./api/auth/social'));
-app.use('/api/payment', require('./api/payment/index'));
+// ══════════════════════════════════════
+// 라우터 등록
+// ══════════════════════════════════════
+app.use('/api/auth',     require('./api/auth/email'));
+app.use('/api/auth',     require('./api/auth/social'));
+app.use('/api/products', require('./api/products/index'));
+app.use('/api/payment',  require('./api/payment/index'));
+app.use('/api/admin',    require('./api/admin/index'));
+app.use('/api/notify',   require('./api/notify/index'));
 
-// ── 헬스체크 ─────────────────────────────────────────
+// 헬스체크
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, service: '정육본가 API', time: new Date().toISOString() });
+  res.json({
+    ok: true,
+    service: '정육본가 API',
+    version: '2.0',
+    time: new Date().toISOString(),
+    endpoints: ['/auth', '/products', '/payment', '/admin', '/notify']
+  });
 });
 
 app.use((req, res) => {
@@ -54,6 +65,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🥩 정육본가 API 서버: http://localhost:${PORT}\n`);
+  console.log(`\n🥩 정육본가 API v2.0 — http://localhost:${PORT}`);
+  console.log(`   엔드포인트: auth · products · payment · admin · notify\n`);
 });
 module.exports = app;
