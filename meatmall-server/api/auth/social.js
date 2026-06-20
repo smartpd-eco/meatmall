@@ -4,9 +4,8 @@ const router   = express.Router();
 const supabase = require('../../lib/supabase');
 const { signAccessToken, signRefreshToken } = require('../../lib/jwt');
 
-const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:5500';
+const FRONTEND = process.env.FRONTEND_URL || 'https://smartpd-eco.github.io/meatmall';
 
-// ── 공통: 소셜 로그인 후 사용자 처리 (신규 가입 or 기존 로그인)
 async function handleSocialUser({ provider, providerId, email, name }) {
   // 1. 기존 소셜 계정 확인
   const { data: existing } = await supabase
@@ -21,7 +20,7 @@ async function handleSocialUser({ provider, providerId, email, name }) {
     return existing.users;
   }
 
-  // 2. 이메일로 기존 계정 연결 시도
+  // 2. 이메일로 기존 계정 연결 (이메일 있을 때만)
   let userId;
   if (email) {
     const { data: byEmail } = await supabase
@@ -33,13 +32,17 @@ async function handleSocialUser({ provider, providerId, email, name }) {
   if (!userId) {
     const { data: newUser, error } = await supabase
       .from('users')
-      .insert({ name: name || '회원', email: email || null, point: 1000 })
+      .insert({
+        name: name || '회원',
+        email: email || null,  // 이메일 없어도 OK
+        point: 1000
+      })
       .select('id')
       .single();
     if (error) throw error;
     userId = newUser.id;
 
-    // 신규 가입 포인트
+    // 가입 포인트
     await supabase.from('point_logs').insert({
       user_id: userId, amount: 1000, reason: '소셜 가입 축하 포인트'
     });
@@ -50,7 +53,7 @@ async function handleSocialUser({ provider, providerId, email, name }) {
     user_id: userId, provider, provider_id: String(providerId)
   }, { onConflict: 'provider,provider_id' });
 
-  // 5. 최신 사용자 정보 반환
+  // 5. 최신 유저 정보 반환
   const { data: user } = await supabase
     .from('users')
     .select('id, email, name, grade, point, is_admin, is_active')
@@ -60,7 +63,6 @@ async function handleSocialUser({ provider, providerId, email, name }) {
   return user;
 }
 
-// ── 소셜 로그인 완료 후 프론트로 리다이렉트 (토큰 전달)
 async function finishSocialLogin(res, user) {
   const accessToken = signAccessToken(user);
   const { token: refreshToken, expiresAt } = await signRefreshToken(user.id);
@@ -73,25 +75,22 @@ async function finishSocialLogin(res, user) {
     path: '/api/auth'
   });
 
-  // 프론트엔드로 리다이렉트 (해시로 accessToken 전달)
   const params = new URLSearchParams({
     token: accessToken,
-    name: user.name || '',
+    name:  user.name  || '',
     grade: user.grade || 'BASIC',
     point: String(user.point || 0)
   });
   res.redirect(`${FRONTEND}/pages/social-callback.html?${params}`);
 }
 
-// ════════════════════════════════════════════
-// 카카오 OAuth
-// ════════════════════════════════════════════
+// ── 카카오 ──────────────────────────────────────────────
 router.get('/kakao', (req, res) => {
   const params = new URLSearchParams({
     client_id:     process.env.KAKAO_CLIENT_ID,
     redirect_uri:  process.env.KAKAO_REDIRECT_URI,
     response_type: 'code',
-    scope:         'profile_nickname,account_email'
+    scope:         'profile_nickname'  // 이메일 제거 (비즈앱 아니면 불가)
   });
   res.redirect(`https://kauth.kakao.com/oauth/authorize?${params}`);
 });
@@ -101,7 +100,7 @@ router.get('/kakao/callback', async (req, res) => {
     const { code } = req.query;
     if (!code) return res.redirect(`${FRONTEND}/login.html?error=kakao_failed`);
 
-    // 1. 인가 코드 → Access Token
+    // 1. Access Token
     const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -116,15 +115,16 @@ router.get('/kakao/callback', async (req, res) => {
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) throw new Error('KAKAO_TOKEN_FAIL');
 
-    // 2. 사용자 정보 조회
+    // 2. 사용자 정보 (닉네임만)
     const profileRes = await fetch('https://kapi.kakao.com/v2/user/me', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` }
     });
     const profile = await profileRes.json();
 
     const kakaoId = profile.id;
-    const email   = profile.kakao_account?.email || null;
     const name    = profile.kakao_account?.profile?.nickname || '카카오 회원';
+    // 이메일: 비즈앱 아니면 null
+    const email   = profile.kakao_account?.email || null;
 
     const user = await handleSocialUser({ provider: 'kakao', providerId: kakaoId, email, name });
     await finishSocialLogin(res, user);
@@ -136,9 +136,7 @@ router.get('/kakao/callback', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════
-// 네이버 OAuth
-// ════════════════════════════════════════════
+// ── 네이버 ──────────────────────────────────────────────
 router.get('/naver', (req, res) => {
   const state = Math.random().toString(36).slice(2);
   const params = new URLSearchParams({
@@ -155,7 +153,6 @@ router.get('/naver/callback', async (req, res) => {
     const { code, state } = req.query;
     if (!code) return res.redirect(`${FRONTEND}/login.html?error=naver_failed`);
 
-    // 1. Access Token
     const tokenRes = await fetch('https://nid.naver.com/oauth2.0/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -169,7 +166,6 @@ router.get('/naver/callback', async (req, res) => {
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) throw new Error('NAVER_TOKEN_FAIL');
 
-    // 2. 사용자 정보
     const profileRes = await fetch('https://openapi.naver.com/v1/nid/me', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` }
     });
@@ -180,7 +176,7 @@ router.get('/naver/callback', async (req, res) => {
       provider: 'naver',
       providerId: profile.id,
       email: profile.email || null,
-      name:  profile.name  || profile.nickname || '네이버 회원'
+      name:  profile.name || profile.nickname || '네이버 회원'
     });
     await finishSocialLogin(res, user);
   } catch (err) {
@@ -189,9 +185,7 @@ router.get('/naver/callback', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════
-// 구글 OAuth
-// ════════════════════════════════════════════
+// ── 구글 ────────────────────────────────────────────────
 router.get('/google', (req, res) => {
   const params = new URLSearchParams({
     client_id:     process.env.GOOGLE_CLIENT_ID,
@@ -208,7 +202,6 @@ router.get('/google/callback', async (req, res) => {
     const { code } = req.query;
     if (!code) return res.redirect(`${FRONTEND}/login.html?error=google_failed`);
 
-    // 1. Access Token
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -223,7 +216,6 @@ router.get('/google/callback', async (req, res) => {
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) throw new Error('GOOGLE_TOKEN_FAIL');
 
-    // 2. 사용자 정보
     const profileRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` }
     });
