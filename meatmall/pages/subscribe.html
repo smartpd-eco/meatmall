@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>정기배송 구독 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.sub-hero{background:linear-gradient(135deg,var(--primary-dark),var(--secondary));padding:36px 20px 28px;color:#fff;text-align:center}
+.sub-hero h1{font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:8px}
+.sub-hero p{font-size:.88rem;opacity:.85;line-height:1.6}
+.benefit-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.benefit-chip{background:rgba(255,255,255,.2);color:#fff;font-size:.76rem;font-weight:600;padding:5px 12px;border-radius:999px}
+
+/* 구독 플랜 */
+.plan-cards{padding:16px;display:flex;flex-direction:column;gap:10px}
+.plan-card{background:#fff;border:2px solid var(--gray-200);border-radius:var(--radius-lg);padding:18px;cursor:pointer;transition:all .2s;position:relative}
+.plan-card.selected{border-color:var(--primary);background:#FFF7ED}
+.plan-card:active{transform:scale(.98)}
+.plan-badge{position:absolute;top:-10px;left:16px;background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px}
+.plan-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.plan-name{font-size:1rem;font-weight:800;color:var(--dark)}
+.plan-discount{font-size:.9rem;font-weight:800;color:var(--primary)}
+.plan-desc{font-size:.82rem;color:var(--gray-600);line-height:1.6}
+.plan-radio{width:20px;height:20px;accent-color:var(--primary)}
+
+/* 상품 선택 */
+.section-box{background:#fff;margin:0 0 8px;padding:16px}
+.section-box-title{font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:12px}
+.product-select-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.product-sel-card{border:1.5px solid var(--gray-200);border-radius:var(--radius-md);padding:12px;cursor:pointer;transition:all .2s;position:relative}
+.product-sel-card.selected{border-color:var(--primary);background:#FFF7ED}
+.product-sel-card:active{transform:scale(.97)}
+.sel-check{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:.72rem;transition:all .2s}
+.product-sel-card.selected .sel-check{background:var(--primary);color:#fff}
+.sel-emoji{font-size:2rem;margin-bottom:6px}
+.sel-name{font-size:.78rem;font-weight:600;color:var(--dark);line-height:1.3;margin-bottom:4px}
+.sel-price{font-size:.82rem;font-weight:800;color:var(--primary)}
+.sel-discount{font-size:.7rem;color:var(--accent);font-weight:700}
+
+/* 수량 조절 */
+.qty-wrap{display:flex;align-items:center;justify-content:space-between;margin-top:8px;border-top:1px solid var(--gray-100);padding-top:8px}
+.qty-ctrl{display:flex;align-items:center;gap:0}
+.qty-btn-s{width:24px;height:24px;border:1.5px solid var(--gray-300);background:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer;font-weight:700;color:var(--gray-700)}
+.qty-btn-s:first-child{border-radius:4px 0 0 4px}
+.qty-btn-s:last-child{border-radius:0 4px 4px 0}
+.qty-val-s{width:28px;height:24px;border-top:1.5px solid var(--gray-300);border-bottom:1.5px solid var(--gray-300);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700}
+
+/* 주문 요약 */
+.order-sum-box{background:#FFF7ED;border:1px solid var(--peach);border-radius:var(--radius-md);padding:14px;margin:0 16px 16px}
+.sum-r{display:flex;justify-content:space-between;font-size:.85rem;padding:5px 0;border-bottom:1px solid var(--peach)}
+.sum-r:last-child{border-bottom:none;font-weight:800;font-size:.95rem;color:var(--primary)}
+
+/* 배송 주기 선택 */
+.cycle-row{display:flex;gap:8px}
+.cycle-chip{flex:1;padding:10px 4px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);text-align:center;font-size:.82rem;font-weight:600;color:var(--gray-700);cursor:pointer;transition:all .15s}
+.cycle-chip.on{border-color:var(--primary);background:var(--cream);color:var(--primary)}
+
+/* 현재 구독 현황 */
+.current-sub{background:#fff;border:1.5px solid var(--green-light);border-radius:var(--radius-lg);margin:16px;padding:18px}
+.sub-status-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sub-active-badge{background:var(--green-light);color:var(--green);font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px}
+.sub-next-date{font-size:.85rem;color:var(--gray-700);margin-top:4px}
+.sub-item-list{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.sub-item-tag{background:var(--gray-100);color:var(--gray-700);font-size:.76rem;padding:4px 10px;border-radius:var(--radius-sm)}
+.sub-actions{display:flex;gap:8px;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+
+  <header class="header">
+    <button class="header__icon-btn" onclick="history.back()">←</button>
+    <div style="font-size:1rem;font-weight:700">정기배송 구독</div>
+    <button class="header__icon-btn" onclick="go('../pages/cart.html')">🛒</button>
+  </header>
+
+  <div class="main-content" id="main-content">
+    <!-- JS로 렌더 -->
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="go('../index.html')"><span class="nav-icon">🏠</span><span>홈</span></div>
+    <div class="nav-item" onclick="go('../pages/category.html')"><span class="nav-icon">📦</span><span>카테고리</span></div>
+    <div class="nav-item active"><span class="nav-icon">🔄</span><span>정기배송</span></div>
+    <div class="nav-item" onclick="go('../pages/mypage.html')"><span class="nav-icon">👤</span><span>마이</span></div>
+    <div class="nav-item" onclick="go('../pages/cs.html')"><span class="nav-icon">💬</span><span>CS</span></div>
+  </nav>
+
+</div>
+<div id="toast-global" class="toast"></div>
+<script src="../js/app.js"></script>
+<script>
+const API = 'https://meatmall.vercel.app/api';
+function go(url) { window.location.href = url; }
+function fmt(n) { return Number(n).toLocaleString('ko-KR'); }
+function toast(msg) {
+  const el = document.getElementById('toast-global');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2400);
+}
+
+Store.load();
+updateCartBadge();
+
+// 상품 목록 (API에서 로드)
+let PRODUCTS = [];
+let selectedItems = {}; // { productId: qty }
+let selectedPlan = 'weekly';
+let selectedCycle = 'weekly';
+let existingSub = null;
+
+const PLANS = [
+  { id:'weekly',   name:'매주 배송',    discount:10, desc:'매주 같은 요일에 정기 배송. 신선한 고기를 가장 자주 받아보세요.', badge:'인기' },
+  { id:'biweekly', name:'2주마다 배송', discount:7,  desc:'2주에 한 번 배송. 적당한 양을 합리적으로 받아보세요.' },
+  { id:'monthly',  name:'매달 배송',    discount:5,  desc:'한 달에 한 번 대량 배송. 냉동 보관으로 한 달치를 한 번에.' },
+];
+
+// ── 초기화 ──────────────────────────────────────────────
+async function init() {
+  await loadProducts();
+  await checkExistingSub();
+  render();
+}
+
+async function loadProducts() {
+  try {
+    const r = await fetch(API + '/products?is_subscribe=true&limit=12');
+    if (r.ok) {
+      const d = await r.json();
+      PRODUCTS = d.products || [];
+    }
+  } catch(e) {}
+
+  // API 실패 시 폴백 데이터
+  if (PRODUCTS.length === 0) {
+    PRODUCTS = [
+      { id:'p1', emoji:'🥩', name:'한우 등심 (냉장)', price:28900, origin_price:36000, category:'beef' },
+      { id:'p2', emoji:'🐷', name:'흑돼지 삼겹살',   price:15900, origin_price:19900, category:'pork' },
+      { id:'p3', emoji:'🌭', name:'수제 소시지 PB',   price:8900,  origin_price:11000, category:'processed' },
+      { id:'p4', emoji:'🥓', name:'수제 베이컨 PB',   price:9500,  origin_price:12000, category:'processed' },
+      { id:'p5', emoji:'🍗', name:'닭가슴살 소분',    price:12900, origin_price:15900, category:'chicken' },
+      { id:'p6', emoji:'🦆', name:'훈제오리 슬라이스', price:10900, origin_price:13000, category:'chicken' },
+    ];
+  }
+}
+
+async function checkExistingSub() {
+  const token = localStorage.getItem('mm_access_token');
+  if (!token) return;
+  // 실제: API에서 구독 현황 조회
+  // const r = await fetch(API + '/subscriptions/me', { headers:{Authorization:'Bearer '+token} });
+}
+
+// ── 렌더 ────────────────────────────────────────────────
+function render() {
+  const plan = PLANS.find(p => p.id === selectedPlan);
+  const disc = plan.discount;
+
+  const selList = Object.entries(selectedItems)
+    .filter(([_,q]) => q > 0)
+    .map(([id, qty]) => {
+      const p = PRODUCTS.find(p => p.id === id);
+      return p ? { ...p, qty, subtotal: Math.round(p.price * (1 - disc/100)) * qty } : null;
+    }).filter(Boolean);
+
+  const subtotal  = selList.reduce((s,i) => s + Math.round(i.price * (1-disc/100)) * i.qty, 0);
+  const origTotal = selList.reduce((s,i) => s + i.price * i.qty, 0);
+  const saving    = origTotal - subtotal;
+
+  document.getElementById('main-content').innerHTML = `
+
+  <!-- 히어로 -->
+  <div class="sub-hero">
+    <h1>📬 정기배송 구독</h1>
+    <p>매주 신선한 고기를 할인가에 받아보세요<br>언제든 변경·일시정지·해지 가능</p>
+    <div class="benefit-chips">
+      <span class="benefit-chip">최대 10% 할인</span>
+      <span class="benefit-chip">무료배송</span>
+      <span class="benefit-chip">언제든 해지</span>
+      <span class="benefit-chip">HACCP 인증</span>
+    </div>
+  </div>
+
+  <!-- 구독 플랜 선택 -->
+  <div class="plan-cards">
+    <div style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:4px">📋 배송 주기 선택</div>
+    ${PLANS.map(p => `
+    <div class="plan-card ${selectedPlan===p.id?'selected':''}" onclick="selectPlan('${p.id}')">
+      ${p.badge ? `<div class="plan-badge">${p.badge}</div>` : ''}
+      <div class="plan-head">
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="radio" class="plan-radio" ${selectedPlan===p.id?'checked':''} readonly>
+          <span class="plan-name">${p.name}</span>
+        </div>
+        <span class="plan-discount">${p.discount}% 할인</span>
+      </div>
+      <div class="plan-desc">${p.desc}</div>
+    </div>`).join('')}
+  </div>
+
+  <div style="height:8px;background:var(--gray-100)"></div>
+
+  <!-- 상품 선택 -->
+  <div class="section-box">
+    <div class="section-box-title">🛒 구독할 상품 선택 <span style="font-size:.76rem;color:var(--gray-500);font-weight:400">(중복 선택 가능)</span></div>
+    <div class="product-select-grid">
+      ${PRODUCTS.map(p => {
+        const discPrice = Math.round(p.price * (1 - disc/100));
+        const isSelected = selectedItems[p.id] > 0;
+        return `
+        <div class="product-sel-card ${isSelected?'selected':''}" onclick="toggleProduct('${p.id}')">
+          <div class="sel-check">${isSelected?'✓':''}</div>
+          <div class="sel-emoji">${p.emoji||'🥩'}</div>
+          <div class="sel-name">${p.name}</div>
+          <div class="sel-price">${fmt(discPrice)}원</div>
+          <div class="sel-discount">${fmt(p.price)}원 → ${disc}%↓</div>
+          ${isSelected ? `
+          <div class="qty-wrap">
+            <span style="font-size:.72rem;color:var(--gray-500)">수량</span>
+            <div class="qty-ctrl">
+              <div class="qty-btn-s" onclick="event.stopPropagation();changeQty('${p.id}',-1)">−</div>
+              <div class="qty-val-s">${selectedItems[p.id]||1}</div>
+              <div class="qty-btn-s" onclick="event.stopPropagation();changeQty('${p.id}',+1)">+</div>
+            </div>
+          </div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <div style="height:8px;background:var(--gray-100)"></div>
+
+  <!-- 주문 요약 -->
+  ${selList.length > 0 ? `
+  <div class="order-sum-box">
+    <div style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:10px">📊 구독 요약</div>
+    ${selList.map(i => `
+    <div class="sum-r">
+      <span>${i.emoji} ${i.name} ×${i.qty}</span>
+      <span>${fmt(i.subtotal)}원</span>
+    </div>`).join('')}
+    <div class="sum-r"><span>배송비</span><span style="color:var(--green)">무료</span></div>
+    <div class="sum-r"><span>절약 금액</span><span style="color:var(--blue)">-${fmt(saving)}원</span></div>
+    <div class="sum-r"><span>회당 결제금액</span><span>${fmt(subtotal)}원</span></div>
+  </div>` : `
+  <div style="padding:20px 16px;text-align:center;color:var(--gray-400);font-size:.88rem">
+    위에서 구독할 상품을 선택해주세요
+  </div>`}
+
+  <!-- 구독 시작 버튼 -->
+  <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-primary btn-full btn-lg" onclick="startSubscription()" ${selList.length===0?'disabled style="opacity:.5"':''}>
+      ${selList.length > 0 ? `${fmt(subtotal)}원 · 구독 시작하기` : '상품을 선택해주세요'}
+    </button>
+    <div style="text-align:center;font-size:.76rem;color:var(--gray-400);line-height:1.7">
+      구독 시작 후 언제든지 변경·일시정지·해지 가능<br>
+      첫 배송은 결제 후 2영업일 내 출발합니다
+    </div>
+  </div>
+
+  <div style="height:8px;background:var(--gray-100)"></div>
+
+  <!-- FAQ -->
+  <div style="padding:16px">
+    <div style="font-size:.92rem;font-weight:700;color:var(--dark);margin-bottom:12px">❓ 자주 묻는 질문</div>
+    ${[
+      ['구독 해지는 어떻게 하나요?', '마이페이지 → 정기배송 → 해지하기에서 언제든 해지 가능합니다. 다음 결제일 전날까지 해지하면 해당 회차 결제가 되지 않습니다.'],
+      ['배송 날짜를 변경할 수 있나요?', '마이페이지 → 정기배송 → 구성 변경에서 배송 요일과 주소를 변경할 수 있습니다.'],
+      ['결제가 실패하면 어떻게 되나요?', '카카오 알림톡으로 즉시 안내드립니다. 결제 수단 변경 후 수동 결제가 가능합니다.'],
+    ].map(([q,a]) => `
+    <div style="border-bottom:1px solid var(--gray-100);padding:12px 0">
+      <div style="font-size:.86rem;font-weight:600;color:var(--dark);margin-bottom:6px">Q. ${q}</div>
+      <div style="font-size:.82rem;color:var(--gray-600);line-height:1.65">A. ${a}</div>
+    </div>`).join('')}
+  </div>
+  `;
+}
+
+function selectPlan(id) {
+  selectedPlan = id;
+  render();
+}
+
+function toggleProduct(id) {
+  if (selectedItems[id] > 0) {
+    delete selectedItems[id];
+  } else {
+    selectedItems[id] = 1;
+  }
+  render();
+}
+
+function changeQty(id, d) {
+  const cur = selectedItems[id] || 0;
+  const next = Math.max(0, cur + d);
+  if (next === 0) delete selectedItems[id];
+  else selectedItems[id] = next;
+  render();
+}
+
+async function startSubscription() {
+  const token = localStorage.getItem('mm_access_token');
+  if (!token) {
+    toast('로그인이 필요합니다');
+    setTimeout(() => go('../login.html'), 800);
+    return;
+  }
+
+  const selList = Object.entries(selectedItems)
+    .filter(([_,q]) => q > 0)
+    .map(([id, qty]) => {
+      const p = PRODUCTS.find(p => p.id === id);
+      return p ? { productId: id, name: p.name, price: p.price, qty } : null;
+    }).filter(Boolean);
+
+  if (selList.length === 0) { toast('상품을 선택해주세요'); return; }
+
+  // 결제창으로 이동 (장바구니에 담고 결제)
+  selList.forEach(item => {
+    Store.addToCart({
+      productId: item.productId + '_sub',
+      emoji: PRODUCTS.find(p=>p.id===item.productId)?.emoji || '🥩',
+      name: '[구독] ' + item.name,
+      option: PLANS.find(p=>p.id===selectedPlan)?.name,
+      price: Math.round(item.price * (1 - PLANS.find(p=>p.id===selectedPlan).discount/100)),
+      qty: item.qty
+    });
+  });
+
+  toast('장바구니에 담겼습니다. 결제 페이지로 이동합니다.');
+  setTimeout(() => go('../pages/cart.html'), 1000);
+}
+
+init();
+</script>
+</body>
+</html>
