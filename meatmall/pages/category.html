@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>카테고리 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+/* 카테고리 탭 */
+.cat-tabs{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid var(--gray-200);position:sticky;top:56px;z-index:50}
+.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{flex-shrink:0;padding:11px 14px;font-size:.82rem;font-weight:600;color:var(--gray-500);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s}
+.cat-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* 필터/정렬 바 */
+.filter-sort-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--gray-100)}
+.sort-select{height:34px;border:1px solid var(--gray-300);border-radius:var(--radius-md);padding:0 10px;font-size:.8rem;outline:none;background:#fff;color:var(--dark);flex-shrink:0}
+.filter-chip{padding:6px 12px;border:1px solid var(--gray-300);border-radius:999px;font-size:.76rem;font-weight:600;color:var(--gray-600);cursor:pointer;white-space:nowrap;flex-shrink:0;background:#fff;transition:all .15s}
+.filter-chip.on{border-color:var(--primary);background:var(--cream);color:var(--primary)}
+.result-count{font-size:.78rem;color:var(--gray-500);margin-left:auto;flex-shrink:0}
+
+/* 상품 그리드 */
+.product-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:12px 16px}
+.product-grid-1{display:flex;flex-direction:column;gap:8px;padding:8px 16px}
+
+/* 리스트형 카드 */
+.product-list-card{background:#fff;border-radius:var(--radius-md);display:flex;gap:12px;padding:12px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .15s}
+.product-list-card:active{transform:scale(.98)}
+.list-thumb{width:80px;height:80px;border-radius:var(--radius-md);background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:2.5rem;flex-shrink:0;overflow:hidden}
+.list-thumb img{width:100%;height:100%;object-fit:cover}
+.list-info{flex:1;min-width:0}
+.list-name{font-size:.9rem;font-weight:700;color:var(--dark);line-height:1.3;margin-bottom:4px}
+.list-meta{font-size:.74rem;color:var(--gray-500);margin-bottom:6px}
+.list-price-row{display:flex;align-items:baseline;gap:6px}
+.list-price{font-size:1rem;font-weight:800;color:var(--primary)}
+.list-origin{font-size:.72rem;color:var(--gray-400);text-decoration:line-through}
+.list-disc{font-size:.74rem;font-weight:700;color:var(--accent)}
+.list-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+
+/* 뷰 전환 버튼 */
+.view-toggle{display:flex;gap:4px}
+.view-btn{width:32px;height:32px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;background:#fff;color:var(--gray-500)}
+.view-btn.on{border-color:var(--primary);background:var(--cream);color:var(--primary)}
+
+/* 로딩/빈 상태 */
+.empty-state{text-align:center;padding:60px 24px;color:var(--gray-400)}
+.empty-icon{font-size:3.5rem;margin-bottom:12px}
+.load-more{width:calc(100% - 32px);margin:8px 16px 16px;height:44px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);background:#fff;color:var(--gray-700);font-size:.88rem;font-weight:600;cursor:pointer}
+.load-more:hover{background:var(--gray-100)}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="header">
+    <div class="header__logo"><span>🥩</span>정육본가</div>
+    <div class="header__actions">
+      <button class="header__icon-btn" onclick="toggleSearch()">🔍</button>
+      <button class="header__icon-btn" onclick="go('../pages/cart.html')">🛒<span class="badge cart-badge" style="display:none">0</span></button>
+    </div>
+  </header>
+
+  <!-- 검색창 (숨김) -->
+  <div id="search-bar" style="display:none;padding:10px 16px;background:#fff;border-bottom:1px solid var(--gray-100)">
+    <input class="form-input" id="search-input" placeholder="상품명 검색..." oninput="onSearch()" style="height:40px" autofocus>
+  </div>
+
+  <!-- 카테고리 탭 -->
+  <div class="cat-tabs" id="cat-tabs"></div>
+
+  <!-- 필터/정렬 바 -->
+  <div class="filter-sort-bar">
+    <select class="sort-select" id="sort-select" onchange="loadProducts()">
+      <option value="created_at">최신순</option>
+      <option value="price_asc">낮은가격순</option>
+      <option value="price_desc">높은가격순</option>
+    </select>
+    <div class="filter-chip" id="filter-haccp" onclick="toggleFilter('haccp')">✅ HACCP</div>
+    <div class="filter-chip" id="filter-subscribe" onclick="toggleFilter('subscribe')">📬 구독가능</div>
+    <span class="result-count" id="result-count"></span>
+    <div class="view-toggle">
+      <div class="view-btn on" id="view-grid" onclick="setView('grid')" title="그리드">⊞</div>
+      <div class="view-btn" id="view-list" onclick="setView('list')" title="리스트">☰</div>
+    </div>
+  </div>
+
+  <div id="product-wrap" style="padding-bottom:80px"></div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="go('../index.html')"><span class="nav-icon">🏠</span><span>홈</span></div>
+    <div class="nav-item active"><span class="nav-icon">📦</span><span>카테고리</span></div>
+    <div class="nav-item" onclick="go('../pages/subscribe.html')"><span class="nav-icon">🔄</span><span>정기배송</span></div>
+    <div class="nav-item" onclick="go('../pages/mypage.html')"><span class="nav-icon">👤</span><span>마이</span></div>
+    <div class="nav-item" onclick="go('../pages/cs.html')"><span class="nav-icon">💬</span><span>CS</span></div>
+  </nav>
+</div>
+<div id="toast-global" class="toast"></div>
+<script src="../js/app.js"></script>
+<script>
+const API = 'https://meatmall.vercel.app/api';
+function go(url){ window.location.href=url; }
+function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
+function toast(msg){
+  const el=document.getElementById('toast-global');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+Store.load(); updateCartBadge();
+
+const CATS = [
+  {id:'',       emoji:'📋', label:'전체'},
+  {id:'beef',   emoji:'🐄', label:'소고기'},
+  {id:'pork',   emoji:'🐷', label:'돼지고기'},
+  {id:'chicken',emoji:'🐔', label:'닭/오리'},
+  {id:'processed',emoji:'🌭',label:'가공육PB'},
+  {id:'giftset',emoji:'🎁', label:'선물세트'},
+  {id:'mealkit',emoji:'🍱', label:'밀키트'},
+];
+
+let currentCat  = '';
+let currentSort = 'created_at';
+let filters     = { haccp: false, subscribe: false };
+let viewMode    = 'grid';
+let page        = 1;
+let total       = 0;
+let allProducts = [];
+let searchTimer = null;
+let searching   = false;
+
+// URL 파라미터에서 카테고리 초기화
+const urlParams = new URLSearchParams(window.location.search);
+currentCat = urlParams.get('cat') || '';
+
+// 카테고리 탭 렌더
+function renderCatTabs(){
+  document.getElementById('cat-tabs').innerHTML = CATS.map(c=>`
+  <div class="cat-tab ${currentCat===c.id?'active':''}" onclick="selectCat('${c.id}')">
+    ${c.emoji} ${c.label}
+  </div>`).join('');
+}
+
+function selectCat(id){
+  currentCat = id;
+  page = 1;
+  allProducts = [];
+  renderCatTabs();
+  loadProducts();
+}
+
+function toggleFilter(name){
+  filters[name] = !filters[name];
+  document.getElementById('filter-'+name).classList.toggle('on', filters[name]);
+  page = 1; allProducts = [];
+  loadProducts();
+}
+
+function setView(v){
+  viewMode = v;
+  document.getElementById('view-grid').classList.toggle('on', v==='grid');
+  document.getElementById('view-list').classList.toggle('on', v==='list');
+  renderProducts();
+}
+
+let searchQuery = '';
+function toggleSearch(){
+  const bar = document.getElementById('search-bar');
+  const visible = bar.style.display !== 'none';
+  bar.style.display = visible ? 'none' : 'block';
+  if(!visible) document.getElementById('search-input').focus();
+}
+
+function onSearch(){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>{
+    searchQuery = document.getElementById('search-input').value.trim();
+    page=1; allProducts=[];
+    loadProducts();
+  }, 400);
+}
+
+async function loadProducts(append=false){
+  if(!append){ page=1; allProducts=[]; }
+  const sort = document.getElementById('sort-select').value;
+  let url = `${API}/products?page=${page}&limit=12&sort=${sort}`;
+  if(currentCat)       url += `&category=${currentCat}`;
+  if(filters.haccp)    url += `&haccp=true`;
+  if(filters.subscribe)url += `&is_subscribe=true`;
+  if(searchQuery)      url += `&search=${encodeURIComponent(searchQuery)}`;
+
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    const prods = d.products || [];
+    total = d.total || 0;
+    if(append) allProducts = [...allProducts, ...prods];
+    else allProducts = prods;
+    renderProducts();
+    document.getElementById('result-count').textContent = `${total}개`;
+  } catch(e){
+    document.getElementById('product-wrap').innerHTML=`
+    <div class="empty-state"><div class="empty-icon">😢</div><div>상품을 불러오지 못했습니다</div></div>`;
+  }
+}
+
+function renderProducts(){
+  const wrap = document.getElementById('product-wrap');
+  if(allProducts.length===0){
+    wrap.innerHTML=`<div class="empty-state"><div class="empty-icon">📦</div><div>상품이 없습니다</div></div>`;
+    return;
+  }
+
+  const html = viewMode==='grid'
+    ? `<div class="product-grid-2">${allProducts.map(renderGridCard).join('')}</div>`
+    : `<div class="product-grid-1">${allProducts.map(renderListCard).join('')}</div>`;
+
+  const loadMoreBtn = allProducts.length < total
+    ? `<button class="load-more" onclick="loadMore()">더보기 (${total-allProducts.length}개 남음)</button>`
+    : '';
+
+  wrap.innerHTML = html + loadMoreBtn;
+}
+
+function renderGridCard(p){
+  const disc = p.origin_price ? Math.round((1-p.price/p.origin_price)*100) : 0;
+  const wished = Store.isWished(p.id);
+  return `
+  <div class="product-card" onclick="go('../pages/product.html?id=${p.id}')">
+    <div class="product-thumb">
+      ${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`:''}
+      <div class="product-thumb-placeholder" style="${p.thumbnail_url?'display:none':''}">${p.emoji||'🥩'}</div>
+      <button class="product-like-btn" onclick="event.stopPropagation();toggleWish('${p.id}',this)">${wished?'❤️':'🤍'}</button>
+      <div style="position:absolute;top:8px;left:8px;display:flex;flex-direction:column;gap:3px">
+        ${disc>0?`<span class="tag tag-accent" style="font-size:.66rem">${disc}%</span>`:''}
+        ${p.haccp?`<span class="tag tag-green" style="font-size:.66rem">HACCP</span>`:''}
+      </div>
+    </div>
+    <div class="product-info">
+      <div class="product-name">${p.name}</div>
+      <div class="product-weight">${p.weight_g?p.weight_g+'g':''} · ${p.origin||''}</div>
+      <div class="product-price-wrap">
+        ${p.origin_price?`<span class="product-origin-price">${fmt(p.origin_price)}원</span>`:''}
+        ${disc>0?`<span class="product-discount">${disc}%</span>`:''}
+      </div>
+      <div class="product-price">${fmt(p.price)}원</div>
+    </div>
+  </div>`;
+}
+
+function renderListCard(p){
+  const disc = p.origin_price ? Math.round((1-p.price/p.origin_price)*100) : 0;
+  return `
+  <div class="product-list-card" onclick="go('../pages/product.html?id=${p.id}')">
+    <div class="list-thumb">
+      ${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}">`:`<span>${p.emoji||'🥩'}</span>`}
+    </div>
+    <div class="list-info">
+      <div class="list-name">${p.name}</div>
+      <div class="list-meta">${p.weight_g?p.weight_g+'g · ':''}${p.origin||'국내산'}</div>
+      <div class="list-price-row">
+        <span class="list-price">${fmt(p.price)}원</span>
+        ${p.origin_price?`<span class="list-origin">${fmt(p.origin_price)}원</span>`:''}
+        ${disc>0?`<span class="list-disc">${disc}%↓</span>`:''}
+      </div>
+      <div class="list-tags">
+        ${p.haccp?`<span class="tag tag-green" style="font-size:.66rem">HACCP</span>`:''}
+        ${p.is_subscribe?`<span class="tag" style="background:#EDE9FE;color:#5B21B6;font-size:.66rem">구독</span>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleWish(id, btn){
+  Store.toggleWish(id);
+  btn.textContent = Store.isWished(id)?'❤️':'🤍';
+  toast(Store.isWished(id)?'찜 목록에 추가했습니다':'찜 목록에서 제거했습니다');
+}
+
+function loadMore(){
+  page++;
+  loadProducts(true);
+}
+
+// 초기화
+renderCatTabs();
+loadProducts();
+</script>
+</body>
+</html>

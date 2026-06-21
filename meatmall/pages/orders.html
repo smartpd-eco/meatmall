@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>주문 내역 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.order-filter{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid var(--gray-100)}
+.order-filter::-webkit-scrollbar{display:none}
+.filter-pill{flex-shrink:0;padding:6px 14px;border:1.5px solid var(--gray-300);border-radius:999px;font-size:.8rem;font-weight:600;color:var(--gray-600);cursor:pointer;background:#fff;transition:all .15s}
+.filter-pill.on{border-color:var(--primary);background:var(--cream);color:var(--primary)}
+.order-card{background:#fff;margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
+.order-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--gray-100)}
+.order-no{font-size:.78rem;color:var(--gray-500)}
+.order-date{font-size:.78rem;color:var(--gray-500)}
+.order-item-row{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--gray-100)}
+.order-item-thumb{width:56px;height:56px;border-radius:var(--radius-md);background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
+.order-item-info{flex:1}
+.order-item-name{font-size:.88rem;font-weight:600;color:var(--dark);margin-bottom:3px}
+.order-item-meta{font-size:.76rem;color:var(--gray-500)}
+.order-item-price{font-size:.9rem;font-weight:800;color:var(--primary);text-align:right;flex-shrink:0}
+.order-card-foot{padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.order-total{font-size:.9rem;font-weight:700;color:var(--dark)}
+.order-actions{display:flex;gap:6px}
+.order-action-btn{font-size:.76rem;font-weight:600;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:all .15s}
+.btn-primary-sm{background:var(--primary);color:#fff;border:none}
+.btn-outline-sm{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}
+.btn-gray-sm{background:#fff;color:var(--gray-600);border:1.5px solid var(--gray-300)}
+.empty-orders{text-align:center;padding:80px 24px;color:var(--gray-400)}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="header">
+    <button class="header__icon-btn" onclick="history.back()">←</button>
+    <div style="font-size:1rem;font-weight:700">주문 내역</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <div class="order-filter" id="order-filter">
+    <div class="filter-pill on" onclick="filterOrders('',this)">전체</div>
+    <div class="filter-pill" onclick="filterOrders('preparing',this)">준비중</div>
+    <div class="filter-pill" onclick="filterOrders('shipping',this)">배송중</div>
+    <div class="filter-pill" onclick="filterOrders('delivered',this)">배송완료</div>
+    <div class="filter-pill" onclick="filterOrders('cancelled',this)">취소/환불</div>
+  </div>
+
+  <div id="order-list" style="padding-bottom:32px">
+    <div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 주문 내역을 불러오는 중...</div>
+  </div>
+</div>
+<div id="toast-global" class="toast"></div>
+<script src="../js/app.js"></script>
+<script>
+const API = 'https://meatmall.vercel.app/api';
+function go(url){ window.location.href=url; }
+function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
+function toast(msg){
+  const el=document.getElementById('toast-global');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+Store.load();
+const token = localStorage.getItem('mm_access_token');
+let currentFilter = '';
+
+const statusLabel={pending:'결제대기',preparing:'준비중',shipping:'배송중',delivered:'배송완료',cancelled:'취소됨',refunded:'환불완료'};
+const statusClass={pending:'status-pending',preparing:'status-preparing',shipping:'status-shipping',delivered:'status-done',cancelled:'status-cancel',refunded:'status-cancel'};
+
+async function loadOrders(){
+  if(!token){ go('../login.html'); return; }
+  try {
+    let url = `${API}/payment/orders?page=1&limit=20`;
+    if(currentFilter) url += `&status=${currentFilter}`;
+    const r = await fetch(url, { headers:{Authorization:'Bearer '+token} });
+    if(r.status===401){ go('../login.html'); return; }
+    const d = await r.json();
+    renderOrders(d.orders||[]);
+  } catch(e){
+    document.getElementById('order-list').innerHTML=`
+    <div class="empty-orders"><div style="font-size:3rem;margin-bottom:12px">😢</div><div>주문 내역을 불러오지 못했습니다</div></div>`;
+  }
+}
+
+function renderOrders(orders){
+  const list = document.getElementById('order-list');
+  if(orders.length===0){
+    list.innerHTML=`
+    <div class="empty-orders">
+      <div style="font-size:3.5rem;margin-bottom:14px">📦</div>
+      <div style="font-size:.95rem;margin-bottom:20px">주문 내역이 없습니다</div>
+      <button class="btn btn-primary" onclick="go('../index.html')">쇼핑하러 가기</button>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = orders.map(o => {
+    const items = o.order_items || [];
+    const firstItem = items[0];
+    const moreCount = items.length - 1;
+    const d = new Date(o.created_at);
+    const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    const isShipping  = o.status === 'shipping';
+    const isDone      = o.status === 'delivered';
+    const isCancellable = ['pending','preparing'].includes(o.status) && o.payment_status==='paid';
+
+    return `
+    <div class="order-card">
+      <div class="order-card-head">
+        <div>
+          <div class="order-no">주문번호 ${o.order_number}</div>
+          <div class="order-date">${dateStr}</div>
+        </div>
+        <span class="status-chip ${statusClass[o.status]||'status-pending'}">${statusLabel[o.status]||o.status}</span>
+      </div>
+      ${firstItem ? `
+      <div class="order-item-row">
+        <div class="order-item-thumb">🥩</div>
+        <div class="order-item-info">
+          <div class="order-item-name">${firstItem.name}${moreCount>0?` 외 ${moreCount}건`:''}</div>
+          <div class="order-item-meta">수량 ${firstItem.qty}개 · ${firstItem.option||''}</div>
+        </div>
+        <div class="order-item-price">${fmt(firstItem.subtotal)}원</div>
+      </div>` : ''}
+      <div class="order-card-foot">
+        <div class="order-total">총 <strong style="color:var(--primary)">${fmt(o.final_amount)}원</strong></div>
+        <div class="order-actions">
+          ${isShipping ? `<button class="order-action-btn btn-primary-sm" onclick="trackOrder('${o.tracking_number||''}','${o.carrier||''}')">배송 조회</button>` : ''}
+          ${isDone ? `<button class="order-action-btn btn-outline-sm" onclick="toast('리뷰 작성 페이지 준비중')">리뷰 작성</button>` : ''}
+          ${isDone ? `<button class="order-action-btn btn-gray-sm" onclick="toast('재주문 처리중')">재주문</button>` : ''}
+          ${isCancellable ? `<button class="order-action-btn btn-gray-sm" onclick="cancelOrder('${o.order_number}')">취소 요청</button>` : ''}
+          <button class="order-action-btn btn-gray-sm" onclick="go('../pages/cs.html')">문의</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterOrders(status, el){
+  currentFilter = status;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  loadOrders();
+}
+
+function trackOrder(trackingNo, carrier){
+  if(!trackingNo){ toast('운송장 번호가 없습니다'); return; }
+  toast(`${carrier||'CJ대한통운'} ${trackingNo} 조회 중...`);
+}
+
+async function cancelOrder(orderId){
+  if(!confirm('주문을 취소하시겠습니까?')) return;
+  try {
+    const r = await fetch(`${API}/payment/cancel`,{
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+      body: JSON.stringify({orderId, reason:'고객 요청 취소'})
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error);
+    toast('주문이 취소됐습니다');
+    loadOrders();
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+loadOrders();
+</script>
+</body>
+</html>

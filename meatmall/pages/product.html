@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>상품 상세 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.product-hero{background:var(--cream);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:8rem;position:relative;overflow:hidden}
+.product-hero img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.hero-badges{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px}
+.wish-btn{position:absolute;top:12px;right:12px;width:40px;height:40px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;border:none;backdrop-filter:blur(4px)}
+
+.product-info-wrap{padding:16px}
+.product-category{font-size:.76rem;font-weight:600;color:var(--secondary);margin-bottom:6px}
+.product-title{font-size:1.15rem;font-weight:800;color:var(--dark);line-height:1.35;margin-bottom:8px}
+.product-origin{font-size:.8rem;color:var(--gray-500);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.origin-badge{background:var(--green-light);color:var(--green);font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px}
+
+.price-section{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.price-main{font-size:1.6rem;font-weight:800;color:var(--primary)}
+.price-origin{font-size:.9rem;color:var(--gray-400);text-decoration:line-through}
+.price-discount{font-size:.9rem;font-weight:700;color:var(--accent)}
+.price-per{font-size:.76rem;color:var(--gray-500);margin-top:2px}
+
+.point-earn{background:var(--cream);border:1px solid var(--peach);border-radius:var(--radius-sm);padding:6px 10px;font-size:.78rem;color:var(--secondary);font-weight:600;display:inline-flex;align-items:center;gap:4px;margin-top:6px}
+
+/* 수량 선택 */
+.qty-section{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);margin:0 -16px}
+.qty-label{font-size:.88rem;font-weight:600;color:var(--dark)}
+.qty-control{display:flex;align-items:center;gap:0}
+.qty-btn-l{width:36px;height:36px;border:1.5px solid var(--gray-300);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;font-weight:700;color:var(--gray-700);transition:all .1s}
+.qty-btn-l:first-child{border-radius:var(--radius-md) 0 0 var(--radius-md)}
+.qty-btn-l:last-child{border-radius:0 var(--radius-md) var(--radius-md) 0}
+.qty-btn-l:active{background:var(--gray-100)}
+.qty-val-l{width:48px;height:36px;border-top:1.5px solid var(--gray-300);border-bottom:1.5px solid var(--gray-300);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800}
+.qty-total{font-size:1.1rem;font-weight:800;color:var(--primary)}
+
+/* 탭 */
+.detail-tabs{display:flex;border-bottom:1px solid var(--gray-200);background:#fff;position:sticky;top:56px;z-index:50}
+.detail-tab{flex:1;padding:12px 4px;text-align:center;font-size:.84rem;font-weight:600;color:var(--gray-500);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s}
+.detail-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* 상세 섹션 */
+.detail-section{padding:20px 16px;display:none}
+.detail-section.active{display:block}
+.detail-title{font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary)}
+.info-table{width:100%;border-collapse:collapse}
+.info-table tr{border-bottom:1px solid var(--gray-100)}
+.info-table td{padding:10px 8px;font-size:.85rem}
+.info-table td:first-child{color:var(--gray-600);width:80px;font-weight:600}
+.info-table td:last-child{color:var(--dark)}
+
+/* 인증 배지 */
+.cert-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.cert-badge{display:flex;align-items:center;gap:6px;background:var(--gray-100);border-radius:var(--radius-md);padding:8px 12px;font-size:.78rem;font-weight:600;color:var(--gray-700)}
+.cert-badge .ico{font-size:1.2rem}
+
+/* 배송 안내 */
+.delivery-info{background:var(--cream);border-radius:var(--radius-md);padding:14px;font-size:.82rem;line-height:1.8;color:var(--gray-700)}
+.delivery-info strong{color:var(--primary)}
+
+/* 리뷰 */
+.review-summary{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--gray-100)}
+.review-score{font-size:2.5rem;font-weight:800;color:var(--dark)}
+.stars-big{color:var(--amber);font-size:1.2rem;letter-spacing:2px}
+.review-item{padding:14px 0;border-bottom:1px solid var(--gray-100)}
+.reviewer{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.reviewer-name{font-size:.84rem;font-weight:600;color:var(--dark)}
+.reviewer-date{font-size:.74rem;color:var(--gray-400)}
+.review-text{font-size:.84rem;color:var(--gray-700);line-height:1.65}
+.review-stars{color:var(--amber);font-size:.84rem}
+
+/* 추천 상품 */
+.recommend-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.recommend-row::-webkit-scrollbar{display:none}
+.rec-card{min-width:130px;width:130px;flex-shrink:0;background:#fff;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer}
+.rec-thumb{aspect-ratio:1/1;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+.rec-info{padding:8px}
+.rec-name{font-size:.76rem;font-weight:600;color:var(--dark);line-height:1.3;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rec-price{font-size:.82rem;font-weight:800;color:var(--primary)}
+
+/* 하단 구매 바 */
+.buy-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--gray-200);padding:12px 16px;z-index:200;display:flex;gap:10px;padding-bottom:env(safe-area-inset-bottom,12px)}
+.btn-wish-bar{width:52px;height:52px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;cursor:pointer;background:#fff}
+.btn-cart-bar{flex:1;height:52px;border:1.5px solid var(--primary);border-radius:var(--radius-md);color:var(--primary);font-size:.95rem;font-weight:700;cursor:pointer;background:#fff}
+.btn-buy-bar{flex:1.5;height:52px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-md);font-size:.95rem;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="header">
+    <button class="header__icon-btn" onclick="history.back()">←</button>
+    <div style="font-size:1rem;font-weight:700" id="header-title">상품 상세</div>
+    <button class="header__icon-btn" onclick="go('../pages/cart.html')">🛒<span class="badge cart-badge" style="display:none">0</span></button>
+  </header>
+
+  <div id="product-content" style="padding-bottom:80px">
+    <div style="text-align:center;padding:60px;color:var(--gray-400)">🔄 상품 정보를 불러오는 중...</div>
+  </div>
+
+  <div class="buy-bar" id="buy-bar" style="display:none">
+    <button class="btn-wish-bar" id="wish-btn" onclick="toggleWish()">🤍</button>
+    <button class="btn-cart-bar" onclick="addToCart()">장바구니</button>
+    <button class="btn-buy-bar" onclick="buyNow()">바로구매</button>
+  </div>
+</div>
+<div id="toast-global" class="toast"></div>
+<script src="../js/app.js"></script>
+<script>
+const API = 'https://meatmall.vercel.app/api';
+function go(url){ window.location.href=url; }
+function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
+function toast(msg){
+  const el=document.getElementById('toast-global');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+Store.load(); updateCartBadge();
+
+const params = new URLSearchParams(window.location.search);
+const productId = params.get('id');
+let product = null;
+let qty = 1;
+
+const catLabel={beef:'소고기',pork:'돼지고기',chicken:'닭/오리',processed:'가공육PB',giftset:'선물세트',mealkit:'밀키트',sausage:'소시지'};
+const srcLabel={direct:'직접가공',oem:'OEM PB',wholesale:'거래처 유통'};
+
+async function loadProduct(){
+  if(!productId){ go('../index.html'); return; }
+  try {
+    const r = await fetch(`${API}/products/${productId}`);
+    if(!r.ok) throw new Error('상품 없음');
+    const d = await r.json();
+    product = d.product;
+    renderProduct();
+  } catch(e){
+    document.getElementById('product-content').innerHTML=`
+    <div style="text-align:center;padding:60px 24px;color:var(--gray-400)">
+      <div style="font-size:3rem;margin-bottom:12px">😢</div>
+      <div>상품을 찾을 수 없습니다</div>
+      <button class="btn btn-primary" style="margin-top:20px" onclick="go('../index.html')">홈으로</button>
+    </div>`;
+  }
+}
+
+function renderProduct(){
+  if(!product) return;
+  const p = product;
+  const discPct = p.origin_price ? Math.round((1-p.price/p.origin_price)*100) : 0;
+  const pointEarn = Math.floor(p.price * 0.01);
+  const isWished = Store.isWished(p.id);
+
+  document.getElementById('header-title').textContent = p.name;
+  document.getElementById('buy-bar').style.display = 'flex';
+  document.getElementById('wish-btn').textContent = isWished ? '❤️' : '🤍';
+
+  document.getElementById('product-content').innerHTML = `
+  <!-- 이미지 -->
+  <div class="product-hero">
+    ${p.thumbnail_url ? `<img src="${p.thumbnail_url}" alt="${p.name}">` : ''}
+    <span style="position:relative;z-index:1">${p.emoji||'🥩'}</span>
+    <div class="hero-badges">
+      ${discPct>0?`<span class="tag tag-accent">${discPct}%</span>`:''}
+      ${p.haccp?`<span class="tag tag-green">HACCP</span>`:''}
+      ${p.is_subscribe?`<span class="tag" style="background:#EDE9FE;color:#5B21B6">구독가능</span>`:''}
+    </div>
+    <button class="wish-btn" id="wish-hero" onclick="toggleWish()">${isWished?'❤️':'🤍'}</button>
+  </div>
+
+  <!-- 기본 정보 -->
+  <div class="product-info-wrap">
+    <div class="product-category">${catLabel[p.category]||p.category} · ${srcLabel[p.source_type]||''}</div>
+    <div class="product-title">${p.name}</div>
+    <div class="product-origin">
+      <span>📍 ${p.origin||'국내산'}</span>
+      ${p.haccp?'<span class="origin-badge">✅ HACCP 인증</span>':''}
+    </div>
+    <div class="price-section">
+      <span class="price-main">${fmt(p.price)}원</span>
+      ${p.origin_price?`<span class="price-origin">${fmt(p.origin_price)}원</span>`:''}
+      ${discPct>0?`<span class="price-discount">${discPct}%↓</span>`:''}
+    </div>
+    <div class="price-per">${p.weight_g?`100g당 ${fmt(Math.round(p.price/(p.weight_g/100)))}원 · ${p.weight_g}g`:''}</div>
+    <div class="point-earn">💎 구매 시 ${fmt(pointEarn)}P 적립</div>
+
+    <!-- 수량 -->
+    <div class="qty-section" style="margin-top:14px">
+      <span class="qty-label">수량</span>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="qty-control">
+          <div class="qty-btn-l" onclick="changeQty(-1)">−</div>
+          <div class="qty-val-l" id="qty-display">1</div>
+          <div class="qty-btn-l" onclick="changeQty(+1)">+</div>
+        </div>
+        <span class="qty-total" id="qty-total">${fmt(p.price)}원</span>
+      </div>
+    </div>
+
+    <!-- 재고 상태 -->
+    <div style="margin-top:12px;font-size:.8rem;${p.stock<=0?'color:var(--red);font-weight:700':p.stock<=p.min_stock?'color:var(--accent);font-weight:600':'color:var(--green);font-weight:600'}">
+      ${p.stock<=0?'❌ 품절':'✅ 재고 있음'}
+      ${p.stock>0&&p.stock<=p.min_stock?` (잔여 ${p.stock}개)`:''}
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="detail-tabs">
+    <div class="detail-tab active" onclick="switchTab('info',this)">상품정보</div>
+    <div class="detail-tab" onclick="switchTab('delivery',this)">배송안내</div>
+    <div class="detail-tab" onclick="switchTab('review',this)">리뷰(0)</div>
+  </div>
+
+  <!-- 상품정보 탭 -->
+  <div class="detail-section active" id="tab-info">
+    <div class="detail-title">📋 상품 정보</div>
+    <p style="font-size:.88rem;color:var(--gray-700);line-height:1.75;margin-bottom:16px">${p.description||'신선한 국내산 육가공 제품입니다.'}</p>
+    <table class="info-table">
+      <tr><td>원산지</td><td>${p.origin||'국내산'}</td></tr>
+      <tr><td>중량</td><td>${p.weight_g?p.weight_g+'g':'-'}</td></tr>
+      <tr><td>소비기한</td><td>${p.expiry_days?`제조일로부터 ${p.expiry_days}일`:'-'}</td></tr>
+      <tr><td>소싱</td><td>${srcLabel[p.source_type]||'-'}</td></tr>
+      <tr><td>보관방법</td><td>${p.expiry_days<=14?'냉장보관 (0~5℃)':'냉동보관 (-18℃ 이하)'}</td></tr>
+      <tr><td>판매단위</td><td>${p.weight_g?p.weight_g+'g 단위':'-'}</td></tr>
+    </table>
+    <div class="cert-row">
+      ${p.haccp?`<div class="cert-badge"><span class="ico">✅</span>HACCP 인증</div>`:''}
+      <div class="cert-badge"><span class="ico">🇰🇷</span>국내산 원육</div>
+      <div class="cert-badge"><span class="ico">🏭</span>자체 공장 가공</div>
+      <div class="cert-badge"><span class="ico">❄️</span>냉장·냉동 배송</div>
+    </div>
+  </div>
+
+  <!-- 배송안내 탭 -->
+  <div class="detail-section" id="tab-delivery">
+    <div class="detail-title">🚚 배송 안내</div>
+    <div class="delivery-info">
+      <strong>배송비:</strong> 5만원 이상 무료 / 미만 3,500원<br>
+      <strong>출고일:</strong> 오후 2시 이전 주문 당일 출고<br>
+      <strong>배송기간:</strong> 출고 후 1~2일 이내 도착<br>
+      <strong>배송사:</strong> CJ대한통운 냉동·냉장 전용<br>
+      <strong>도서산간:</strong> 추가 배송비 5,000원<br><br>
+      📦 냉장 상품은 아이스팩·보냉백으로 포장하여 신선도를 유지합니다.<br>
+      ❄️ 냉동 상품은 드라이아이스로 포장됩니다.
+    </div>
+    <div style="margin-top:14px;padding:12px;background:var(--red-light);border-radius:var(--radius-md);font-size:.8rem;color:var(--red);line-height:1.65">
+      ⚠️ 신선 식품 특성상 단순 변심에 의한 반품은 어렵습니다.<br>
+      상품 불량·오배송의 경우 100% 교환·환불해드립니다.
+    </div>
+  </div>
+
+  <!-- 리뷰 탭 -->
+  <div class="detail-section" id="tab-review">
+    <div class="detail-title">⭐ 구매 리뷰</div>
+    <div class="review-summary">
+      <div class="review-score">5.0</div>
+      <div>
+        <div class="stars-big">★★★★★</div>
+        <div style="font-size:.78rem;color:var(--gray-500);margin-top:4px">리뷰 0개</div>
+      </div>
+    </div>
+    <div style="text-align:center;padding:40px;color:var(--gray-400);font-size:.88rem">
+      아직 리뷰가 없습니다.<br>첫 번째 리뷰를 작성해보세요!
+    </div>
+  </div>
+
+  <!-- 추천 상품 -->
+  <div style="padding:16px 0 0">
+    <div class="section-header"><div class="section-title">🔥 같은 카테고리 상품</div></div>
+    <div class="recommend-row" id="recommend-list" style="padding:0 16px"></div>
+  </div>
+  `;
+
+  loadRecommend(p.category, p.id);
+}
+
+async function loadRecommend(category, excludeId){
+  try {
+    const r = await fetch(`${API}/products?category=${category}&limit=6`);
+    const d = await r.json();
+    const items = (d.products||[]).filter(p=>p.id!==excludeId).slice(0,5);
+    const list = document.getElementById('recommend-list');
+    if(!list) return;
+    list.innerHTML = items.map(p=>`
+    <div class="rec-card" onclick="go('../pages/product.html?id=${p.id}')">
+      <div class="rec-thumb">${p.emoji||'🥩'}</div>
+      <div class="rec-info">
+        <div class="rec-name">${p.name}</div>
+        <div class="rec-price">${fmt(p.price)}원</div>
+      </div>
+    </div>`).join('');
+  } catch(e){}
+}
+
+function switchTab(name, el){
+  document.querySelectorAll('.detail-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.detail-section').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name)?.classList.add('active');
+}
+
+function changeQty(d){
+  qty = Math.max(1, Math.min(99, qty+d));
+  document.getElementById('qty-display').textContent = qty;
+  document.getElementById('qty-total').textContent = fmt(product.price * qty)+'원';
+}
+
+function toggleWish(){
+  if(!product) return;
+  Store.toggleWish(product.id);
+  const wished = Store.isWished(product.id);
+  document.getElementById('wish-btn').textContent  = wished?'❤️':'🤍';
+  const hero = document.getElementById('wish-hero');
+  if(hero) hero.textContent = wished?'❤️':'🤍';
+  toast(wished?'찜 목록에 추가했습니다 ❤️':'찜 목록에서 제거했습니다');
+}
+
+function addToCart(){
+  if(!product) return;
+  if(product.stock<=0){ toast('품절된 상품입니다'); return; }
+  Store.addToCart({
+    productId: product.id,
+    emoji: product.emoji||'🥩',
+    name: product.name,
+    option: product.weight_g?product.weight_g+'g':'기본',
+    price: product.price,
+    qty
+  });
+  updateCartBadge();
+  toast(`장바구니에 ${qty}개 담았습니다 🛒`);
+}
+
+function buyNow(){
+  if(!product) return;
+  if(product.stock<=0){ toast('품절된 상품입니다'); return; }
+  addToCart();
+  setTimeout(()=>go('../pages/cart.html'), 500);
+}
+
+loadProduct();
+</script>
+</body>
+</html>
