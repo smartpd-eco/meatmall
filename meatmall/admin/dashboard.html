@@ -7,628 +7,651 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-/* 관리자 전용 오버라이드 */
-:root { --max-w: 480px; }
-body { background: #F1F0EF; }
+:root{--max-w:480px}
+body{background:#F1F0EF}
+.admin-header{background:var(--primary-dark);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.admin-logo{font-family:var(--font-display);font-size:1rem;font-weight:700;color:#fff}
+.admin-logo small{font-size:.68rem;font-weight:400;opacity:.7;margin-left:6px}
+.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
+.admin-tabs{display:flex;background:var(--primary);overflow-x:auto;scrollbar-width:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tab{flex-shrink:0;padding:10px 14px;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.65);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s}
+.admin-tab.active{color:#fff;border-bottom-color:var(--amber)}
 
-/* ── 관리자 헤더 ── */
-.admin-header {
-  background: var(--primary-dark);
-  height: 56px;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px;
-  position: sticky; top: 0; z-index: 100;
-}
-.admin-logo { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--white); }
-.admin-logo small { font-size: .68rem; font-weight: 400; opacity: .7; margin-left: 6px; }
-.admin-header-actions { display: flex; gap: 6px; }
-.admin-hbtn {
-  width: 36px; height: 36px;
-  border-radius: var(--radius-full);
-  background: rgba(255,255,255,.12);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; color: var(--white); cursor: pointer;
-}
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+.kpi-card{background:#fff;border-radius:var(--radius-md);padding:16px;box-shadow:var(--shadow-sm)}
+.kpi-label{font-size:.74rem;color:var(--gray-500);margin-bottom:6px}
+.kpi-value{font-size:1.3rem;font-weight:800;color:var(--dark)}
+.kpi-delta{font-size:.74rem;font-weight:700;margin-top:4px}
+.up{color:var(--red)}.down{color:var(--blue)}
 
-/* ── 관리자 탭 내비 ── */
-.admin-tabs {
-  display: flex;
-  background: var(--primary);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.admin-tabs::-webkit-scrollbar { display: none; }
-.admin-tab {
-  flex-shrink: 0;
-  padding: 10px 16px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: rgba(255,255,255,.65);
-  cursor: pointer;
-  border-bottom: 2.5px solid transparent;
-  white-space: nowrap;
-  transition: all .2s;
-}
-.admin-tab.active { color: var(--white); border-bottom-color: var(--amber); }
+/* 알림 배너 */
+.alert-bar{margin:0 14px 10px;border-radius:var(--radius-md);padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:.82rem}
+.alert-urgent{background:var(--red-light);border-left:3px solid var(--red)}
+.alert-warn{background:#FEF3C7;border-left:3px solid var(--amber)}
+.alert-text{flex:1;color:var(--gray-700);line-height:1.4}
+.alert-text strong{font-weight:700}
+.alert-btn{font-size:.74rem;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border:1px solid var(--primary);border-radius:var(--radius-sm);white-space:nowrap;background:none}
 
-/* ── KPI 카드 ── */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  padding: 14px;
-}
-.kpi-card {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
-}
-.kpi-label { font-size: 0.75rem; color: var(--gray-500); margin-bottom: 6px; }
-.kpi-value { font-size: 1.4rem; font-weight: 800; color: var(--dark); }
-.kpi-delta {
-  display: inline-flex; align-items: center; gap: 2px;
-  font-size: 0.75rem; font-weight: 700;
-  margin-top: 4px;
-}
-.delta-up   { color: var(--red); }
-.delta-down { color: var(--blue); }
+/* 섹션 카드 */
+.admin-section{background:#fff;margin:0 14px 12px;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.section-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 10px;border-bottom:1px solid var(--gray-100)}
+.section-title{font-size:.9rem;font-weight:700;color:var(--dark)}
+.section-action{font-size:.76rem;color:var(--primary);font-weight:600;cursor:pointer;background:none;border:none}
 
-/* ── 섹션 카드 ── */
-.admin-section {
-  background: var(--white);
-  margin: 0 14px 12px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-.admin-section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--gray-100);
-}
-.admin-section-title { font-size: 0.92rem; font-weight: 700; color: var(--dark); }
-.admin-section-action { font-size: 0.78rem; color: var(--primary); font-weight: 600; cursor: pointer; }
+/* 매출 차트 */
+.chart-wrap{padding:14px 16px;overflow-x:auto}
+.rev-bars{display:flex;gap:6px;align-items:flex-end;height:100px}
+.rev-bar-w{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:28px}
+.rev-bar{width:100%;border-radius:4px 4px 0 0;background:var(--primary);transition:height .4s;cursor:pointer;min-height:4px}
+.rev-bar:hover{background:var(--accent)}
+.rev-label{font-size:.62rem;color:var(--gray-500)}
+.rev-value{font-size:.65rem;font-weight:700;color:var(--dark)}
 
-/* ── 주문 테이블 ── */
-.order-table { width: 100%; }
-.order-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--gray-100);
-  font-size: 0.82rem;
-  cursor: pointer;
-  transition: background .1s;
-}
-.order-row:last-child { border-bottom: none; }
-.order-row:active { background: var(--gray-100); }
-.order-id { font-weight: 700; color: var(--dark); min-width: 80px; font-size: .78rem; }
-.order-name-col { flex: 1; color: var(--gray-700); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.order-price-col { font-weight: 700; color: var(--dark); min-width: 60px; text-align: right; white-space: nowrap; }
+/* 주문 목록 */
+.order-row{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--gray-100);font-size:.8rem;cursor:pointer;transition:background .1s}
+.order-row:last-child{border-bottom:none}
+.order-row:active{background:var(--gray-100)}
+.order-id{font-weight:700;color:var(--dark);min-width:80px;font-size:.76rem}
+.order-buyer{color:var(--gray-700);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.order-amt{font-weight:700;color:var(--dark);white-space:nowrap}
 
-/* ── 재고 테이블 ── */
-.stock-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--gray-100);
-  font-size: 0.82rem;
-}
-.stock-row:last-child { border-bottom: none; }
-.stock-emoji { font-size: 1.3rem; flex-shrink: 0; }
-.stock-name  { flex: 1; font-weight: 600; color: var(--dark); }
-.stock-bar-wrap { width: 70px; }
-.stock-bar-bg {
-  height: 6px; background: var(--gray-200);
-  border-radius: 3px; overflow: hidden;
-}
-.stock-bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
-.stock-qty { font-size: .78rem; color: var(--gray-500); min-width: 36px; text-align: right; }
-.stock-alert {
-  font-size: .7rem; font-weight: 700;
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
-}
-.alert-low  { background: var(--red-light); color: var(--red); }
-.alert-ok   { background: var(--green-light); color: var(--green); }
-.alert-warn { background: #FEF3C7; color: #92400E; }
+/* 재고 목록 */
+.stock-row{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--gray-100);font-size:.82rem}
+.stock-row:last-child{border-bottom:none}
+.stock-emo{font-size:1.3rem;flex-shrink:0}
+.stock-name{flex:1;font-weight:600;color:var(--dark);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:130px}
+.stock-bar-bg{height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;width:70px}
+.stock-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.stock-qty{font-size:.76rem;color:var(--gray-500);min-width:36px;text-align:right}
+.stock-status{font-size:.7rem;font-weight:700;padding:2px 6px;border-radius:999px}
+.s-ok{background:var(--green-light);color:var(--green)}
+.s-warn{background:#FEF3C7;color:#92400E}
+.s-low{background:var(--red-light);color:var(--red)}
+.s-out{background:var(--gray-100);color:var(--gray-500)}
 
-/* ── CS 티켓 ── */
-.ticket-row {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--gray-100);
-  cursor: pointer;
-}
-.ticket-row:last-child { border-bottom: none; }
-.ticket-row:active { background: var(--gray-100); }
-.ticket-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.ticket-title  { font-size: .88rem; font-weight: 600; color: var(--dark); flex: 1; }
-.ticket-meta   { font-size: .75rem; color: var(--gray-500); display: flex; gap: 8px; }
-.ticket-type   { font-size: .72rem; font-weight: 600; color: var(--secondary); }
+/* 매출 테이블 */
+.rev-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid var(--gray-100);font-size:.82rem}
+.rev-row:last-child{border-bottom:none}
+.rev-pg{flex:1;font-weight:600;color:var(--dark)}
+.rev-fee{color:var(--red);margin-right:8px;font-size:.76rem}
+.rev-amt{font-weight:800;color:var(--dark)}
+.rev-pct-bar{height:5px;border-radius:3px;margin-top:3px}
 
-/* ── 매출 차트 (SVG) ── */
-.chart-wrap {
-  padding: 14px 16px;
-  overflow-x: auto;
-}
-.revenue-bars { display: flex; gap: 6px; align-items: flex-end; height: 100px; }
-.rev-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 28px; }
-.rev-bar {
-  width: 100%;
-  border-radius: 4px 4px 0 0;
-  background: var(--primary);
-  transition: height .4s ease;
-  cursor: pointer;
-  min-height: 4px;
-}
-.rev-bar:hover { background: var(--accent); }
-.rev-label { font-size: .62rem; color: var(--gray-500); }
-.rev-value { font-size: .65rem; font-weight: 700; color: var(--dark); }
+/* CS 티켓 */
+.ticket-row{padding:12px 16px;border-bottom:1px solid var(--gray-100);cursor:pointer}
+.ticket-row:last-child{border-bottom:none}
+.ticket-row:active{background:var(--gray-100)}
+.ticket-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.ticket-title{font-size:.88rem;font-weight:600;color:var(--dark);flex:1}
+.ticket-meta{font-size:.74rem;color:var(--gray-500);display:flex;gap:8px}
 
-/* ── 빠른 액션 ── */
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  padding: 14px;
-}
-.qa-btn {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  padding: 14px 8px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: transform .15s;
-}
-.qa-btn:active { transform: scale(.95); }
-.qa-icon { font-size: 1.5rem; margin-bottom: 6px; }
-.qa-label { font-size: 0.68rem; font-weight: 700; color: var(--gray-700); }
+/* 빠른 액션 */
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
+.qa-btn{background:#fff;border-radius:var(--radius-md);padding:14px 8px;text-align:center;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .15s;border:none}
+.qa-btn:active{transform:scale(.95)}
+.qa-ico{font-size:1.5rem;margin-bottom:6px}
+.qa-lbl{font-size:.68rem;font-weight:700;color:var(--gray-700)}
 
-/* ── 알림 배너 ── */
-.admin-alert {
-  margin: 14px 14px 0;
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  display: flex; align-items: center; gap: 10px;
-  font-size: .82rem;
-}
-.admin-alert.alert-urgent {
-  background: var(--red-light);
-  border-left: 3px solid var(--red);
-}
-.admin-alert.alert-warn {
-  background: #FEF3C7;
-  border-left: 3px solid var(--amber);
-}
-.admin-alert-text { flex: 1; color: var(--gray-700); line-height: 1.4; }
-.admin-alert-text strong { font-weight: 700; }
-.admin-alert-btn {
-  font-size: .75rem; font-weight: 700;
-  color: var(--primary); cursor: pointer;
-  white-space: nowrap;
-  padding: 4px 8px;
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-sm);
-}
+/* 로그인 */
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,var(--primary-dark),var(--primary))}
+.login-box{background:#fff;border-radius:var(--radius-lg);padding:32px 24px;width:100%;max-width:360px;box-shadow:var(--shadow-lg)}
 
-/* ── 로그인 화면 ── */
-.admin-login-wrap {
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 32px 24px;
-  background: linear-gradient(160deg, var(--primary-dark), var(--primary));
-}
-.admin-login-box {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 32px 24px;
-  width: 100%;
-  max-width: 360px;
-  box-shadow: var(--shadow-lg);
-}
+/* 주문 상세 바텀시트 */
+.order-detail-content{padding:16px;font-size:.88rem;line-height:1.8}
+.detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray-100)}
+.detail-row:last-child{border-bottom:none}
+.detail-key{color:var(--gray-600)}
+.detail-val{font-weight:600;color:var(--dark)}
+
+/* 로딩 스켈레톤 */
+.skel{background:linear-gradient(90deg,var(--gray-100) 25%,#ece9e6 50%,var(--gray-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{to{background-position:-200% 0}}
 </style>
 </head>
 <body>
 <div class="app-wrap" id="app">
-  <!-- JS로 렌더 -->
+  <div style="text-align:center;padding:60px 24px;color:var(--gray-400)">🔄 로딩 중...</div>
+</div>
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="bottom-sheet" id="detail-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-title" id="sheet-title">상세 정보</div>
+    <span class="sheet-close" onclick="closeSheet()">✕</span>
+  </div>
+  <div id="sheet-body" style="max-height:60vh;overflow-y:auto"></div>
 </div>
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
-function go(url) { window.location.href = url; }
+const API = 'https://meatmall.vercel.app/api';
+let adminToken = null;
+let activeTab  = 'dashboard';
 
-// ── 관리자 인증 상태 ──────────────────────────────────────
-let adminAuth = sessionStorage.getItem('mm_admin') === 'true';
-
-function render() {
-  if (!adminAuth) { renderLoginPage(); return; }
-  renderDashboard();
+function go(url){ window.location.href=url; }
+function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
+function toast(msg){
+  const el=document.getElementById('toast-global');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400);
+}
+function openSheet(title, html){
+  document.getElementById('sheet-title').textContent=title;
+  document.getElementById('sheet-body').innerHTML=html;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('detail-sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeSheet(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('detail-sheet').classList.remove('open');
+  document.body.style.overflow='';
 }
 
-// ── 관리자 로그인 ────────────────────────────────────────
-function renderLoginPage() {
-  document.getElementById('app').innerHTML = `
-  <div class="admin-login-wrap">
-    <div style="text-align:center; margin-bottom:28px">
-      <div style="font-size:3rem; margin-bottom:10px">🥩</div>
-      <div style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:var(--white)">정육본가</div>
-      <div style="font-size:.85rem; color:rgba(255,255,255,.7); margin-top:4px">관리자 시스템</div>
+// ── 인증 ────────────────────────────────────────────────
+function init(){
+  adminToken = localStorage.getItem('mm_access_token');
+  const user = JSON.parse(localStorage.getItem('mm_user_cache')||'{}');
+  const sessionAdmin = sessionStorage.getItem('mm_admin')==='true';
+
+  if (sessionAdmin || user.is_admin) {
+    renderDashboard();
+  } else {
+    renderLogin();
+  }
+}
+
+// ── 로그인 ───────────────────────────────────────────────
+function renderLogin(){
+  document.getElementById('app').innerHTML=`
+  <div class="login-wrap">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:3rem;margin-bottom:10px">🥩</div>
+      <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:#fff">정육본가</div>
+      <div style="font-size:.85rem;color:rgba(255,255,255,.7);margin-top:4px">관리자 시스템</div>
     </div>
-    <div class="admin-login-box">
-      <div style="font-size:1.05rem; font-weight:800; color:var(--dark); margin-bottom:20px">🔐 관리자 로그인</div>
+    <div class="login-box">
+      <div style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:20px">🔐 관리자 로그인</div>
       <div class="form-group" style="margin-bottom:12px">
-        <div class="form-label">관리자 ID</div>
-        <input class="form-input" id="aid" type="text" placeholder="admin" autocomplete="off">
+        <div class="form-label">이메일</div>
+        <input class="form-input" id="aid" type="email" placeholder="admin@meatmall.co.kr">
       </div>
       <div class="form-group" style="margin-bottom:20px">
         <div class="form-label">비밀번호</div>
-        <input class="form-input" id="apw" type="password" placeholder="••••••••">
+        <input class="form-input" id="apw" type="password" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')adminLogin()">
       </div>
-      <button class="btn btn-primary btn-full btn-lg" onclick="adminLogin()">로그인</button>
-      <div style="margin-top:16px; text-align:center; font-size:.78rem; color:var(--gray-500)">
-        데모: admin / admin1234
+      <button class="btn btn-primary btn-full btn-lg" id="login-btn" onclick="adminLogin()">로그인</button>
+      <div style="margin-top:14px;text-align:center;font-size:.76rem;color:var(--gray-400)">
+        정육본가 관리자 전용 시스템
       </div>
     </div>
   </div>`;
 }
 
-function adminLogin() {
-  const id = document.getElementById('aid').value;
-  const pw = document.getElementById('apw').value;
-  if (id === 'admin' && pw === 'admin1234') {
-    sessionStorage.setItem('mm_admin', 'true');
-    adminAuth = true;
+async function adminLogin(){
+  const email = document.getElementById('aid').value.trim();
+  const pw    = document.getElementById('apw').value;
+  if (!email||!pw){ toast('이메일과 비밀번호를 입력해주세요'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.innerHTML='<div class="spinner"></div>'; btn.disabled=true;
+
+  try {
+    const r = await fetch(API+'/auth/login',{
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, password:pw})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error||'로그인 실패');
+    if (!d.user?.is_admin) throw new Error('관리자 권한이 없습니다');
+
+    localStorage.setItem('mm_access_token', d.accessToken);
+    localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
+    sessionStorage.setItem('mm_admin','true');
+    adminToken = d.accessToken;
     toast('관리자로 로그인했습니다');
-    setTimeout(renderDashboard, 400);
-  } else {
-    toast('아이디 또는 비밀번호가 틀렸습니다');
+    setTimeout(()=>renderDashboard(), 400);
+  } catch(e){
+    btn.innerHTML='로그인'; btn.disabled=false;
+    toast('❌ '+e.message);
   }
 }
 
-// ── 관리자 대시보드 렌더 ─────────────────────────────────
-let activeTab = 'dashboard';
-
-function renderDashboard() {
-  document.getElementById('app').innerHTML = `
+// ── 대시보드 렌더 ────────────────────────────────────────
+function renderDashboard(){
+  document.getElementById('app').innerHTML=`
   <div class="admin-header">
     <div class="admin-logo">🥩 정육본가 <small>관리자</small></div>
-    <div class="admin-header-actions">
-      <div class="admin-hbtn" title="알림">🔔</div>
+    <div style="display:flex;gap:6px">
+      <div class="admin-hbtn" onclick="go('products.html')" title="상품관리">📦</div>
       <div class="admin-hbtn" onclick="adminLogout()" title="로그아웃">🚪</div>
     </div>
   </div>
-
-  <div class="admin-tabs">
+  <div class="admin-tabs" id="admin-tabs">
     <div class="admin-tab active" onclick="switchTab('dashboard',this)">📊 대시보드</div>
     <div class="admin-tab" onclick="switchTab('orders',this)">📦 주문관리</div>
     <div class="admin-tab" onclick="switchTab('inventory',this)">🗄️ 재고관리</div>
-    <div class="admin-tab" onclick="switchTab('revenue',this)">💰 매출/정산</div>
+    <div class="admin-tab" onclick="switchTab('revenue',this)">💰 매출정산</div>
     <div class="admin-tab" onclick="switchTab('cs',this)">💬 CS관리</div>
   </div>
-
-  <div id="tab-content" style="min-height:80vh; padding-bottom:32px"></div>`;
-
-  renderTab('dashboard');
+  <div id="tab-content" style="min-height:80vh;padding-bottom:32px">
+    <div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 로딩 중...</div>
+  </div>`;
+  switchTab('dashboard', document.querySelector('.admin-tab'));
 }
 
-function switchTab(name, el) {
+async function switchTab(name, el){
   activeTab = name;
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderTab(name);
-}
-
-function renderTab(name) {
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
   const content = document.getElementById('tab-content');
-  const tabs = { dashboard: renderDashboardTab, orders: renderOrdersTab, inventory: renderInventoryTab, revenue: renderRevenueTab, cs: renderCSTab };
-  content.innerHTML = tabs[name] ? tabs[name]() : '';
+  content.innerHTML='<div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 불러오는 중...</div>';
+
+  const renders = {
+    dashboard: renderTabDashboard,
+    orders:    renderTabOrders,
+    inventory: renderTabInventory,
+    revenue:   renderTabRevenue,
+    cs:        renderTabCS,
+  };
+  if(renders[name]) await renders[name]();
 }
 
-// ── 대시보드 탭 ───────────────────────────────────────────
-function renderDashboardTab() {
-  return `
-  <!-- 긴급 알림 -->
-  <div class="admin-alert alert-urgent">
-    <span style="font-size:1.2rem">🚨</span>
-    <div class="admin-alert-text"><strong>재고 부족 알림</strong><br>삼겹살 500g – 재고 8개 남음 (안전재고 이하)</div>
-    <span class="admin-alert-btn" onclick="switchTab('inventory', document.querySelectorAll('.admin-tab')[2])">확인</span>
-  </div>
-  <div class="admin-alert alert-warn" style="margin-top:8px">
-    <span style="font-size:1.2rem">⚠️</span>
-    <div class="admin-alert-text"><strong>미답변 CS 3건</strong><br>가장 오래된 문의: 18시간 경과</div>
-    <span class="admin-alert-btn" onclick="switchTab('cs', document.querySelectorAll('.admin-tab')[4])">처리</span>
-  </div>
+// ── 대시보드 탭 ──────────────────────────────────────────
+async function renderTabDashboard(){
+  let kpi={}, alerts={};
+  try {
+    const r = await fetch(API+'/admin/dashboard',{
+      headers:{Authorization:'Bearer '+adminToken}
+    });
+    if(r.ok){ const d=await r.json(); kpi=d.kpi||{}; alerts=d.alerts||{}; }
+  } catch(e){}
 
-  <!-- KPI 카드 -->
+  const content = document.getElementById('tab-content');
+  content.innerHTML=`
+  ${alerts.pendingCS > 0 ? `
+  <div class="alert-bar alert-urgent" style="margin-top:14px">
+    <span style="font-size:1.2rem">🚨</span>
+    <div class="alert-text"><strong>미답변 CS ${alerts.pendingCS}건</strong> 처리가 필요합니다</div>
+    <button class="alert-btn" onclick="switchTab('cs',document.querySelectorAll('.admin-tab')[4])">처리</button>
+  </div>` : ''}
+  ${(alerts.lowStock||[]).length > 0 ? `
+  <div class="alert-bar alert-warn">
+    <span style="font-size:1.2rem">⚠️</span>
+    <div class="alert-text"><strong>재고 부족 ${alerts.lowStock.length}개 상품</strong></div>
+    <button class="alert-btn" onclick="switchTab('inventory',document.querySelectorAll('.admin-tab')[2])">확인</button>
+  </div>` : ''}
+
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-label">오늘 매출</div>
-      <div class="kpi-value" style="font-size:1.2rem">${fmt(1843000)}원</div>
-      <div class="kpi-delta delta-up">▲ 23% vs 어제</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">오늘 주문</div>
-      <div class="kpi-value">47건</div>
-      <div class="kpi-delta delta-up">▲ 12% vs 어제</div>
+      <div class="kpi-value" style="font-size:1.1rem">${fmt(kpi.todayRevenue||0)}원</div>
+      <div class="kpi-delta" style="color:var(--gray-500)">${kpi.todayOrders||0}건</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">이번달 매출</div>
-      <div class="kpi-value" style="font-size:1.1rem">${fmt(28470000)}원</div>
-      <div class="kpi-delta delta-up">▲ 18% vs 지난달</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">활성 구독자</div>
-      <div class="kpi-value">183명</div>
-      <div class="kpi-delta delta-up">▲ 11명 증가</div>
+      <div class="kpi-value" style="font-size:1rem">${fmt(kpi.monthRevenue||0)}원</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">미처리 주문</div>
-      <div class="kpi-value" style="color:var(--red)">12건</div>
+      <div class="kpi-value" style="color:${(kpi.pendingOrders||0)>0?'var(--red)':'var(--dark)'}">${kpi.pendingOrders||0}건</div>
       <div class="kpi-delta" style="color:var(--gray-500)">처리 필요</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-label">평균 ROAS</div>
-      <div class="kpi-value">3.4x</div>
-      <div class="kpi-delta delta-up">▲ 목표초과</div>
-    </div>
-  </div>
-
-  <!-- 매출 바 차트 (주간) -->
-  <div class="admin-section">
-    <div class="admin-section-header">
-      <div class="admin-section-title">📈 최근 7일 매출</div>
-      <span class="admin-section-action" onclick="switchTab('revenue', document.querySelectorAll('.admin-tab')[3])">상세보기</span>
-    </div>
-    <div class="chart-wrap">
-      ${renderBarChart([820,1250,980,1640,2100,1380,1843], ['월','화','수','목','금','토','일'])}
+      <div class="kpi-label">활성 구독자</div>
+      <div class="kpi-value">${kpi.activeSubscribers||0}명</div>
     </div>
   </div>
 
   <!-- 빠른 액션 -->
-  <div class="quick-actions">
-    <div class="qa-btn" onclick="switchTab('orders', document.querySelectorAll('.admin-tab')[1])">
-      <div class="qa-icon">📦</div><div class="qa-label">주문처리</div>
+  <div class="quick-grid">
+    <div class="qa-btn" onclick="go('products.html')">
+      <div class="qa-ico">📦</div><div class="qa-lbl">상품관리</div>
     </div>
-    <div class="qa-btn" onclick="switchTab('inventory', document.querySelectorAll('.admin-tab')[2])">
-      <div class="qa-icon">🗄️</div><div class="qa-label">재고확인</div>
+    <div class="qa-btn" onclick="switchTab('orders',document.querySelectorAll('.admin-tab')[1])">
+      <div class="qa-ico">🧾</div><div class="qa-lbl">주문처리</div>
     </div>
-    <div class="qa-btn" onclick="switchTab('cs', document.querySelectorAll('.admin-tab')[4])">
-      <div class="qa-icon">💬</div><div class="qa-label">CS처리</div>
+    <div class="qa-btn" onclick="switchTab('inventory',document.querySelectorAll('.admin-tab')[2])">
+      <div class="qa-ico">🗄️</div><div class="qa-lbl">재고확인</div>
     </div>
-    <div class="qa-btn" onclick="toast('상품 등록 페이지로 이동')">
-      <div class="qa-icon">➕</div><div class="qa-label">상품등록</div>
-    </div>
-  </div>`;
-}
-
-function renderBarChart(values, labels) {
-  const max = Math.max(...values);
-  return `<div class="revenue-bars">
-    ${values.map((v, i) => {
-      const h = Math.round((v / max) * 90);
-      return `<div class="rev-bar-wrap">
-        <div class="rev-value">${(v/10000).toFixed(0)}만</div>
-        <div class="rev-bar" style="height:${h}px" title="${fmt(v*100)}원"></div>
-        <div class="rev-label">${labels[i]}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-// ── 주문관리 탭 ───────────────────────────────────────────
-const ORDERS = [
-  { id:'ORD-2606-0047', name:'국내산 한우 등심 300g 외 2건', buyer:'김민수', price:67800, status:'preparing', statusText:'준비중', statusClass:'status-preparing' },
-  { id:'ORD-2606-0046', name:'수제 프랑크소시지 × 3', buyer:'이지연', price:26700, status:'preparing', statusText:'준비중', statusClass:'status-preparing' },
-  { id:'ORD-2606-0045', name:'흑돼지 삼겹살 500g', buyer:'박철수', price:15900, status:'shipping', statusText:'배송중', statusClass:'status-shipping' },
-  { id:'ORD-2606-0044', name:'밀키트 소불고기 (2인분)', buyer:'최영희', price:13900, status:'shipping', statusText:'배송중', statusClass:'status-shipping' },
-  { id:'ORD-2606-0043', name:'한우 선물세트 1.2kg', buyer:'정다은', price:89000, status:'done', statusText:'완료', statusClass:'status-done' },
-  { id:'ORD-2606-0042', name:'구독박스 6월 3주차', buyer:'강준호', price:34500, status:'done', statusText:'완료', statusClass:'status-done' },
-];
-
-function renderOrdersTab() {
-  return `
-  <div style="padding:14px 14px 8px; display:flex; gap:8px; align-items:center">
-    <input class="form-input" style="flex:1; height:38px; font-size:.84rem" placeholder="🔍 주문번호·고객명 검색">
-    <button class="btn btn-sm btn-primary" onclick="toast('피킹리스트 출력')">🖨️ 출력</button>
-  </div>
-  <div style="display:flex; gap:6px; padding:0 14px 10px; overflow-x:auto; scrollbar-width:none">
-    <span class="tag tag-gray" style="cursor:pointer; padding:5px 10px">전체 47건</span>
-    <span class="tag tag-amber" style="cursor:pointer; padding:5px 10px">준비중 12</span>
-    <span class="tag tag-green" style="cursor:pointer; padding:5px 10px">배송중 23</span>
-    <span class="tag tag-gray" style="cursor:pointer; padding:5px 10px">완료 12</span>
-  </div>
-  <div class="admin-section" style="margin-top:0">
-    ${ORDERS.map(o => `
-    <div class="order-row" onclick="orderDetail('${o.id}')">
-      <div>
-        <div class="order-id">${o.id}</div>
-        <div style="font-size:.72rem; color:var(--gray-500); margin-top:1px">${o.buyer}</div>
-      </div>
-      <div class="order-name-col">${o.name}</div>
-      <div style="text-align:right; flex-shrink:0">
-        <span class="status-chip ${o.statusClass}" style="display:block; margin-bottom:3px; font-size:.7rem">${o.statusText}</span>
-        <span class="order-price-col">${fmt(o.price)}원</span>
-      </div>
-    </div>`).join('')}
-  </div>`;
-}
-
-function orderDetail(id) {
-  toast(`${id} 주문 상세 확인`);
-}
-
-// ── 재고관리 탭 ───────────────────────────────────────────
-const INVENTORY = [
-  { emoji:'🥩', name:'한우 등심 1++ (냉장)', qty:34, total:100, unit:'300g', status:'ok' },
-  { emoji:'🐷', name:'흑돼지 삼겹살 (냉장)', qty:8, total:50, unit:'500g', status:'low' },
-  { emoji:'🌭', name:'수제 프랑크소시지 PB', qty:22, total:60, unit:'200g×3', status:'ok' },
-  { emoji:'🥓', name:'수제 베이컨 PB', qty:15, total:40, unit:'200g', status:'warn' },
-  { emoji:'🦆', name:'훈제오리 슬라이스 PB', qty:28, total:50, unit:'200g', status:'ok' },
-  { emoji:'🍱', name:'소불고기 밀키트', qty:11, total:30, unit:'400g', status:'warn' },
-  { emoji:'🐔', name:'닭가슴살 소분 세트', qty:41, total:80, unit:'100g×10', status:'ok' },
-];
-
-function renderInventoryTab() {
-  return `
-  <div style="padding:14px 14px 8px; display:flex; gap:8px">
-    <input class="form-input" style="flex:1; height:38px; font-size:.84rem" placeholder="🔍 상품 검색">
-    <button class="btn btn-sm btn-primary" onclick="toast('발주서 생성')">📋 발주</button>
-  </div>
-  <div class="admin-section" style="margin-top:0">
-    <div class="admin-section-header">
-      <div class="admin-section-title">재고 현황 (${INVENTORY.length}개 SKU)</div>
-      <span style="font-size:.75rem; color:var(--gray-500)">안전재고: 재고/총량 20% 이하</span>
-    </div>
-    ${INVENTORY.map(item => {
-      const pct = Math.round((item.qty / item.total) * 100);
-      const barColor = item.status === 'low' ? 'var(--red)' : item.status === 'warn' ? 'var(--amber)' : 'var(--green)';
-      const alertClass = item.status === 'low' ? 'alert-low' : item.status === 'warn' ? 'alert-warn' : 'alert-ok';
-      const alertText = item.status === 'low' ? '부족' : item.status === 'warn' ? '주의' : '정상';
-      return `
-      <div class="stock-row">
-        <span class="stock-emoji">${item.emoji}</span>
-        <div style="flex:1; min-width:0">
-          <div class="stock-name" style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:130px">${item.name}</div>
-          <div style="font-size:.7rem; color:var(--gray-500)">${item.unit}</div>
-        </div>
-        <div class="stock-bar-wrap">
-          <div class="stock-bar-bg">
-            <div class="stock-bar-fill" style="width:${pct}%; background:${barColor}"></div>
-          </div>
-          <div style="font-size:.65rem; color:var(--gray-500); margin-top:2px; text-align:right">${pct}%</div>
-        </div>
-        <div class="stock-qty">${item.qty}개</div>
-        <span class="stock-alert ${alertClass}">${alertText}</span>
-      </div>`;
-    }).join('')}
-  </div>
-  <div style="padding:0 14px 14px">
-    <div style="font-size:.78rem; color:var(--gray-500); line-height:1.7">
-      ⚠️ 소비기한 D-3일 임박 상품: <strong style="color:var(--red)">훈제오리 12개</strong> → 자동 할인(15%) 처리됨
+    <div class="qa-btn" onclick="switchTab('cs',document.querySelectorAll('.admin-tab')[4])">
+      <div class="qa-ico">💬</div><div class="qa-lbl">CS처리</div>
     </div>
   </div>`;
 }
 
-// ── 매출/정산 탭 ─────────────────────────────────────────
-function renderRevenueTab() {
-  return `
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-label">이번달 총 매출</div>
-      <div class="kpi-value" style="font-size:1.1rem">${fmt(28470000)}원</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">PG 수수료 합계</div>
-      <div class="kpi-value" style="font-size:1.1rem; color:var(--red)">${fmt(1048000)}원</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">광고비</div>
-      <div class="kpi-value" style="font-size:1.1rem; color:var(--red)">${fmt(7000000)}원</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">순이익 (추정)</div>
-      <div class="kpi-value" style="font-size:1.1rem; color:var(--green)">${fmt(5220000)}원</div>
-    </div>
-  </div>
+// ── 주문관리 탭 ──────────────────────────────────────────
+async function renderTabOrders(){
+  let orders=[], total=0;
+  try {
+    const r = await fetch(API+'/admin/orders?limit=30',{
+      headers:{Authorization:'Bearer '+adminToken}
+    });
+    if(r.ok){ const d=await r.json(); orders=d.orders||[]; total=d.total||0; }
+  } catch(e){}
 
-  <div class="admin-section">
-    <div class="admin-section-header">
-      <div class="admin-section-title">채널별 매출</div>
-    </div>
-    ${[
-      {ch:'스마트스토어', amt:16800000, pct:59, color:'var(--primary)'},
-      {ch:'자사몰 (준비중)', amt:8200000, pct:29, color:'var(--secondary)'},
-      {ch:'기타', amt:3470000, pct:12, color:'var(--gray-400)'},
-    ].map(r => `
-    <div style="padding:12px 16px; border-bottom:1px solid var(--gray-100)">
-      <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:.85rem">
-        <span style="font-weight:600">${r.ch}</span>
-        <span style="font-weight:800">${fmt(r.amt)}원</span>
-      </div>
-      <div style="height:6px; background:var(--gray-200); border-radius:3px; overflow:hidden">
-        <div style="width:${r.pct}%; height:100%; background:${r.color}; border-radius:3px"></div>
-      </div>
-    </div>`).join('')}
-  </div>
+  const statusLabel = {pending:'결제대기',preparing:'준비중',shipping:'배송중',delivered:'완료',cancelled:'취소',refund_req:'환불요청',refunded:'환불완료'};
+  const statusClass = {pending:'status-pending',preparing:'status-preparing',shipping:'status-shipping',delivered:'status-done',cancelled:'status-cancel'};
 
-  <div class="admin-section">
-    <div class="admin-section-header">
-      <div class="admin-section-title">PG사별 정산 내역</div>
-      <span class="admin-section-action" onclick="toast('엑셀 내보내기')">📥 내보내기</span>
-    </div>
-    ${[
-      {pg:'네이버페이', amt:12400000, fee:463760, rate:'3.74%'},
-      {pg:'카카오페이', amt:8200000,  fee:287000, rate:'3.5%'},
-      {pg:'토스페이',  amt:4800000,  fee:158400, rate:'3.3%'},
-      {pg:'카드/무통장', amt:3070000, fee:138150, rate:'4.5%'},
-    ].map(p => `
-    <div style="display:flex; align-items:center; padding:11px 16px; border-bottom:1px solid var(--gray-100); font-size:.82rem">
-      <span style="flex:1; font-weight:600">${p.pg}</span>
-      <span style="color:var(--gray-500); margin-right:10px">수수료 ${p.rate}</span>
-      <span style="font-weight:700; color:var(--red); margin-right:8px">-${fmt(p.fee)}원</span>
-      <span style="font-weight:800">${fmt(p.amt)}원</span>
-    </div>`).join('')}
-  </div>`;
-}
-
-// ── CS 관리 탭 ────────────────────────────────────────────
-const TICKETS = [
-  { id:'CS-0048', type:'배송문의', title:'주문한 상품이 아직 도착하지 않았어요', buyer:'이영수', time:'18시간 전', status:'대기', urgent:true },
-  { id:'CS-0047', type:'환불요청', title:'제품이 변질된 것 같습니다 환불 원합니다', buyer:'박지현', time:'12시간 전', status:'대기', urgent:true },
-  { id:'CS-0046', type:'상품문의', title:'삼겹살 원산지가 궁금합니다', buyer:'김도윤', time:'6시간 전', status:'대기', urgent:false },
-  { id:'CS-0045', type:'결제문의', title:'카카오페이 결제 오류가 났어요', buyer:'최수진', time:'3시간 전', status:'처리중', urgent:false },
-  { id:'CS-0044', type:'정기배송', title:'다음달 배송 일정 변경 가능한가요?', buyer:'장민아', time:'1시간 전', status:'답변완료', urgent:false },
-];
-
-function renderCSTab() {
-  return `
-  <div style="padding:14px 14px 8px; display:flex; gap:8px">
-    <input class="form-input" style="flex:1; height:38px; font-size:.84rem" placeholder="🔍 티켓 검색">
-    <select class="form-input" style="width:90px; height:38px; font-size:.82rem">
-      <option>전체</option><option>대기</option><option>처리중</option><option>완료</option>
+  document.getElementById('tab-content').innerHTML=`
+  <div style="padding:12px 14px 6px;display:flex;gap:8px;align-items:center">
+    <input style="flex:1;height:36px;border:0.5px solid var(--gray-300);border-radius:var(--radius-md);padding:0 12px;font-size:.82rem;outline:none" placeholder="🔍 주문번호·수령인 검색">
+    <select style="height:36px;border:0.5px solid var(--gray-300);border-radius:var(--radius-md);padding:0 8px;font-size:.8rem;outline:none;background:#fff">
+      <option>전체 ${total}건</option>
+      <option>준비중</option><option>배송중</option><option>완료</option><option>취소</option>
     </select>
   </div>
-  <div class="admin-section" style="margin-top:0">
-    <div class="admin-section-header">
-      <div class="admin-section-title">CS 티켓 (${TICKETS.length}건)</div>
-      <span style="font-size:.75rem; color:var(--red); font-weight:700">미답변 3건 ⚠️</span>
-    </div>
-    ${TICKETS.map(t => `
-    <div class="ticket-row" onclick="handleTicket('${t.id}')">
-      <div class="ticket-header">
-        <span class="ticket-type">[${t.type}]</span>
-        <div class="ticket-title">${t.urgent ? '🔴 ' : ''}${t.title}</div>
-        <span class="tag ${t.status==='답변완료'?'tag-green':t.status==='처리중'?'tag-amber':'tag-primary'}" style="flex-shrink:0; font-size:.68rem">${t.status}</span>
-      </div>
-      <div class="ticket-meta">
-        <span>👤 ${t.buyer}</span>
-        <span>⏱️ ${t.time}</span>
-        <span style="font-weight:700; color:var(--primary)">${t.id}</span>
-      </div>
-    </div>`).join('')}
-  </div>
-  <div style="padding:0 14px">
-    <button class="btn btn-primary btn-full" onclick="toast('CS 템플릿 라이브러리 열기')">📋 답변 템플릿 사용</button>
+  <div class="admin-section" style="margin-top:4px">
+    ${orders.length===0
+      ? '<div style="padding:40px;text-align:center;color:var(--gray-400)">주문이 없습니다</div>'
+      : orders.map(o=>`
+      <div class="order-row" onclick="showOrderDetail('${o.id}')">
+        <div>
+          <div class="order-id">${o.order_number}</div>
+          <div style="font-size:.72rem;color:var(--gray-500);margin-top:1px">${o.recipient} · ${o.users?.name||''}</div>
+        </div>
+        <div class="order-buyer">${(o.order_items||[]).length>0?o.order_items[0].name+(o.order_items.length>1?` 외 ${o.order_items.length-1}건`:''):'상품없음'}</div>
+        <div style="text-align:right;flex-shrink:0">
+          <span class="status-chip ${statusClass[o.status]||'status-pending'}" style="display:block;margin-bottom:3px;font-size:.7rem">${statusLabel[o.status]||o.status}</span>
+          <span class="order-amt">${fmt(o.final_amount)}원</span>
+        </div>
+      </div>`).join('')}
   </div>`;
 }
 
-function handleTicket(id) {
-  const t = TICKETS.find(t => t.id === id);
-  if (!t) return;
-  toast(`${id} — ${t.title}`);
+async function showOrderDetail(id){
+  try {
+    const r = await fetch(API+'/admin/orders?limit=100',{headers:{Authorization:'Bearer '+adminToken}});
+    const d = await r.json();
+    const o = (d.orders||[]).find(x=>x.id===id);
+    if(!o) return;
+
+    const statusOptions = ['pending','preparing','shipping','delivered','cancelled']
+      .map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('');
+
+    openSheet('주문 상세', `
+    <div class="order-detail-content">
+      <div class="detail-row"><span class="detail-key">주문번호</span><span class="detail-val">${o.order_number}</span></div>
+      <div class="detail-row"><span class="detail-key">수령인</span><span class="detail-val">${o.recipient} · ${o.phone}</span></div>
+      <div class="detail-row"><span class="detail-key">배송지</span><span class="detail-val" style="text-align:right;max-width:200px">[${o.zip_code}] ${o.address1} ${o.address2||''}</span></div>
+      <div class="detail-row"><span class="detail-key">결제금액</span><span class="detail-val">${fmt(o.final_amount)}원</span></div>
+      <div class="detail-row"><span class="detail-key">결제수단</span><span class="detail-val">${o.payment_method||'-'}</span></div>
+      <div class="detail-row"><span class="detail-key">결제일시</span><span class="detail-val">${o.paid_at?new Date(o.paid_at).toLocaleString('ko-KR'):'-'}</span></div>
+      <div style="margin:12px 0 8px;font-weight:700;font-size:.88rem;color:var(--dark)">주문 상품</div>
+      ${(o.order_items||[]).map(i=>`
+      <div class="detail-row">
+        <span class="detail-key">${i.name} ×${i.qty}</span>
+        <span class="detail-val">${fmt(i.subtotal)}원</span>
+      </div>`).join('')}
+      <div style="margin:14px 0 8px;font-weight:700;font-size:.88rem;color:var(--dark)">상태 변경</div>
+      <div style="display:flex;gap:8px">
+        <select id="new-status" style="flex:1;height:40px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);padding:0 10px;font-size:.84rem;outline:none">
+          ${statusOptions}
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="tracking-no" style="flex:1;height:36px;border:1px solid var(--gray-300);border-radius:var(--radius-md);padding:0 10px;font-size:.82rem;outline:none" placeholder="운송장번호 (배송 시)" value="${o.tracking_number||''}">
+        <select id="carrier-sel" style="width:110px;height:36px;border:1px solid var(--gray-300);border-radius:var(--radius-md);padding:0 6px;font-size:.78rem;outline:none">
+          <option>CJ대한통운</option><option>한진</option><option>롯데</option><option>우체국</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="updateOrderStatus('${o.id}')">상태 변경 저장</button>
+    </div>`);
+  } catch(e){ toast('상세 정보 로드 실패'); }
 }
 
-function adminLogout() {
-  if (confirm('로그아웃 하시겠습니까?')) {
-    sessionStorage.removeItem('mm_admin');
-    adminAuth = false;
-    renderLoginPage();
-  }
+async function updateOrderStatus(id){
+  const status  = document.getElementById('new-status').value;
+  const tracking= document.getElementById('tracking-no').value;
+  const carrier = document.getElementById('carrier-sel').value;
+  try {
+    const r = await fetch(API+'/admin/orders/'+id,{
+      method:'PATCH', credentials:'include',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
+      body: JSON.stringify({status, tracking_number:tracking||undefined, carrier:carrier||undefined})
+    });
+    if(!r.ok) throw new Error();
+    toast('✅ 주문 상태가 변경됐습니다');
+    closeSheet();
+    switchTab('orders', document.querySelectorAll('.admin-tab')[1]);
+  } catch(e){ toast('❌ 상태 변경 실패'); }
 }
 
-// 초기화
-render();
+// ── 재고관리 탭 ──────────────────────────────────────────
+async function renderTabInventory(){
+  let inventory=[];
+  try {
+    const r = await fetch(API+'/admin/inventory',{headers:{Authorization:'Bearer '+adminToken}});
+    if(r.ok){ const d=await r.json(); inventory=d.inventory||[]; }
+  } catch(e){}
+
+  const statusCls={ok:'s-ok',warn:'s-warn',low:'s-low',out:'s-out'};
+  const statusTxt={ok:'정상',warn:'주의',low:'부족',out:'품절'};
+  const barColor ={ok:'var(--green)',warn:'var(--amber)',low:'var(--red)',out:'var(--gray-300)'};
+
+  document.getElementById('tab-content').innerHTML=`
+  <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:.82rem;color:var(--gray-500)">총 ${inventory.length}개 SKU</span>
+    <button class="btn btn-sm btn-outline" onclick="toast('발주서 기능 준비중')">📋 발주서 생성</button>
+  </div>
+  <div class="admin-section" style="margin-top:4px">
+    ${inventory.length===0
+      ? '<div style="padding:40px;text-align:center;color:var(--gray-400)">상품이 없습니다</div>'
+      : inventory.map(p=>`
+      <div class="stock-row" onclick="showStockEdit('${p.id}','${p.name}',${p.stock},${p.min_stock})">
+        <span class="stock-emo">${p.emoji||'🥩'}</span>
+        <div style="flex:1;min-width:0">
+          <div class="stock-name">${p.name}</div>
+          <div style="font-size:.7rem;color:var(--gray-500)">${p.category}</div>
+        </div>
+        <div>
+          <div class="stock-bar-bg"><div class="stock-bar-fill" style="width:${p.pct||0}%;background:${barColor[p.status||'ok']}"></div></div>
+          <div style="font-size:.65rem;color:var(--gray-400);margin-top:2px;text-align:right">${p.pct||0}%</div>
+        </div>
+        <div class="stock-qty">${p.stock}개</div>
+        <span class="stock-status ${statusCls[p.status||'ok']}">${statusTxt[p.status||'ok']}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function showStockEdit(id,name,stock,minStock){
+  openSheet('재고 수정', `
+  <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:.88rem;font-weight:600;color:var(--dark)">${name}</div>
+    <div class="form-group">
+      <div class="form-label">현재 재고</div>
+      <input class="form-input" id="new-stock" type="number" value="${stock}">
+    </div>
+    <div class="form-group">
+      <div class="form-label">안전재고 (최소)</div>
+      <input class="form-input" id="new-minstk" type="number" value="${minStock}">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="updateStock('${id}')">재고 저장</button>
+  </div>`);
+}
+
+async function updateStock(id){
+  const stock    = Number(document.getElementById('new-stock').value);
+  const minStock = Number(document.getElementById('new-minstk').value);
+  try {
+    const r = await fetch(API+'/admin/inventory/'+id,{
+      method:'PATCH', credentials:'include',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
+      body: JSON.stringify({stock, min_stock:minStock})
+    });
+    if(!r.ok) throw new Error();
+    toast('✅ 재고가 수정됐습니다');
+    closeSheet();
+    switchTab('inventory',document.querySelectorAll('.admin-tab')[2]);
+  } catch(e){ toast('❌ 재고 수정 실패'); }
+}
+
+// ── 매출정산 탭 ──────────────────────────────────────────
+async function renderTabRevenue(){
+  let data={totalRevenue:0,totalFee:0,netRevenue:0,daily:{},byMethod:{},orderCount:0};
+  try {
+    const r = await fetch(API+'/admin/revenue?period=7d',{headers:{Authorization:'Bearer '+adminToken}});
+    if(r.ok){ const d=await r.json(); data={...data,...d}; }
+  } catch(e){}
+
+  const days   = Object.keys(data.daily||{}).slice(-7);
+  const values = days.map(d=>data.daily[d]||0);
+  const maxVal = Math.max(...values,1);
+
+  const methodLabel={CARD:'💳 카드',KAKAO:'💬 카카오',NAVER:'🟢 네이버',TOSS:'🔵 토스',VBANK:'🏦 무통장',PHONE:'📱 휴대폰'};
+  const totalAmt = Object.values(data.byMethod||{}).reduce((s,v)=>s+v.amount,0)||1;
+
+  document.getElementById('tab-content').innerHTML=`
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">기간 매출</div>
+      <div class="kpi-value" style="font-size:1rem">${fmt(data.totalRevenue||0)}원</div>
+      <div class="kpi-delta" style="color:var(--gray-500)">${data.orderCount||0}건</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">PG 수수료</div>
+      <div class="kpi-value" style="font-size:1rem;color:var(--red)">${fmt(data.totalFee||0)}원</div>
+    </div>
+    <div class="kpi-card" style="grid-column:1/-1">
+      <div class="kpi-label">순수익 (추정)</div>
+      <div class="kpi-value" style="color:var(--green)">${fmt(data.netRevenue||0)}원</div>
+    </div>
+  </div>
+
+  <div class="admin-section">
+    <div class="section-head"><div class="section-title">📈 최근 7일 매출</div></div>
+    <div class="chart-wrap">
+      <div class="rev-bars">
+        ${days.length===0
+          ? '<div style="color:var(--gray-400);font-size:.82rem;padding:20px">데이터 없음</div>'
+          : days.map((d,i)=>{
+              const h=Math.round((values[i]/maxVal)*90);
+              const label=d.slice(5);
+              return `<div class="rev-bar-w">
+                <div class="rev-value">${values[i]>=10000?Math.round(values[i]/10000)+'만':values[i]+'원'}</div>
+                <div class="rev-bar" style="height:${h}px" title="${fmt(values[i])}원"></div>
+                <div class="rev-label">${label}</div>
+              </div>`;
+            }).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-section">
+    <div class="section-head">
+      <div class="section-title">PG사별 정산</div>
+      <button class="section-action" onclick="toast('엑셀 내보내기 준비중')">📥 내보내기</button>
+    </div>
+    ${Object.entries(data.byMethod||{}).map(([m,v])=>`
+    <div class="rev-row">
+      <div style="flex:1">
+        <div class="rev-pg">${methodLabel[m]||m}</div>
+        <div class="rev-pct-bar" style="background:var(--primary);opacity:.3;width:${Math.round(v.amount/totalAmt*100)}%"></div>
+      </div>
+      <span class="rev-fee">수수료 -${fmt(v.fee||0)}원</span>
+      <span class="rev-amt">${fmt(v.amount||0)}원</span>
+    </div>`).join('') || '<div style="padding:20px;text-align:center;color:var(--gray-400)">결제 데이터 없음</div>'}
+  </div>`;
+}
+
+// ── CS관리 탭 ────────────────────────────────────────────
+async function renderTabCS(){
+  let tickets=[], total=0;
+  try {
+    const r = await fetch(API+'/admin/cs?limit=30',{headers:{Authorization:'Bearer '+adminToken}});
+    if(r.ok){ const d=await r.json(); tickets=d.tickets||[]; total=d.total||0; }
+  } catch(e){}
+
+  const statusCls={pending:'tag-primary',in_progress:'tag-amber',answered:'tag-green',closed:'tag-gray'};
+  const statusTxt={pending:'대기중',in_progress:'처리중',answered:'답변완료',closed:'종료'};
+  const typeLabel={order:'주문/배송',payment:'결제/환불',product:'상품문의',subscribe:'정기배송',account:'회원정보',other:'기타'};
+
+  document.getElementById('tab-content').innerHTML=`
+  <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:.82rem;color:var(--gray-500)">총 ${total}건</span>
+    <span style="font-size:.78rem;color:var(--red);font-weight:700">미답변 ${tickets.filter(t=>t.status==='pending').length}건 ⚠️</span>
+  </div>
+  <div class="admin-section" style="margin-top:4px">
+    ${tickets.length===0
+      ? '<div style="padding:40px;text-align:center;color:var(--gray-400)">CS 문의가 없습니다</div>'
+      : tickets.map(t=>`
+      <div class="ticket-row" onclick="showCSDetail('${t.id}')">
+        <div class="ticket-head">
+          <span class="tag ${statusCls[t.status]||'tag-gray'}" style="font-size:.7rem">${statusTxt[t.status]||t.status}</span>
+          <span style="font-size:.76rem;color:var(--secondary);font-weight:600">[${typeLabel[t.type]||t.type}]</span>
+          <div class="ticket-title">${t.status==='pending'?'🔴 ':''} ${t.title}</div>
+        </div>
+        <div class="ticket-meta">
+          <span>👤 ${t.users?.name||'비회원'}</span>
+          <span>📞 ${t.users?.phone||'-'}</span>
+          <span>⏱️ ${new Date(t.created_at).toLocaleDateString('ko-KR')}</span>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+async function showCSDetail(id){
+  try {
+    const r  = await fetch(API+'/admin/cs?limit=100',{headers:{Authorization:'Bearer '+adminToken}});
+    const d  = await r.json();
+    const t  = (d.tickets||[]).find(x=>x.id===id);
+    if(!t) return;
+
+    openSheet('CS 문의 처리', `
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="background:var(--gray-100);border-radius:var(--radius-md);padding:12px;font-size:.84rem;line-height:1.7">
+        <div style="font-weight:700;color:var(--dark);margin-bottom:4px">${t.title}</div>
+        <div style="color:var(--gray-700)">${t.content}</div>
+        <div style="font-size:.74rem;color:var(--gray-500);margin-top:8px">
+          ${t.users?.name||'비회원'} · ${t.users?.phone||''} · ${new Date(t.created_at).toLocaleString('ko-KR')}
+        </div>
+      </div>
+      ${t.answer ? `
+      <div style="background:var(--cream);border:1px solid var(--peach);border-radius:var(--radius-md);padding:12px;font-size:.84rem;line-height:1.7">
+        <div style="font-weight:700;color:var(--primary);margin-bottom:4px">✅ 기존 답변</div>
+        <div>${t.answer}</div>
+      </div>` : ''}
+      <div class="form-group">
+        <div class="form-label">${t.answer?'답변 수정':'답변 작성'}</div>
+        <textarea id="cs-answer" class="form-input" rows="5" style="height:120px;resize:vertical;padding:10px" placeholder="고객에게 보낼 답변을 입력하세요...">${t.answer||''}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:2" onclick="submitCSAnswer('${t.id}')">📨 답변 전송</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="closeSheet()">취소</button>
+      </div>
+      <p style="text-align:center;font-size:.74rem;color:var(--gray-400)">답변 전송 시 카카오 알림톡으로 고객에게 발송됩니다</p>
+    </div>`);
+  } catch(e){ toast('문의 로드 실패'); }
+}
+
+async function submitCSAnswer(id){
+  const answer = document.getElementById('cs-answer').value.trim();
+  if(!answer){ toast('답변 내용을 입력해주세요'); return; }
+  try {
+    const r = await fetch(API+'/admin/cs/'+id,{
+      method:'PATCH', credentials:'include',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
+      body: JSON.stringify({answer, status:'answered'})
+    });
+    if(!r.ok) throw new Error();
+    toast('✅ 답변이 전송됐습니다');
+    closeSheet();
+    switchTab('cs',document.querySelectorAll('.admin-tab')[4]);
+  } catch(e){ toast('❌ 답변 전송 실패'); }
+}
+
+function adminLogout(){
+  if(!confirm('로그아웃 하시겠습니까?')) return;
+  sessionStorage.removeItem('mm_admin');
+  localStorage.removeItem('mm_access_token');
+  localStorage.removeItem('mm_user_cache');
+  renderLogin();
+}
+
+init();
 </script>
 </body>
 </html>
