@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>상품 관리 · 정육본가 관리자</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+:root { --max-w: 480px; }
+body { background: #F1F0EF; }
+
+/* 헤더 */
+.admin-header { background: var(--primary-dark); height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; z-index: 100; }
+.admin-logo { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: #fff; }
+.admin-hbtn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; cursor: pointer; border: none; }
+
+/* 탭 */
+.page-tabs { display: flex; background: var(--primary); }
+.page-tab { flex: 1; padding: 11px 4px; text-align: center; font-size: .82rem; font-weight: 600; color: rgba(255,255,255,.65); cursor: pointer; border-bottom: 2.5px solid transparent; transition: all .2s; }
+.page-tab.active { color: #fff; border-bottom-color: var(--amber); }
+
+/* 상품 목록 */
+.product-list-item { background: #fff; margin: 0 14px 8px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+.pli-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; }
+.pli-emoji { width: 48px; height: 48px; background: var(--cream); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+.pli-img { width: 48px; height: 48px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
+.pli-info { flex: 1; min-width: 0; }
+.pli-name { font-size: .88rem; font-weight: 700; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pli-meta { font-size: .74rem; color: var(--gray-500); margin-top: 2px; }
+.pli-price { font-size: .92rem; font-weight: 800; color: var(--primary); flex-shrink: 0; }
+.pli-actions { display: flex; border-top: 1px solid var(--gray-100); }
+.pli-action-btn { flex: 1; padding: 9px; text-align: center; font-size: .78rem; font-weight: 600; cursor: pointer; border: none; background: none; transition: background .1s; }
+.pli-action-btn:hover { background: var(--gray-100); }
+.pli-action-btn:not(:last-child) { border-right: 1px solid var(--gray-100); }
+.btn-edit { color: var(--primary); }
+.btn-toggle { color: var(--secondary); }
+.btn-del { color: var(--red); }
+
+/* 재고 바 */
+.stock-bar-mini { height: 4px; border-radius: 2px; margin-top: 4px; }
+.stock-ok { background: var(--green); }
+.stock-warn { background: var(--amber); }
+.stock-low { background: var(--red); }
+
+/* 등록 폼 */
+.form-card { background: #fff; margin: 14px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+.form-section { padding: 16px; border-bottom: 1px solid var(--gray-100); }
+.form-section:last-child { border-bottom: none; }
+.form-section-title { font-size: .88rem; font-weight: 700; color: var(--dark); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+/* 이미지 업로드 */
+.img-upload-area { border: 2px dashed var(--gray-300); border-radius: var(--radius-md); padding: 24px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+.img-upload-area:hover { border-color: var(--primary); background: var(--cream); }
+.img-upload-area.has-img { border-style: solid; border-color: var(--primary); padding: 0; overflow: hidden; }
+.img-upload-area img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.img-upload-icon { font-size: 2.5rem; margin-bottom: 8px; }
+.img-upload-text { font-size: .82rem; color: var(--gray-500); }
+.img-remove-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(0,0,0,.5); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: .9rem; }
+input[type=file] { display: none; }
+
+/* 카테고리 선택 */
+.cat-grid-admin { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.cat-btn-admin { padding: 10px 4px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-md); text-align: center; cursor: pointer; transition: all .15s; font-size: .72rem; font-weight: 600; color: var(--gray-700); }
+.cat-btn-admin.on { border-color: var(--primary); background: var(--cream); color: var(--primary); }
+.cat-btn-admin .cat-ico { font-size: 1.3rem; display: block; margin-bottom: 3px; }
+
+/* 소스 타입 */
+.source-row { display: flex; gap: 8px; }
+.source-chip { flex: 1; padding: 9px 4px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-md); text-align: center; font-size: .78rem; font-weight: 600; color: var(--gray-700); cursor: pointer; }
+.source-chip.on { border-color: var(--primary); background: var(--cream); color: var(--primary); }
+
+/* 토글 스위치 */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: .88rem; color: var(--dark); }
+.toggle-sub { font-size: .74rem; color: var(--gray-500); margin-top: 2px; }
+input[type=checkbox].toggle { appearance: none; width: 44px; height: 24px; border-radius: 12px; background: var(--gray-300); cursor: pointer; transition: background .2s; position: relative; }
+input[type=checkbox].toggle:checked { background: var(--primary); }
+input[type=checkbox].toggle::after { content: ''; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #fff; top: 2px; left: 2px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+input[type=checkbox].toggle:checked::after { left: 22px; }
+
+/* 저장 버튼 */
+.save-bar { padding: 14px; background: #fff; position: sticky; bottom: 0; border-top: 1px solid var(--gray-200); display: flex; gap: 10px; }
+
+/* 검색/필터 바 */
+.filter-bar { display: flex; gap: 8px; padding: 14px 14px 8px; }
+.filter-select { height: 36px; border: 0.5px solid var(--gray-300); border-radius: var(--radius-md); padding: 0 10px; font-size: .82rem; background: #fff; outline: none; }
+.search-inp { flex: 1; height: 36px; border: 0.5px solid var(--gray-300); border-radius: var(--radius-md); padding: 0 12px; font-size: .82rem; outline: none; }
+.search-inp:focus { border-color: var(--primary); }
+
+/* 뱃지 */
+.status-pill { font-size: .68rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
+.pill-on { background: var(--green-light); color: var(--green); }
+.pill-off { background: var(--gray-100); color: var(--gray-500); }
+.pill-low { background: var(--red-light); color: var(--red); }
+
+/* 로딩 */
+.loading-box { text-align: center; padding: 40px; color: var(--gray-400); font-size: .88rem; }
+</style>
+</head>
+<body>
+<div class="app-wrap" id="app">
+
+  <!-- 관리자 로그인 체크 (JS로 처리) -->
+  <div class="admin-header">
+    <div class="admin-logo">🥩 상품 관리</div>
+    <div style="display:flex;gap:8px">
+      <button class="admin-hbtn" onclick="go('dashboard.html')" title="대시보드">🏠</button>
+      <button class="admin-hbtn" onclick="adminLogout()" title="로그아웃">🚪</button>
+    </div>
+  </div>
+
+  <div class="page-tabs">
+    <div class="page-tab active" id="tab-list-btn" onclick="showTab('list')">📋 상품 목록</div>
+    <div class="page-tab" id="tab-add-btn" onclick="showTab('add')">➕ 상품 등록</div>
+  </div>
+
+  <!-- 상품 목록 탭 -->
+  <div id="tab-list" style="padding-bottom:32px">
+    <div class="filter-bar">
+      <select class="filter-select" id="filter-cat" onchange="loadProducts()">
+        <option value="">전체 카테고리</option>
+        <option value="beef">소고기</option>
+        <option value="pork">돼지고기</option>
+        <option value="chicken">닭/오리</option>
+        <option value="processed">가공육PB</option>
+        <option value="giftset">선물세트</option>
+        <option value="mealkit">밀키트</option>
+      </select>
+      <input class="search-inp" id="search-inp" placeholder="🔍 상품명 검색" oninput="searchProducts()">
+      <button class="btn btn-sm btn-primary" onclick="showTab('add')" style="white-space:nowrap">+ 등록</button>
+    </div>
+    <div id="product-list-wrap">
+      <div class="loading-box">🔄 상품 목록 불러오는 중...</div>
+    </div>
+  </div>
+
+  <!-- 상품 등록/수정 탭 -->
+  <div id="tab-add" style="display:none;padding-bottom:80px">
+    <div style="padding:12px 14px 0;font-size:.82rem;color:var(--gray-500)" id="form-mode-label">새 상품 등록</div>
+
+    <div class="form-card">
+
+      <!-- 이미지 업로드 -->
+      <div class="form-section">
+        <div class="form-section-title">📷 상품 이미지</div>
+        <div class="img-upload-area" id="img-area" onclick="document.getElementById('img-file').click()">
+          <div class="img-upload-icon">📸</div>
+          <div class="img-upload-text">클릭하여 이미지 업로드<br><span style="font-size:.72rem;color:var(--gray-400)">JPG, PNG 최대 5MB</span></div>
+        </div>
+        <input type="file" id="img-file" accept="image/*" onchange="previewImage(this)">
+
+        <div style="margin-top:12px">
+          <label class="form-label">또는 이모지 선택</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+            ${['🥩','🐷','🐔','🌭','🥓','🦆','🍱','🎁','🍗','🐄'].map(e =>
+              `<div class="cat-btn-admin" onclick="selectEmoji('${e}')" id="emoji-${e}" style="padding:8px;font-size:1.4rem">${e}</div>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- 기본 정보 -->
+      <div class="form-section">
+        <div class="form-section-title">📝 기본 정보</div>
+        <div class="form-group">
+          <label class="form-label">상품명 <span style="color:var(--red)">*</span></label>
+          <input class="form-input" id="f-name" placeholder="예: 국내산 한우 1++ 등심 (냉장)">
+          <span class="form-error" id="err-name">상품명을 입력해주세요</span>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label class="form-label">상품 설명</label>
+          <textarea class="form-input" id="f-desc" rows="3" placeholder="상품 특징, 원산지, 조리법 등 상세 설명" style="height:80px;resize:vertical;padding:10px"></textarea>
+        </div>
+      </div>
+
+      <!-- 카테고리 -->
+      <div class="form-section">
+        <div class="form-section-title">📦 카테고리 <span style="color:var(--red)">*</span></div>
+        <div class="cat-grid-admin">
+          ${[
+            {id:'beef',      emoji:'🐄', label:'소고기'},
+            {id:'pork',      emoji:'🐷', label:'돼지고기'},
+            {id:'chicken',   emoji:'🐔', label:'닭/오리'},
+            {id:'processed', emoji:'🌭', label:'가공육PB'},
+            {id:'giftset',   emoji:'🎁', label:'선물세트'},
+            {id:'mealkit',   emoji:'🍱', label:'밀키트'},
+            {id:'sausage',   emoji:'🥓', label:'소시지'},
+            {id:'sale',      emoji:'🔥', label:'특가'},
+          ].map(c => `
+          <div class="cat-btn-admin" id="cat-${c.id}" onclick="selectCat('${c.id}')">
+            <span class="cat-ico">${c.emoji}</span>${c.label}
+          </div>`).join('')}
+        </div>
+        <span class="form-error" id="err-cat">카테고리를 선택해주세요</span>
+      </div>
+
+      <!-- 소싱 타입 -->
+      <div class="form-section">
+        <div class="form-section-title">🏭 소싱 채널</div>
+        <div class="source-row">
+          <div class="source-chip on" id="src-direct" onclick="selectSource('direct')">🏭 직접가공</div>
+          <div class="source-chip" id="src-oem" onclick="selectSource('oem')">📦 OEM PB</div>
+          <div class="source-chip" id="src-wholesale" onclick="selectSource('wholesale')">🚛 거래처</div>
+        </div>
+      </div>
+
+      <!-- 가격 정보 -->
+      <div class="form-section">
+        <div class="form-section-title">💰 가격 정보</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label class="form-label">판매가 <span style="color:var(--red)">*</span></label>
+            <div style="position:relative">
+              <input class="form-input" id="f-price" type="number" placeholder="0" style="padding-right:28px" oninput="calcDiscount()">
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--gray-500)">원</span>
+            </div>
+            <span class="form-error" id="err-price">판매가를 입력해주세요</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">정가 (할인 전)</label>
+            <div style="position:relative">
+              <input class="form-input" id="f-origin-price" type="number" placeholder="0" style="padding-right:28px" oninput="calcDiscount()">
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--gray-500)">원</span>
+            </div>
+          </div>
+        </div>
+        <div id="discount-preview" style="margin-top:6px;font-size:.8rem;color:var(--accent);font-weight:600;text-align:right"></div>
+      </div>
+
+      <!-- 상품 규격 -->
+      <div class="form-section">
+        <div class="form-section-title">📏 상품 규격</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label class="form-label">중량 (g)</label>
+            <input class="form-input" id="f-weight" type="number" placeholder="300">
+          </div>
+          <div class="form-group">
+            <label class="form-label">소비기한 (일)</label>
+            <input class="form-input" id="f-expiry" type="number" placeholder="7">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:10px">
+          <label class="form-label">원산지</label>
+          <input class="form-input" id="f-origin" placeholder="예: 국내산(한우), 국내산(돼지)">
+        </div>
+        <div class="form-group" style="margin-top:10px">
+          <label class="form-label">판매 단위 (표시용)</label>
+          <input class="form-input" id="f-unit" placeholder="예: 300g / 2팩(600g) / 10개입">
+        </div>
+      </div>
+
+      <!-- 재고 -->
+      <div class="form-section">
+        <div class="form-section-title">🗄️ 재고 관리</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label class="form-label">현재 재고 <span style="color:var(--red)">*</span></label>
+            <input class="form-input" id="f-stock" type="number" placeholder="0">
+            <span class="form-error" id="err-stock">재고 수량을 입력해주세요</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">안전재고 (최소)</label>
+            <input class="form-input" id="f-min-stock" type="number" placeholder="10">
+            <span class="form-hint">이하 시 부족 알림</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 옵션 설정 -->
+      <div class="form-section">
+        <div class="form-section-title">⚙️ 판매 옵션</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">판매 활성화</div>
+            <div class="toggle-sub">OFF 시 상품 목록에 노출 안 됨</div>
+          </div>
+          <input type="checkbox" class="toggle" id="f-active" checked>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">정기배송 가능</div>
+            <div class="toggle-sub">구독 상품 목록에 표시</div>
+          </div>
+          <input type="checkbox" class="toggle" id="f-subscribe">
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">HACCP 인증</div>
+            <div class="toggle-sub">상품에 HACCP 뱃지 표시</div>
+          </div>
+          <input type="checkbox" class="toggle" id="f-haccp">
+        </div>
+      </div>
+
+    </div><!-- /form-card -->
+
+    <!-- 저장 바 -->
+    <div class="save-bar">
+      <button class="btn btn-secondary" style="flex:1" onclick="resetForm()">초기화</button>
+      <button class="btn btn-primary" style="flex:2" id="save-btn" onclick="saveProduct()">
+        <span id="save-btn-text">💾 상품 저장</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+<div id="toast-global" class="toast"></div>
+<script src="../js/app.js"></script>
+<script>
+const API = 'https://meatmall.vercel.app/api';
+function go(url) { window.location.href = url; }
+function fmt(n) { return Number(n).toLocaleString('ko-KR'); }
+function toast(msg) {
+  const el = document.getElementById('toast-global');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2400);
+}
+
+// ── 관리자 인증 ──────────────────────────────────────────
+const token = localStorage.getItem('mm_access_token');
+const userCache = JSON.parse(localStorage.getItem('mm_user_cache')||'{}');
+if (!token || !userCache.is_admin) {
+  // 관리자 로그인 페이지로
+  if (!sessionStorage.getItem('mm_admin')) {
+    window.location.href = 'dashboard.html';
+  }
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('mm_admin');
+  go('dashboard.html');
+}
+
+// ── 폼 상태 ──────────────────────────────────────────────
+let selectedCat    = '';
+let selectedSource = 'direct';
+let selectedEmoji  = '🥩';
+let editingId      = null;
+let imgBase64      = null;
+let allProducts    = [];
+let searchTimer    = null;
+
+// ── 탭 전환 ──────────────────────────────────────────────
+function showTab(name) {
+  document.getElementById('tab-list').style.display    = name==='list' ? 'block' : 'none';
+  document.getElementById('tab-add').style.display     = name==='add'  ? 'block' : 'none';
+  document.getElementById('tab-list-btn').className    = 'page-tab' + (name==='list'?' active':'');
+  document.getElementById('tab-add-btn').className     = 'page-tab' + (name==='add'?' active':'');
+  if (name==='list') loadProducts();
+}
+
+// ── 상품 목록 로드 ───────────────────────────────────────
+async function loadProducts() {
+  const cat = document.getElementById('filter-cat').value;
+  const wrap = document.getElementById('product-list-wrap');
+  wrap.innerHTML = '<div class="loading-box">🔄 불러오는 중...</div>';
+
+  try {
+    let url = API + '/products?limit=50';
+    if (cat) url += '&category=' + cat;
+
+    const r = await fetch(url, {
+      headers: token ? { Authorization:'Bearer '+token } : {}
+    });
+    const d = await r.json();
+    allProducts = d.products || [];
+    renderProductList(allProducts);
+  } catch(e) {
+    wrap.innerHTML = '<div class="loading-box">❌ 불러오기 실패. 서버를 확인해주세요.</div>';
+  }
+}
+
+function searchProducts() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const q = document.getElementById('search-inp').value.toLowerCase();
+    const filtered = allProducts.filter(p => p.name.toLowerCase().includes(q));
+    renderProductList(filtered);
+  }, 300);
+}
+
+function renderProductList(products) {
+  const wrap = document.getElementById('product-list-wrap');
+  if (products.length === 0) {
+    wrap.innerHTML = '<div class="loading-box">상품이 없습니다. 상품을 등록해주세요.</div>';
+    return;
+  }
+
+  const catLabels = { beef:'소고기', pork:'돼지고기', chicken:'닭/오리', processed:'가공육PB', giftset:'선물세트', mealkit:'밀키트', sausage:'소시지', sale:'특가' };
+  const srcLabels = { direct:'직접가공', oem:'OEM PB', wholesale:'거래처' };
+
+  wrap.innerHTML = `
+  <div style="padding:8px 14px 4px;font-size:.78rem;color:var(--gray-500)">총 ${products.length}개 상품</div>
+  ${products.map(p => {
+    const stockPct = Math.min(100, Math.round(p.stock / (p.min_stock*5) * 100));
+    const stockCls = p.stock <= 0 ? 'stock-low' : p.stock <= p.min_stock ? 'stock-low' : p.stock <= p.min_stock*2 ? 'stock-warn' : 'stock-ok';
+    const stockStatus = p.stock <= 0 ? '품절' : p.stock <= p.min_stock ? '부족' : '정상';
+    const discPct = p.origin_price ? Math.round((1 - p.price/p.origin_price)*100) : 0;
+
+    return `
+    <div class="product-list-item">
+      <div class="pli-head">
+        ${p.thumbnail_url
+          ? `<img class="pli-img" src="${p.thumbnail_url}" alt="${p.name}">`
+          : `<div class="pli-emoji">${p.emoji||'🥩'}</div>`}
+        <div class="pli-info">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+            <span class="status-pill ${p.is_active?'pill-on':'pill-off'}">${p.is_active?'판매중':'비활성'}</span>
+            ${p.haccp ? '<span class="status-pill" style="background:#DBEAFE;color:#1E40AF">HACCP</span>' : ''}
+            ${p.is_subscribe ? '<span class="status-pill" style="background:#EDE9FE;color:#5B21B6">구독</span>' : ''}
+            <span class="status-pill ${stockCls==='stock-low'?'pill-low':'pill-on'}">${stockStatus}</span>
+          </div>
+          <div class="pli-name">${p.name}</div>
+          <div class="pli-meta">${catLabels[p.category]||p.category} · ${srcLabels[p.source_type]||''} · ${p.weight_g||0}g · 재고 ${p.stock}개</div>
+          <div class="stock-bar-mini ${stockCls}" style="width:${stockPct}%"></div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="pli-price">${fmt(p.price)}원</div>
+          ${discPct > 0 ? `<div style="font-size:.72rem;color:var(--accent);font-weight:700">${discPct}%↓</div>` : ''}
+        </div>
+      </div>
+      <div class="pli-actions">
+        <button class="pli-action-btn btn-edit" onclick="editProduct('${p.id}')">✏️ 수정</button>
+        <button class="pli-action-btn btn-toggle" onclick="toggleActive('${p.id}',${p.is_active})">${p.is_active?'🔒 비활성':'✅ 활성'}</button>
+        <button class="pli-action-btn btn-del" onclick="deleteProduct('${p.id}','${p.name}')">🗑️ 삭제</button>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+// ── 카테고리/소싱/이모지 선택 ────────────────────────────
+function selectCat(id) {
+  selectedCat = id;
+  document.querySelectorAll('.cat-btn-admin').forEach(b => b.classList.remove('on'));
+  document.getElementById('cat-'+id)?.classList.add('on');
+  document.getElementById('err-cat').classList.remove('show');
+}
+
+function selectSource(id) {
+  selectedSource = id;
+  ['direct','oem','wholesale'].forEach(s => document.getElementById('src-'+s).classList.remove('on'));
+  document.getElementById('src-'+id).classList.add('on');
+}
+
+function selectEmoji(e) {
+  selectedEmoji = e;
+  document.querySelectorAll('[id^=emoji-]').forEach(b => b.style.borderColor='');
+  document.getElementById('emoji-'+e).style.borderColor = 'var(--primary)';
+  document.getElementById('emoji-'+e).style.background  = 'var(--cream)';
+  // 이미지 없을 때 이모지 프리뷰
+  if (!imgBase64) {
+    const area = document.getElementById('img-area');
+    area.innerHTML = `<div style="font-size:5rem;padding:24px;text-align:center">${e}</div>`;
+    area.classList.add('has-img');
+  }
+}
+
+// ── 이미지 미리보기 ──────────────────────────────────────
+function previewImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('이미지 크기는 5MB 이하여야 합니다'); return; }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    imgBase64 = e.target.result;
+    const area = document.getElementById('img-area');
+    area.classList.add('has-img');
+    area.innerHTML = `
+      <img src="${imgBase64}" alt="preview">
+      <div class="img-remove-btn" onclick="removeImage(event)">✕</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(event) {
+  event.stopPropagation();
+  imgBase64 = null;
+  const area = document.getElementById('img-area');
+  area.classList.remove('has-img');
+  area.innerHTML = `
+    <div class="img-upload-icon">📸</div>
+    <div class="img-upload-text">클릭하여 이미지 업로드<br><span style="font-size:.72rem;color:var(--gray-400)">JPG, PNG 최대 5MB</span></div>`;
+  document.getElementById('img-file').value = '';
+}
+
+// ── 할인율 계산 ──────────────────────────────────────────
+function calcDiscount() {
+  const price = Number(document.getElementById('f-price').value);
+  const orig  = Number(document.getElementById('f-origin-price').value);
+  const el    = document.getElementById('discount-preview');
+  if (price > 0 && orig > 0 && orig > price) {
+    const pct = Math.round((1 - price/orig) * 100);
+    el.textContent = `→ ${pct}% 할인 (${fmt(orig-price)}원 절약)`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+// ── 상품 저장 ────────────────────────────────────────────
+async function saveProduct() {
+  // 유효성 검사
+  let ok = true;
+  const name  = document.getElementById('f-name').value.trim();
+  const price = Number(document.getElementById('f-price').value);
+  const stock = document.getElementById('f-stock').value;
+
+  if (!name)  { document.getElementById('err-name').classList.add('show');  ok = false; }
+  else          document.getElementById('err-name').classList.remove('show');
+  if (!selectedCat) { document.getElementById('err-cat').classList.add('show');   ok = false; }
+  else               document.getElementById('err-cat').classList.remove('show');
+  if (!price) { document.getElementById('err-price').classList.add('show'); ok = false; }
+  else          document.getElementById('err-price').classList.remove('show');
+  if (stock === '') { document.getElementById('err-stock').classList.add('show'); ok = false; }
+  else               document.getElementById('err-stock').classList.remove('show');
+  if (!ok) { toast('필수 항목을 입력해주세요'); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  document.getElementById('save-btn-text').textContent = '저장 중...';
+
+  const payload = {
+    name,
+    description:  document.getElementById('f-desc').value.trim(),
+    category:     selectedCat,
+    source_type:  selectedSource,
+    origin:       document.getElementById('f-origin').value.trim(),
+    weight_g:     Number(document.getElementById('f-weight').value) || null,
+    price,
+    origin_price: Number(document.getElementById('f-origin-price').value) || null,
+    stock:        Number(stock),
+    min_stock:    Number(document.getElementById('f-min-stock').value) || 10,
+    expiry_days:  Number(document.getElementById('f-expiry').value) || null,
+    is_active:    document.getElementById('f-active').checked,
+    is_subscribe: document.getElementById('f-subscribe').checked,
+    haccp:        document.getElementById('f-haccp').checked,
+    emoji:        selectedEmoji,
+    thumbnail_url: imgBase64 || null,
+    // 판매 단위는 description에 포함 or 별도 필드
+  };
+
+  try {
+    const isEdit = !!editingId;
+    const url    = isEdit ? `${API}/products/${editingId}` : `${API}/products`;
+    const method = isEdit ? 'PATCH' : 'POST';
+
+    const r = await fetch(url, {
+      method,
+      headers: { 'Content-Type':'application/json', Authorization:'Bearer '+token },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+
+    if (!r.ok) throw new Error(d.error || '저장 실패');
+
+    toast(isEdit ? '✅ 상품이 수정됐습니다' : '✅ 상품이 등록됐습니다');
+    resetForm();
+    showTab('list');
+
+  } catch(e) {
+    toast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    document.getElementById('save-btn-text').textContent = '💾 상품 저장';
+  }
+}
+
+// ── 상품 수정 ─────────────────────────────────────────────
+async function editProduct(id) {
+  const p = allProducts.find(p => p.id === id);
+  if (!p) return;
+
+  editingId = id;
+  showTab('add');
+  document.getElementById('form-mode-label').textContent = `✏️ 상품 수정 중: ${p.name}`;
+  document.getElementById('save-btn-text').textContent = '💾 수정 저장';
+
+  // 폼에 데이터 채우기
+  document.getElementById('f-name').value          = p.name || '';
+  document.getElementById('f-desc').value          = p.description || '';
+  document.getElementById('f-price').value         = p.price || '';
+  document.getElementById('f-origin-price').value  = p.origin_price || '';
+  document.getElementById('f-weight').value        = p.weight_g || '';
+  document.getElementById('f-expiry').value        = p.expiry_days || '';
+  document.getElementById('f-origin').value        = p.origin || '';
+  document.getElementById('f-stock').value         = p.stock || 0;
+  document.getElementById('f-min-stock').value     = p.min_stock || 10;
+  document.getElementById('f-active').checked      = p.is_active;
+  document.getElementById('f-subscribe').checked   = p.is_subscribe;
+  document.getElementById('f-haccp').checked       = p.haccp;
+
+  selectCat(p.category);
+  selectSource(p.source_type || 'direct');
+  if (p.emoji) selectEmoji(p.emoji);
+  if (p.thumbnail_url) {
+    imgBase64 = p.thumbnail_url;
+    const area = document.getElementById('img-area');
+    area.classList.add('has-img');
+    area.innerHTML = `<img src="${p.thumbnail_url}" alt="preview"><div class="img-remove-btn" onclick="removeImage(event)">✕</div>`;
+  }
+  calcDiscount();
+}
+
+// ── 활성/비활성 토글 ─────────────────────────────────────
+async function toggleActive(id, currentActive) {
+  try {
+    const r = await fetch(`${API}/products/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type':'application/json', Authorization:'Bearer '+token },
+      credentials: 'include',
+      body: JSON.stringify({ is_active: !currentActive })
+    });
+    if (!r.ok) throw new Error();
+    toast(currentActive ? '상품이 비활성화됐습니다' : '상품이 활성화됐습니다');
+    loadProducts();
+  } catch(e) { toast('❌ 상태 변경 실패'); }
+}
+
+// ── 상품 삭제 ─────────────────────────────────────────────
+async function deleteProduct(id, name) {
+  if (!confirm(`"${name}"\n이 상품을 삭제하시겠습니까?\n(비활성화 처리됩니다)`)) return;
+  try {
+    const r = await fetch(`${API}/products/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization:'Bearer '+token },
+      credentials: 'include'
+    });
+    if (!r.ok) throw new Error();
+    toast('🗑️ 상품이 삭제됐습니다');
+    loadProducts();
+  } catch(e) { toast('❌ 삭제 실패'); }
+}
+
+// ── 폼 초기화 ─────────────────────────────────────────────
+function resetForm() {
+  editingId = null;
+  imgBase64 = null;
+  selectedCat    = '';
+  selectedSource = 'direct';
+  selectedEmoji  = '🥩';
+
+  ['f-name','f-desc','f-price','f-origin-price','f-weight','f-expiry','f-origin','f-stock','f-min-stock','f-unit'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('f-active').checked    = true;
+  document.getElementById('f-subscribe').checked = false;
+  document.getElementById('f-haccp').checked     = false;
+  document.querySelectorAll('.cat-btn-admin').forEach(b => b.classList.remove('on'));
+  selectSource('direct');
+  removeImage({stopPropagation:()=>{}});
+  document.getElementById('form-mode-label').textContent = '새 상품 등록';
+  document.getElementById('save-btn-text').textContent   = '💾 상품 저장';
+  document.getElementById('discount-preview').textContent = '';
+  document.querySelectorAll('.form-error').forEach(e => e.classList.remove('show'));
+}
+
+// ── 초기 로드 ─────────────────────────────────────────────
+loadProducts();
+</script>
+</body>
+</html>
