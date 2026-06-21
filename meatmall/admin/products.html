@@ -153,10 +153,17 @@ input[type=checkbox].toggle:checked::after { left: 22px; }
 
         <div style="margin-top:12px">
           <label class="form-label">또는 이모지 선택</label>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-            ${['🥩','🐷','🐔','🌭','🥓','🦆','🍱','🎁','🍗','🐄'].map(e =>
-              `<div class="cat-btn-admin" onclick="selectEmoji('${e}')" id="emoji-${e}" style="padding:8px;font-size:1.4rem">${e}</div>`
-            ).join('')}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="emoji-grid">
+            <div class="cat-btn-admin" id="emoji-🥩" onclick="selectEmoji('🥩')" style="padding:8px;font-size:1.4rem">🥩</div>
+            <div class="cat-btn-admin" id="emoji-🐷" onclick="selectEmoji('🐷')" style="padding:8px;font-size:1.4rem">🐷</div>
+            <div class="cat-btn-admin" id="emoji-🐔" onclick="selectEmoji('🐔')" style="padding:8px;font-size:1.4rem">🐔</div>
+            <div class="cat-btn-admin" id="emoji-🌭" onclick="selectEmoji('🌭')" style="padding:8px;font-size:1.4rem">🌭</div>
+            <div class="cat-btn-admin" id="emoji-🥓" onclick="selectEmoji('🥓')" style="padding:8px;font-size:1.4rem">🥓</div>
+            <div class="cat-btn-admin" id="emoji-🦆" onclick="selectEmoji('🦆')" style="padding:8px;font-size:1.4rem">🦆</div>
+            <div class="cat-btn-admin" id="emoji-🍱" onclick="selectEmoji('🍱')" style="padding:8px;font-size:1.4rem">🍱</div>
+            <div class="cat-btn-admin" id="emoji-🎁" onclick="selectEmoji('🎁')" style="padding:8px;font-size:1.4rem">🎁</div>
+            <div class="cat-btn-admin" id="emoji-🍗" onclick="selectEmoji('🍗')" style="padding:8px;font-size:1.4rem">🍗</div>
+            <div class="cat-btn-admin" id="emoji-🐄" onclick="selectEmoji('🐄')" style="padding:8px;font-size:1.4rem">🐄</div>
           </div>
         </div>
       </div>
@@ -178,20 +185,15 @@ input[type=checkbox].toggle:checked::after { left: 22px; }
       <!-- 카테고리 -->
       <div class="form-section">
         <div class="form-section-title">📦 카테고리 <span style="color:var(--red)">*</span></div>
-        <div class="cat-grid-admin">
-          ${[
-            {id:'beef',      emoji:'🐄', label:'소고기'},
-            {id:'pork',      emoji:'🐷', label:'돼지고기'},
-            {id:'chicken',   emoji:'🐔', label:'닭/오리'},
-            {id:'processed', emoji:'🌭', label:'가공육PB'},
-            {id:'giftset',   emoji:'🎁', label:'선물세트'},
-            {id:'mealkit',   emoji:'🍱', label:'밀키트'},
-            {id:'sausage',   emoji:'🥓', label:'소시지'},
-            {id:'sale',      emoji:'🔥', label:'특가'},
-          ].map(c => `
-          <div class="cat-btn-admin" id="cat-${c.id}" onclick="selectCat('${c.id}')">
-            <span class="cat-ico">${c.emoji}</span>${c.label}
-          </div>`).join('')}
+        <div class="cat-grid-admin" id="cat-grid-admin">
+          <div class="cat-btn-admin" id="cat-beef" onclick="selectCat('beef')"><span class="cat-ico">🐄</span>소고기</div>
+          <div class="cat-btn-admin" id="cat-pork" onclick="selectCat('pork')"><span class="cat-ico">🐷</span>돼지고기</div>
+          <div class="cat-btn-admin" id="cat-chicken" onclick="selectCat('chicken')"><span class="cat-ico">🐔</span>닭/오리</div>
+          <div class="cat-btn-admin" id="cat-processed" onclick="selectCat('processed')"><span class="cat-ico">🌭</span>가공육PB</div>
+          <div class="cat-btn-admin" id="cat-giftset" onclick="selectCat('giftset')"><span class="cat-ico">🎁</span>선물세트</div>
+          <div class="cat-btn-admin" id="cat-mealkit" onclick="selectCat('mealkit')"><span class="cat-ico">🍱</span>밀키트</div>
+          <div class="cat-btn-admin" id="cat-sausage" onclick="selectCat('sausage')"><span class="cat-ico">🥓</span>소시지</div>
+          <div class="cat-btn-admin" id="cat-sale" onclick="selectCat('sale')"><span class="cat-ico">🔥</span>특가</div>
         </div>
         <span class="form-error" id="err-cat">카테고리를 선택해주세요</span>
       </div>
