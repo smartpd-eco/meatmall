@@ -147,7 +147,7 @@ input[type=checkbox].toggle:checked::after { left: 22px; }
         <div class="form-section-title">📷 상품 이미지</div>
         <div class="img-upload-area" id="img-area" onclick="document.getElementById('img-file').click()">
           <div class="img-upload-icon">📸</div>
-          <div class="img-upload-text">클릭하여 이미지 업로드<br><span style="font-size:.72rem;color:var(--gray-400)">JPG, PNG 최대 5MB</span></div>
+          <div class="img-upload-text">클릭하여 이미지 업로드<br><span style="font-size:.72rem;color:var(--gray-400)">JPG, PNG, WEBP 최대 500KB</span></div>
         </div>
         <input type="file" id="img-file" accept="image/*" onchange="previewImage(this)">
 
@@ -464,7 +464,11 @@ function selectEmoji(e) {
 function previewImage(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { toast('이미지 크기는 5MB 이하여야 합니다'); return; }
+  if (file.size > 500 * 1024) {
+  toast('이미지 크기는 500KB 이하여야 합니다. 이미지 압축 후 다시 올려주세요.');
+  input.value = '';
+  return;
+}
 
   const reader = new FileReader();
   reader.onload = e => {
