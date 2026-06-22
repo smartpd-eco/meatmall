@@ -68,25 +68,34 @@ router.post('/ready', requireAuth, async (req, res) => {
     const isVbank      = paymentMethod === 'VBANK';
     const orderNumber  = makeOrderNo();
 
+    // 기본 주문 데이터
+    const orderData = {
+      order_number:    orderNumber,
+      user_id:         userId,
+      status:          isVbank ? 'pending_deposit' : 'pending',
+      recipient, phone, zip_code: zipCode, address1, address2: address2||null,
+      delivery_note:   deliveryNote||null,
+      product_total:   productTotal,
+      delivery_fee:    deliveryFee,
+      discount_amount: couponDisc,
+      point_used:      Number(pointUse),
+      final_amount:    finalAmount,
+      payment_method:  paymentMethod,
+      payment_status:  isVbank ? 'awaiting_deposit' : 'unpaid',
+    };
+
+    // 무통장 컬럼은 존재할 때만 추가 (스키마 마이그레이션 전 호환)
+    if (isVbank) {
+      try {
+        orderData.bank_name        = bankName || VBANK.bank;
+        orderData.depositor_name   = depositorName || null;
+        orderData.deposit_deadline = new Date(Date.now()+3*86400000).toISOString();
+      } catch(e) {}
+    }
+
     const { data: order, error: orderErr } = await supabase
       .from('orders')
-      .insert({
-        order_number:    orderNumber,
-        user_id:         userId,
-        status:          isVbank ? 'pending_deposit' : 'pending',
-        recipient, phone, zip_code: zipCode, address1, address2: address2||null,
-        delivery_note:   deliveryNote||null,
-        product_total:   productTotal,
-        delivery_fee:    deliveryFee,
-        discount_amount: couponDisc,
-        point_used:      Number(pointUse),
-        final_amount:    finalAmount,
-        payment_method:  paymentMethod,
-        payment_status:  isVbank ? 'awaiting_deposit' : 'unpaid',
-        bank_name:       isVbank ? (bankName || VBANK.bank)   : null,
-        depositor_name:  isVbank ? depositorName : null,
-        deposit_deadline:isVbank ? new Date(Date.now()+3*86400000).toISOString() : null,
-      })
+      .insert(orderData)
       .select('id, order_number').single();
 
     if (orderErr) throw orderErr;
