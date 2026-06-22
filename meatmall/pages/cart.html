@@ -73,6 +73,11 @@
   </div>
   <div style="padding:16px;overflow-y:auto;max-height:72vh;display:flex;flex-direction:column;gap:16px">
 
+    <!-- 테스트 모드 배너 -->
+    <div id="test-mode-banner" style="display:none;background:#FEF3C7;border:1px solid #FCD34D;border-radius:var(--radius-md);padding:9px 12px;font-size:.8rem;color:#92400E;font-weight:600">
+      🧪 테스트 모드 — 실제 결제가 발생하지 않습니다
+    </div>
+
     <!-- 배송지 선택 -->
     <div>
       <div style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
@@ -104,7 +109,7 @@
     <div id="vbank-section" style="display:none">
       <div class="vbank-box">
         <div class="vbank-title">🏦 무통장 입금 안내</div>
-        <div class="vbank-account">기업은행 123-456789-01-001 · 예금주: (주)정육본가</div>
+        <div class="vbank-account" id="vbank-account-info">기업은행 123-456789-01-001 · 예금주: (주)정육본가</div>
         <div class="vbank-info">
           주문 후 <strong>3일 이내</strong> 입금해주세요.<br>
           미입금 시 자동으로 주문이 취소됩니다.
@@ -165,6 +170,28 @@ function toast(msg){
 }
 
 Store.load(); updateCartBadge();
+
+// 결제 설정 API에서 동적 로드
+let payConfig = {
+  clientKey: 'test_ck_docs_Jz9BYo1zelvxd10pR0rl',
+  isTest: true,
+  vbank: { bank:'기업은행', account:'123-456789-01-001', holder:'(주)정육본가' },
+  freeShipping: 50000, deliveryFee: 3500,
+};
+(async function loadConfig(){
+  try {
+    const r = await fetch(API+'/payment/config');
+    if(r.ok){ const d=await r.json(); payConfig={...payConfig,...d}; }
+    // 무통장 계좌 정보 업데이트
+    const acc = document.getElementById('vbank-account-info');
+    if(acc) acc.textContent=`${payConfig.vbank.bank} ${payConfig.vbank.account} · 예금주: ${payConfig.vbank.holder}`;
+    // 테스트 모드 안내
+    if(payConfig.isTest){
+      const testBanner = document.getElementById('test-mode-banner');
+      if(testBanner) testBanner.style.display='block';
+    }
+  } catch(e){}
+})();
 
 // 데모 장바구니
 if(Store.cart.length===0){

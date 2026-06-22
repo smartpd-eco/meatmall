@@ -237,6 +237,7 @@ function renderDashboard(){
     <div class="admin-tab" onclick="switchTab('inventory',this)">🗄️ 재고관리</div>
     <div class="admin-tab" onclick="switchTab('revenue',this)">💰 매출정산</div>
     <div class="admin-tab" onclick="switchTab('cs',this)">💬 CS관리</div>
+    <div class="admin-tab" onclick="go('payment-settings.html')" style="color:var(--amber)">💳 결제설정</div>
     <div class="admin-tab" onclick="window.open('../index.html','_blank')" style="color:var(--amber)">🛍️ 쇼핑몰</div>
   </div>
   <div id="tab-content" style="min-height:80vh;padding-bottom:32px">
@@ -316,11 +317,11 @@ async function renderTabDashboard(){
     <div class="qa-btn" onclick="go('products.html')">
       <div class="qa-ico">📦</div><div class="qa-lbl">상품관리</div>
     </div>
+    <div class="qa-btn" onclick="go('payment-settings.html')">
+      <div class="qa-ico">💳</div><div class="qa-lbl">결제설정</div>
+    </div>
     <div class="qa-btn" onclick="switchTab('orders',document.querySelectorAll('.admin-tab')[1])">
       <div class="qa-ico">🧾</div><div class="qa-lbl">주문처리</div>
-    </div>
-    <div class="qa-btn" onclick="switchTab('cs',document.querySelectorAll('.admin-tab')[4])">
-      <div class="qa-ico">💬</div><div class="qa-lbl">CS처리</div>
     </div>
   </div>`;
 }

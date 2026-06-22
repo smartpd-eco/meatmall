@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>결제 설정 · 정육본가 관리자</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+body{background:#F1F0EF}
+.admin-header{background:var(--primary-dark);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.admin-logo{font-size:1rem;font-weight:700;color:#fff}
+.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
+.setting-card{background:#fff;margin:12px 14px;border-radius:var(--radius-lg);box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden}
+.card-head{padding:14px 16px 10px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.95rem;font-weight:700;color:var(--dark)}
+.card-body{padding:16px}
+.status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-live{background:#16A34A;animation:pulse 2s infinite}
+.dot-test{background:#F59E0B}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.mode-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:.78rem;font-weight:700}
+.badge-live{background:#DCFCE7;color:#166534}
+.badge-test{background:#FEF3C7;color:#92400E}
+.key-row{margin-bottom:12px}
+.key-label{font-size:.8rem;font-weight:600;color:var(--gray-600);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
+.key-input{width:100%;height:44px;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);padding:0 12px;font-size:.84rem;font-family:monospace;outline:none;color:var(--dark)}
+.key-input:focus{border-color:var(--primary)}
+.key-input.filled{border-color:var(--green);background:#F0FDF4}
+.key-input.empty{border-color:var(--gray-200)}
+.method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.method-item{border:1.5px solid var(--gray-200);border-radius:var(--radius-md);padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s}
+.method-item.active{border-color:var(--primary);background:var(--cream)}
+.method-icon{font-size:1.5rem;margin-bottom:5px}
+.method-name{font-size:.76rem;font-weight:700;color:var(--dark)}
+.method-fee{font-size:.68rem;color:var(--gray-500);margin-top:2px}
+.method-status{font-size:.66rem;font-weight:700;margin-top:3px}
+.status-on{color:var(--green)}
+.status-off{color:var(--gray-400)}
+.info-box{background:var(--gray-100);border-radius:var(--radius-md);padding:12px 14px;font-size:.82rem;color:var(--gray-700);line-height:1.8}
+.info-box.warn{background:#FEF3C7;color:#78350F}
+.info-box.success{background:#F0FDF4;color:#166534}
+.step-list{display:flex;flex-direction:column;gap:10px}
+.step-item{display:flex;gap:12px;align-items:flex-start}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{flex:1;font-size:.84rem;color:var(--gray-700);line-height:1.6}
+.step-text strong{color:var(--dark)}
+.copy-btn{font-size:.72rem;font-weight:600;color:var(--primary);background:none;border:1px solid var(--primary);padding:2px 8px;border-radius:4px;cursor:pointer}
+code{font-family:monospace;background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <div class="admin-header">
+    <div class="admin-logo">💳 결제 설정</div>
+    <div style="display:flex;gap:6px">
+      <button class="admin-hbtn" onclick="window.open('../index.html','_blank')" title="쇼핑몰">🛍️</button>
+      <button class="admin-hbtn" onclick="go('dashboard.html')" title="대시보드">🏠</button>
+    </div>
+  </div>
+
+  <div style="padding:4px 0 32px">
+
+    <!-- 현재 결제 모드 상태 -->
+    <div class="setting-card">
+      <div class="card-head">
+        <div class="card-title">🔌 결제 연동 상태</div>
+        <div id="mode-badge" class="mode-badge badge-test"><div class="status-dot dot-test"></div>확인 중...</div>
+      </div>
+      <div class="card-body">
+        <div class="info-box" id="mode-info">서버 연결 확인 중...</div>
+        <div style="margin-top:12px;font-size:.82rem;color:var(--gray-600);line-height:1.8">
+          <strong>테스트 모드:</strong> 실제 결제 없이 UI 테스트 가능<br>
+          <strong>운영 모드:</strong> 실제 카드/간편결제 처리
+        </div>
+      </div>
+    </div>
+
+    <!-- 나이스페이먼츠 키 등록 안내 -->
+    <div class="setting-card">
+      <div class="card-head">
+        <div class="card-title">🔑 나이스페이먼츠 키 등록</div>
+        <a href="https://www.nicepay.co.kr" target="_blank" style="font-size:.76rem;color:var(--primary);font-weight:600">공식사이트 →</a>
+      </div>
+      <div class="card-body">
+        <div class="info-box warn" style="margin-bottom:14px">
+          ⚠️ 키값은 <strong>Vercel 환경변수</strong>에 등록해야 합니다.<br>
+          이 페이지에서 직접 입력하면 보안상 위험합니다.
+        </div>
+
+        <div class="key-row">
+          <div class="key-label">
+            NICE_CLIENT_KEY (클라이언트 키)
+            <button class="copy-btn" onclick="copyEnvKey('NICE_CLIENT_KEY')">복사</button>
+          </div>
+          <input class="key-input" id="check-client-key" placeholder="test_ck_... 또는 live_ck_..." readonly>
+        </div>
+        <div class="key-row">
+          <div class="key-label">
+            NICE_SECRET_KEY (시크릿 키)
+            <button class="copy-btn" onclick="copyEnvKey('NICE_SECRET_KEY')">복사</button>
+          </div>
+          <input class="key-input" id="check-secret-key" placeholder="등록 후 표시 안 됨 (보안)" readonly>
+        </div>
+
+        <div style="margin-top:16px">
+          <div style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:10px">📋 Vercel 등록 방법</div>
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-text"><a href="https://vercel.com/happyboyx000-4031s-projects/meatmall/settings/environment-variables" target="_blank" style="color:var(--primary);font-weight:600">Vercel 환경변수 설정 →</a><br>Settings → Environment Variables</div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-text">
+                <strong>Add New</strong> 클릭 후 아래 변수 추가:<br>
+                <code>NICE_CLIENT_KEY</code> = 발급받은 클라이언트 키<br>
+                <code>NICE_SECRET_KEY</code> = 발급받은 시크릿 키
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-text"><strong>Deployments → Redeploy</strong> 클릭<br>재배포 후 운영 모드로 자동 전환</div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">4</div>
+              <div class="step-text">이 페이지에서 <strong>상태 새로고침</strong>으로 확인</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 무통장 계좌 설정 -->
+    <div class="setting-card">
+      <div class="card-head">
+        <div class="card-title">🏦 무통장 입금 계좌</div>
+      </div>
+      <div class="card-body">
+        <div class="info-box" id="vbank-info" style="margin-bottom:14px">로딩 중...</div>
+
+        <div style="font-size:.84rem;font-weight:700;color:var(--dark);margin-bottom:10px">계좌 변경 방법 (Vercel 환경변수)</div>
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">①</div>
+            <div class="step-text">
+              <code>VBANK_BANK</code> = 은행명 (예: 기업은행)<br>
+              <code>VBANK_ACCOUNT</code> = 계좌번호<br>
+              <code>VBANK_HOLDER</code> = 예금주명
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결제 수단 현황 -->
+    <div class="setting-card">
+      <div class="card-head">
+        <div class="card-title">💳 결제 수단 현황</div>
+      </div>
+      <div class="card-body">
+        <div class="method-grid" id="method-grid">
+          <!-- JS로 렌더 -->
+        </div>
+        <div class="info-box" style="margin-top:12px">
+          모든 결제수단은 나이스페이먼츠 계약 후 자동 활성화됩니다.<br>
+          수단별 수수료는 계약 조건에 따라 다릅니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 테스트 결제 -->
+    <div class="setting-card">
+      <div class="card-head">
+        <div class="card-title">🧪 결제 테스트</div>
+      </div>
+      <div class="card-body">
+        <div class="info-box success" style="margin-bottom:14px">
+          테스트 모드에서는 실제 결제 없이 전체 플로우를 확인할 수 있습니다.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-outline btn-full" onclick="testPayFlow('CARD')">💳 카드결제 테스트</button>
+          <button class="btn btn-outline btn-full" onclick="testPayFlow('VBANK')">🏦 무통장 주문 테스트</button>
+          <button class="btn btn-outline btn-full" onclick="window.open('../pages/cart.html','_blank')">🛒 장바구니 열기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PG 수수료 안내 -->
+    <div class="setting-card">
+      <div class="card-head">
+        <div class="card-title">📊 PG 수수료 안내</div>
+      </div>
+      <div class="card-body">
+        <table style="width:100%;border-collapse:collapse;font-size:.83rem">
+          <tr style="background:var(--gray-100)">
+            <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--dark)">결제수단</th>
+            <th style="padding:8px 10px;text-align:right;font-weight:700;color:var(--dark)">수수료율</th>
+            <th style="padding:8px 10px;text-align:right;font-weight:700;color:var(--dark)">비고</th>
+          </tr>
+          ${[
+            ['신용카드','2.5~3.5%','카드사별 상이'],
+            ['카카오페이','3.5%','간편결제'],
+            ['네이버페이','3.74%','간편결제'],
+            ['토스페이','3.3%','간편결제'],
+            ['무통장입금','0%','수수료 없음'],
+            ['휴대폰결제','4.5%','통신사별 상이'],
+          ].map(([m,f,n])=>`
+          <tr style="border-bottom:1px solid var(--gray-100)">
+            <td style="padding:9px 10px;color:var(--dark)">${m}</td>
+            <td style="padding:9px 10px;text-align:right;font-weight:700;color:var(--primary)">${f}</td>
+            <td style="padding:9px 10px;text-align:right;color:var(--gray-500)">${n}</td>
+          </tr>`).join('')}
+        </table>
+        <div class="info-box warn" style="margin-top:12px;font-size:.78rem">
+          위 수수료는 참고용이며 나이스페이먼츠 계약 조건에 따라 달라질 수 있습니다.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div id="toast-global" class="toast"></div>
+<script src="../js/app.js"></script>
+<script>
+const API = 'https://meatmall.vercel.app/api';
+function go(url){ window.location.href=url; }
+function toast(msg){
+  const el=document.getElementById('toast-global');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+const METHODS = [
+  {id:'CARD',  icon:'💳', name:'신용카드',   fee:'2.5~3.5%'},
+  {id:'KAKAO', icon:'💬', name:'카카오페이', fee:'3.5%'},
+  {id:'NAVER', icon:'🟢', name:'네이버페이', fee:'3.74%'},
+  {id:'TOSS',  icon:'🔵', name:'토스페이',   fee:'3.3%'},
+  {id:'VBANK', icon:'🏦', name:'무통장입금', fee:'0%'},
+  {id:'PHONE', icon:'📱', name:'휴대폰결제', fee:'4.5%'},
+];
+
+async function loadConfig(){
+  try {
+    const r = await fetch(API+'/payment/config');
+    const d = await r.json();
+
+    // 모드 상태
+    const badge = document.getElementById('mode-badge');
+    const info  = document.getElementById('mode-info');
+    if(d.isTest){
+      badge.innerHTML='<div class="status-dot dot-test"></div>🧪 테스트 모드';
+      badge.className='mode-badge badge-test';
+      info.innerHTML='현재 <strong>테스트 모드</strong>입니다. 실제 결제가 발생하지 않습니다.<br>운영 키를 Vercel에 등록 후 Redeploy하면 라이브로 전환됩니다.';
+      info.className='info-box warn';
+      document.getElementById('check-client-key').value='테스트 키 (test_ck_docs_Jz9BYo1...)';
+      document.getElementById('check-secret-key').value='등록 대기 중';
+    } else {
+      badge.innerHTML='<div class="status-dot dot-live"></div>✅ 운영 모드 (LIVE)';
+      badge.className='mode-badge badge-live';
+      info.innerHTML='현재 <strong>운영 모드</strong>입니다. 실제 결제가 처리됩니다.';
+      info.className='info-box success';
+      document.getElementById('check-client-key').value='live_ck_**** (등록됨)';
+      document.getElementById('check-client-key').className='key-input filled';
+      document.getElementById('check-secret-key').value='보안상 비표시';
+    }
+
+    // 무통장 계좌
+    document.getElementById('vbank-info').innerHTML=`
+      <strong>현재 계좌:</strong> ${d.vbank.bank} ${d.vbank.account}<br>
+      <strong>예금주:</strong> ${d.vbank.holder}`;
+
+    // 결제수단 그리드
+    document.getElementById('method-grid').innerHTML = METHODS.map(m=>`
+    <div class="method-item active">
+      <div class="method-icon">${m.icon}</div>
+      <div class="method-name">${m.name}</div>
+      <div class="method-fee">${m.fee}</div>
+      <div class="method-status status-on">✓ 활성</div>
+    </div>`).join('');
+
+  } catch(e){
+    document.getElementById('mode-info').textContent='서버 연결 실패: '+e.message;
+  }
+}
+
+function copyEnvKey(key){
+  navigator.clipboard.writeText(key).then(()=>toast(`"${key}" 이름이 복사됐습니다`));
+}
+
+function testPayFlow(method){
+  const url = '../pages/cart.html';
+  toast(`${method} 테스트 — 장바구니 페이지로 이동합니다`);
+  setTimeout(()=>window.open(url,'_blank'), 800);
+}
+
+loadConfig();
+</script>
+</body>
+</html>
