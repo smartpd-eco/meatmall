@@ -5,6 +5,32 @@ const { requireAdmin } = require('../../middleware/auth');
 const { optionalAuth } = require('../../middleware/auth');
 
 // ════════════════════════════════════════════════════
+// CORS 설정 - GitHub Pages → Vercel API 호출 허용
+// ════════════════════════════════════════════════════
+const allowedOrigins = [
+  'https://smartpd-eco.github.io',
+  'https://meatmall.vercel.app',
+];
+
+router.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+
+  res.header('Vary', 'Origin');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
+// ════════════════════════════════════════════════════
 // GET /api/products — 상품 목록
 // ════════════════════════════════════════════════════
 router.get('/', optionalAuth, async (req, res) => {
