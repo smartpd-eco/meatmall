@@ -46,10 +46,15 @@
 
 /* ── 리셋 & 베이스 ──────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  overflow-x: hidden; /* 가로 스크롤 전역 방지 */
+}
 body {
   font-family: var(--font-main);
-  background: var(--gray-100);
+  background: #E8E4E0;
   color: var(--dark);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -67,6 +72,7 @@ ul, ol { list-style: none; }
   min-height: 100vh;
   background: var(--white);
   position: relative;
+  overflow-x: hidden;
   box-shadow: 0 0 40px rgba(0,0,0,.12);
 }
 
@@ -76,6 +82,8 @@ ul, ol { list-style: none; }
   top: 0;
   z-index: 100;
   height: var(--header-h);
+  width: 100%;
+  max-width: var(--max-w);
   background: var(--white);
   border-bottom: 1px solid var(--gray-300);
   display: flex;
@@ -459,10 +467,54 @@ ul, ol { list-style: none; }
 
 /* ── 데스크탑 어댑테이션 ────────────────────────────────── */
 @media (min-width: 768px) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: #E8E4E0;
+  }
   .app-wrap {
     margin: 24px auto;
     border-radius: var(--radius-lg);
     min-height: calc(100vh - 48px);
+    overflow: hidden;
   }
-  .bottom-nav { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+  .bottom-nav {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  /* 토스트도 max-width 안에 */
+  .toast {
+    max-width: calc(var(--max-w) - 40px);
+  }
+}
+
+/* ── 모바일 프레임 내 sticky 요소 너비 고정 ─────────────── */
+.app-wrap .header,
+.app-wrap .bottom-nav,
+.app-wrap .admin-header,
+.app-wrap .admin-tabs,
+.app-wrap .cat-scroll,
+.app-wrap .cat-tabs,
+.app-wrap .event-strip,
+.app-wrap .detail-tabs,
+.app-wrap .order-filter,
+.app-wrap .save-bar,
+.app-wrap .checkout-bar,
+.app-wrap .buy-bar {
+  max-width: var(--max-w);
+  box-sizing: border-box;
+}
+
+/* position fixed 요소들 — app-wrap 기준으로 너비 제한 */
+.bottom-nav,
+.buy-bar,
+.checkout-bar,
+.save-bar,
+.toast {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: var(--max-w) !important;
 }

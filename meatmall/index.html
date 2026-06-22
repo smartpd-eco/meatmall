@@ -26,7 +26,7 @@
 .dot.active{width:14px;border-radius:3px;background:#fff}
 
 /* ── 카테고리 한 줄 텍스트 탭 ── */
-.cat-scroll{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:2px solid var(--gray-100)}
+.cat-scroll{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:2px solid var(--gray-100);width:100%;box-sizing:border-box}
 .cat-scroll::-webkit-scrollbar{display:none}
 .cat-scroll-item{flex-shrink:0;padding:10px 14px;font-size:.82rem;font-weight:600;color:var(--gray-500);cursor:pointer;white-space:nowrap;border-bottom:2.5px solid transparent;transition:all .2s;margin-bottom:-2px}
 .cat-scroll-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:800}
@@ -60,7 +60,7 @@
 .deal-stock-txt{font-size:.66rem;color:var(--gray-500);margin-top:3px}
 
 /* ── 이벤트 배너 띠 ── */
-.event-strip{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid var(--gray-100)}
+.event-strip{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid var(--gray-100);width:100%;box-sizing:border-box}
 .event-strip::-webkit-scrollbar{display:none}
 .event-chip{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--radius-sm);font-size:.78rem;font-weight:700;cursor:pointer;transition:transform .12s}
 .event-chip:active{transform:scale(.95)}
