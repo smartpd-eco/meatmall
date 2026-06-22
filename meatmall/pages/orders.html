@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>주문 내역 · 정육본가</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,6 +37,12 @@
 /* 디버그 토스트 */
 .debug-bar{background:#1A2744;color:#A8BDD4;font-size:.72rem;padding:6px 12px;font-family:monospace;display:none}
 </style>
+<script>
+// 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
+window.addEventListener('pageshow', function(e){
+  if(e.persisted){ window.location.reload(); }
+});
+</script>
 </head>
 <body>
 <div class="app-wrap">

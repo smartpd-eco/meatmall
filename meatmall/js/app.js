@@ -182,3 +182,16 @@ if (document.readyState === 'loading') {
 } else {
   showAdminBtn();
 }
+
+// ── BFCache(뒤로가기 캐시) 방지 ────────────────────────────
+// 뒤로가기 시 페이지가 캐시에서 복원되면 강제 새로고침
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) {
+    // BFCache에서 복원된 경우 → 강제 새로고침
+    window.location.reload();
+  }
+});
+
+// 페이지 언로드 시 캐시 방지 헤더 설정 (meta tag로 처리)
+// 각 페이지에 <meta http-equiv="Cache-Control"> 추가 불필요하게
+// pageshow persisted 이벤트로 충분히 처리됨

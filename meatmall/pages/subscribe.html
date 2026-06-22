@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>정기배송 구독 · 정육본가</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
@@ -66,6 +69,12 @@
 .sub-item-tag{background:var(--gray-100);color:var(--gray-700);font-size:.76rem;padding:4px 10px;border-radius:var(--radius-sm)}
 .sub-actions{display:flex;gap:8px;margin-top:12px}
 </style>
+<script>
+// 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
+window.addEventListener('pageshow', function(e){
+  if(e.persisted){ window.location.reload(); }
+});
+</script>
 </head>
 <body>
 <div class="app-wrap">

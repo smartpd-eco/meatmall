@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>장바구니 · 정육본가</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -46,6 +49,12 @@
 .vbank-info{font-size:.84rem;color:var(--gray-700);line-height:1.9;margin-bottom:12px}
 .vbank-account{background:#fff;border-radius:var(--radius-sm);padding:10px 12px;font-size:.9rem;font-weight:700;color:var(--primary);margin-bottom:12px;border:1px solid #FED7AA;letter-spacing:.02em}
 </style>
+<script>
+// 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
+window.addEventListener('pageshow', function(e){
+  if(e.persisted){ window.location.reload(); }
+});
+</script>
 </head>
 <body>
 <div class="app-wrap">
@@ -330,6 +339,8 @@ function deleteSel(){ Store.cart=Store.cart.filter(c=>!selected.has(c.productId)
 
 // 결제 시트
 function openCheckout(){
+  // 매번 최신 배송지 다시 로드
+  selectedAddr = null;
   if(!localStorage.getItem('mm_access_token')){ toast('로그인이 필요합니다');go('../login.html');return; }
   document.getElementById('avail-pt').textContent=`보유: ${fmt(userPoint)}P`;
   loadAddrSheet();

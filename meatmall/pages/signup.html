@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>회원가입 · 정육본가</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
@@ -58,6 +61,12 @@
 .done-title{font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--dark)}
 .benefit-box{background:var(--cream);border:1px solid var(--peach);border-radius:var(--radius-md);padding:16px;width:100%;text-align:left;font-size:.84rem;line-height:1.9;color:var(--gray-700)}
 </style>
+<script>
+// 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
+window.addEventListener('pageshow', function(e){
+  if(e.persisted){ window.location.reload(); }
+});
+</script>
 </head>
 <body>
 <div class="app-wrap">
