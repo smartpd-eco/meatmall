@@ -202,25 +202,35 @@ function loadAddrSheet(){
     </div>`;
     selectedAddr=null; return;
   }
-  // 기본 배송지 자동 선택
-  selectedAddr = addrs.find(a=>a.isDefault) || addrs[0];
+  // 기본 배송지 자동 선택 (인덱스 기반)
+  let defaultIdx = addrs.findIndex(a=>a.isDefault);
+  if(defaultIdx < 0) defaultIdx = 0;
+  selectedAddr = addrs[defaultIdx];
+
   wrap.innerHTML = addrs.map((a,i)=>`
-  <div class="addr-select-box ${a===selectedAddr?'selected':''}" onclick="selectAddr(${i})" style="margin-bottom:8px">
+  <div class="addr-select-box ${i===defaultIdx?'selected':''}" id="addr-item-${i}" onclick="selectAddr(${i})" style="margin-bottom:8px">
     <div class="addr-name-row">
       <span style="font-size:.9rem;font-weight:700;color:var(--dark)">${a.recipient}</span>
       <span style="font-size:.78rem;color:var(--gray-500)">${a.phone}</span>
     </div>
     <div style="font-size:.82rem;color:var(--gray-700)">[${a.zipCode}] ${a.address1} ${a.address2||''}</div>
     ${a.deliveryNote?`<div style="font-size:.76rem;color:var(--secondary);margin-top:3px">📝 ${a.deliveryNote}</div>`:''}
+    ${i===defaultIdx?'<div style="font-size:.72rem;color:var(--primary);font-weight:700;margin-top:4px">✓ 선택됨</div>':''}
   </div>`).join('');
 }
 
 function selectAddr(i){
   const addrs=JSON.parse(localStorage.getItem('mm_addresses')||'[]');
   selectedAddr=addrs[i];
+  // 시각적 선택 표시
   document.querySelectorAll('.addr-select-box').forEach((el,j)=>{
     el.classList.toggle('selected',j===i);
+    // 선택됨 표시 업데이트
+    const tick = el.querySelector('.addr-tick');
+    if(tick) tick.style.display = j===i ? 'block' : 'none';
   });
+  // 재렌더링으로 선택됨 표시
+  loadAddrSheet();
 }
 
 function renderCart(){
@@ -332,12 +342,23 @@ function calcFinal(){
 }
 
 async function doPay(){
-  if(!selectedAddr){ toast('배송지를 선택해주세요. 배송지 관리에서 추가해주세요.'); return; }
+  // 배송지 재확인
+  const freshAddrs = JSON.parse(localStorage.getItem('mm_addresses')||'[]');
+  if(!selectedAddr || freshAddrs.length === 0){
+    toast('배송지를 먼저 추가해주세요');
+    closePaySheet();
+    setTimeout(()=>go('../pages/address.html'), 500);
+    return;
+  }
 
   // 무통장 입금자명 확인
   if(payMethod==='VBANK'){
-    const depName=document.getElementById('depositor-name').value.trim();
-    if(!depName){ toast('입금자명을 입력해주세요'); document.getElementById('depositor-name').focus(); return; }
+    const depName=document.getElementById('depositor-name')?.value?.trim();
+    if(!depName){
+      toast('입금자명을 입력해주세요');
+      document.getElementById('depositor-name')?.focus();
+      return;
+    }
   }
 
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
