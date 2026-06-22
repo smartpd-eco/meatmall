@@ -333,8 +333,8 @@ async function renderTabOrders(){
     if(r.ok){ const d=await r.json(); orders=d.orders||[]; total=d.total||0; }
   } catch(e){}
 
-  const statusLabel = {pending:'결제대기',preparing:'준비중',shipping:'배송중',delivered:'완료',cancelled:'취소',refund_req:'환불요청',refunded:'환불완료'};
-  const statusClass = {pending:'status-pending',preparing:'status-preparing',shipping:'status-shipping',delivered:'status-done',cancelled:'status-cancel'};
+  const statusLabel = {pending:'결제대기',pending_deposit:'입금대기🏦',preparing:'준비중',shipping:'배송중',delivered:'완료',cancelled:'취소',refund_req:'환불요청',refunded:'환불완료'};
+  const statusClass = {pending:'status-pending',pending_deposit:'status-pending',preparing:'status-preparing',shipping:'status-shipping',delivered:'status-done',cancelled:'status-cancel'};
 
   document.getElementById('tab-content').innerHTML=`
   <div style="padding:12px 14px 6px;display:flex;gap:8px;align-items:center">
@@ -398,6 +398,20 @@ async function showOrderDetail(id){
           <option>CJ대한통운</option><option>한진</option><option>롯데</option><option>우체국</option>
         </select>
       </div>
+      ${o.payment_method==='VBANK'&&o.payment_status!=='paid'?`
+      <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--radius-md);padding:12px;margin-top:8px;font-size:.84rem">
+        <div style="font-weight:700;color:#92400E;margin-bottom:8px">🏦 무통장 입금 확인</div>
+        <div style="color:var(--gray-700);margin-bottom:8px">
+          입금계좌: <strong>기업은행 123-456789-01-001 (주)정육본가</strong><br>
+          주문금액: <strong style="color:var(--primary)">${fmt(o.final_amount)}원</strong><br>
+          입금기한: <strong>${o.deposit_deadline?new Date(o.deposit_deadline).toLocaleDateString('ko-KR'):'3일 이내'}</strong>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input id="depositor-name" class="form-input" style="height:36px;font-size:.82rem;flex:1" placeholder="입금자명" value="${o.depositor_name||''}">
+          <input id="deposit-amount" class="form-input" style="height:36px;font-size:.82rem;width:110px" placeholder="입금액" value="${o.final_amount}">
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-top:8px;height:44px" onclick="confirmVbank('${o.order_number}')">✅ 입금 확인 처리</button>
+      </div>` : ''}
       <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="updateOrderStatus('${o.id}')">상태 변경 저장</button>
     </div>`);
   } catch(e){ toast('상세 정보 로드 실패'); }
@@ -641,6 +655,24 @@ async function submitCSAnswer(id){
     closeSheet();
     switchTab('cs',document.querySelectorAll('.admin-tab')[4]);
   } catch(e){ toast('❌ 답변 전송 실패'); }
+}
+
+async function confirmVbank(orderId){
+  const depositorName  = document.getElementById('depositor-name')?.value || '';
+  const depositAmount  = document.getElementById('deposit-amount')?.value || '';
+  if (!confirm(`입금자: ${depositorName || '미확인'}\n금액: ${depositAmount}원\n\n입금 확인 처리하시겠습니까?`)) return;
+  try {
+    const r = await fetch(API+'/payment/vbank-confirm',{
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json', Authorization:'Bearer '+adminToken},
+      body: JSON.stringify({ orderId, depositorName, depositAmount:Number(depositAmount) })
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error);
+    toast('✅ 입금 확인 완료! 주문이 준비중으로 변경됐습니다.');
+    closeSheet();
+    switchTab('orders', document.querySelectorAll('.admin-tab')[1]);
+  } catch(e){ toast('❌ '+e.message); }
 }
 
 function adminLogout(){

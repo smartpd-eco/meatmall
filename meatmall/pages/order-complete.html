@@ -60,18 +60,46 @@ const p = new URLSearchParams(window.location.search);
 const orderId = p.get('orderId') || '';
 const amount  = p.get('amount')  || 0;
 const point   = p.get('point')   || 0;
+const isVbank = p.get('vbank')   === 'true';
 
 document.getElementById('oi-id').textContent  = orderId;
 document.getElementById('oi-amt').textContent = fmt(amount) + '원';
-document.getElementById('oi-pt').innerHTML    = `<span style="color:var(--primary)">${fmt(point)}P</span> 적립`;
 
-// 예상 배송일 (영업일 기준 +2일)
-const d = new Date();
-d.setDate(d.getDate() + 2);
-if (d.getDay() === 0) d.setDate(d.getDate() + 1);
-if (d.getDay() === 6) d.setDate(d.getDate() + 2);
-document.getElementById('oi-date').textContent =
-  `${d.getMonth()+1}월 ${d.getDate()}일 (예정)`;
+if (isVbank) {
+  // 무통장 주문완료 화면
+  const bank     = decodeURIComponent(p.get('bank')||'기업은행');
+  const account  = decodeURIComponent(p.get('account')||'123-456789-01-001');
+  const holder   = decodeURIComponent(p.get('holder')||'(주)정육본가');
+  const deadline = decodeURIComponent(p.get('deadline')||'');
+
+  document.querySelector('.complete-icon').textContent = '🏦';
+  document.querySelector('.complete-title').textContent = '주문이 접수됐습니다!';
+  document.querySelector('p').innerHTML = `입금 확인 후 배송이 시작됩니다.<br>아래 계좌로 <strong style="color:var(--primary)">${fmt(amount)}원</strong>을 입금해주세요.`;
+  document.getElementById('oi-pt').innerHTML = `<span style="color:var(--gray-500)">입금 확인 후 적립</span>`;
+
+  // 무통장 안내 박스 삽입
+  const infoBox = document.getElementById('order-info');
+  infoBox.innerHTML += `
+    <div style="margin-top:10px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--radius-md);padding:12px">
+      <div style="font-size:.88rem;font-weight:700;color:#92400E;margin-bottom:8px">🏦 입금 계좌 안내</div>
+      <div style="font-size:.85rem;color:var(--gray-700);line-height:1.9">
+        <strong>은행:</strong> ${bank}<br>
+        <strong>계좌번호:</strong> ${account}<br>
+        <strong>예금주:</strong> ${holder}<br>
+        <strong>입금금액:</strong> <span style="color:var(--primary);font-weight:800">${fmt(amount)}원</span><br>
+        <strong>입금기한:</strong> <span style="color:var(--red)">${deadline} 까지</span>
+      </div>
+    </div>`;
+
+  document.getElementById('oi-date').textContent = '입금 확인 후 2일 이내';
+} else {
+  document.getElementById('oi-pt').innerHTML = `<span style="color:var(--primary)">${fmt(point)}P</span> 적립`;
+  const d = new Date();
+  d.setDate(d.getDate() + 2);
+  if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+  if (d.getDay() === 6) d.setDate(d.getDate() + 2);
+  document.getElementById('oi-date').textContent = `${d.getMonth()+1}월 ${d.getDate()}일 (예정)`;
+}
 </script>
 </body>
 </html>

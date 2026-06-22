@@ -283,6 +283,9 @@ function closePaySheet() {
 function selPay(el, method) {
   document.querySelectorAll('.pay-chip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on'); payMethod = method;
+  // 무통장 선택 시 입금 정보 입력 폼 표시
+  const vbankSection = document.getElementById('vbank-section');
+  if(vbankSection) vbankSection.style.display = method==='VBANK' ? 'block' : 'none';
 }
 
 function useAllPoint() {
@@ -334,6 +337,12 @@ async function doPay() {
   btn.innerHTML = '<div class="spinner"></div>';
 
   try {
+    // 무통장 입금자명 확인
+    if (payMethod === 'VBANK') {
+      const depositorName = document.getElementById('depositor-name')?.value?.trim();
+      if (!depositorName) { toast('입금자명을 입력해주세요'); btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>'; return; }
+    }
+
     // 1. 서버에 주문 생성
     const readyRes = await fetch(API + '/payment/ready', {
       method: 'POST',
@@ -348,12 +357,23 @@ async function doPay() {
         zipCode: currentAddr.zipCode,
         pointUse: pt,
         paymentMethod: payMethod,
+        depositorName: document.getElementById('depositor-name')?.value?.trim() || null,
+        bankName: document.getElementById('bank-name')?.value || null,
       })
     });
     const readyData = await readyRes.json();
     if (!readyRes.ok) throw new Error(readyData.error);
 
     const { order, nice } = readyData;
+
+    // 무통장은 결제창 없이 바로 완료 페이지로
+    if (order.isVbank) {
+      // 장바구니 비우기
+      selItems.forEach(i => { Store.cart = Store.cart.filter(c=>c.productId!==i.productId); });
+      Store.save(); updateCartBadge();
+      window.location.href = `../pages/order-complete.html?orderId=${order.orderId}&amount=${order.amount}&point=0&vbank=true&bank=${encodeURIComponent(order.bankInfo?.bank||'')}&account=${encodeURIComponent(order.bankInfo?.account||'')}&holder=${encodeURIComponent(order.bankInfo?.holder||'')}&deadline=${encodeURIComponent(order.bankInfo?.deadline||'')}`;
+      return;
+    }
 
     // 2. 나이스페이먼츠 결제창 호출
     AUTHNICE.requestPay({
