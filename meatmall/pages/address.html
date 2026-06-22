@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>배송지 관리 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.addr-card{background:#fff;margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
+.addr-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--gray-100)}
+.addr-default-badge{background:var(--primary);color:#fff;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:8px}
+.addr-body{padding:13px 16px;font-size:.88rem;color:var(--gray-700);line-height:1.7}
+.addr-actions{display:flex;border-top:1px solid var(--gray-100)}
+.addr-action{flex:1;padding:10px;text-align:center;font-size:.8rem;font-weight:600;cursor:pointer;background:none;border:none;transition:background .1s}
+.addr-action:hover{background:var(--gray-100)}
+.addr-action:not(:last-child){border-right:1px solid var(--gray-100)}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 16px;height:52px;border:2px dashed var(--gray-300);border-radius:var(--radius-md);color:var(--gray-500);font-size:.9rem;font-weight:600;cursor:pointer;background:#fff;transition:all .15s}
+.add-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--cream)}
+
+/* 폼 바텀시트 */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.phone-row{display:flex;gap:8px}
+.verify-btn{height:50px;padding:0 14px;white-space:nowrap;flex-shrink:0}
+.code-row{display:flex;gap:8px;margin-top:8px}
+.timer-txt{font-size:.78rem;color:var(--secondary);font-weight:600;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="header">
+    <button class="header__icon-btn" onclick="history.back()">←</button>
+    <div style="font-size:1rem;font-weight:700">배송지 관리</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <div id="addr-list" style="padding:8px 0 100px">
+    <div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 불러오는 중...</div>
+  </div>
+
+  <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;padding:12px 16px;background:#fff;border-top:1px solid var(--gray-200)">
+    <button class="btn btn-primary btn-full" onclick="openForm()">+ 새 배송지 추가</button>
+  </div>
+</div>
+
+<!-- 배송지 추가/수정 바텀시트 -->
+<div class="overlay" id="overlay" onclick="closeForm()"></div>
+<div class="bottom-sheet" id="addr-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-title" id="form-title">새 배송지 추가</div>
+    <span class="sheet-close" onclick="closeForm()">✕</span>
+  </div>
+  <div style="padding:16px;overflow-y:auto;max-height:65vh;display:flex;flex-direction:column;gap:12px">
+
+    <div class="form-group">
+      <label class="form-label">수령인 이름 <span style="color:var(--red)">*</span></label>
+      <input class="form-input" id="f-recipient" placeholder="홍길동">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">휴대폰 번호 <span style="color:var(--red)">*</span></label>
+      <div class="phone-row">
+        <input class="form-input" id="f-phone" type="tel" placeholder="010-0000-0000" oninput="fmtPhone(this)" style="flex:1">
+        <button class="btn btn-outline verify-btn" id="send-btn" onclick="sendCode()">인증번호</button>
+      </div>
+      <div id="code-area" style="display:none">
+        <div class="code-row">
+          <input class="form-input" id="f-code" type="number" placeholder="인증번호 6자리" style="flex:1;height:44px">
+          <button class="btn btn-primary" style="height:44px;padding:0 14px;white-space:nowrap" onclick="verifyCode()">확인</button>
+        </div>
+        <div class="timer-txt" id="timer-txt"></div>
+      </div>
+      <div id="phone-verified" style="display:none;color:var(--green);font-size:.8rem;font-weight:600;margin-top:4px">✅ 인증 완료</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">우편번호 <span style="color:var(--red)">*</span></label>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="f-zip" placeholder="우편번호" readonly style="flex:1">
+        <button class="btn btn-outline" style="height:50px;padding:0 14px;white-space:nowrap" onclick="searchAddress()">주소 검색</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">기본 주소</label>
+      <input class="form-input" id="f-addr1" placeholder="주소 검색 후 자동 입력" readonly>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">상세 주소</label>
+      <input class="form-input" id="f-addr2" placeholder="동, 호수 등 상세주소">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">배송 요청사항</label>
+      <select class="form-input" id="f-note" style="height:50px">
+        <option value="">선택 없음</option>
+        <option>문 앞에 놓아주세요</option>
+        <option>경비실에 맡겨주세요</option>
+        <option>부재 시 연락주세요</option>
+        <option>택배함에 넣어주세요</option>
+        <option>직접 입력</option>
+      </select>
+    </div>
+    <div id="note-custom" style="display:none">
+      <input class="form-input" id="f-note-custom" placeholder="직접 입력">
+    </div>
+
+    <label style="display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--dark);cursor:pointer">
+      <input type="checkbox" id="f-default" style="width:18px;height:18px;accent-color:var(--primary)">
+      기본 배송지로 설정
+    </label>
+
+    <button class="btn btn-primary btn-full btn-lg" id="save-addr-btn" onclick="saveAddress()">배송지 저장</button>
+  </div>
+</div>
+
+<div id="toast-global" class="toast"></div>
+<!-- 카카오 주소 API -->
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="../js/app.js"></script>
+<script>
+const API = 'https://meatmall.vercel.app/api';
+const token = localStorage.getItem('mm_access_token');
+function go(url){ window.location.href=url; }
+function toast(msg){
+  const el=document.getElementById('toast-global');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+let addresses = [];
+let editingId = null;
+let phoneVerified = false;
+let smsTimer = null;
+let testCode = '123456'; // 개발 모드 고정 코드
+
+// ── 배송지 목록 로드 ──────────────────────────────────────
+async function loadAddresses(){
+  // localStorage 기반 (서버 API 없을 때 fallback)
+  const saved = JSON.parse(localStorage.getItem('mm_addresses')||'[]');
+  addresses = saved;
+  renderAddresses();
+}
+
+function renderAddresses(){
+  const list = document.getElementById('addr-list');
+  if(addresses.length === 0){
+    list.innerHTML=`
+    <div style="text-align:center;padding:60px 24px;color:var(--gray-400)">
+      <div style="font-size:3rem;margin-bottom:14px">📍</div>
+      <div style="font-size:.9rem;margin-bottom:20px">등록된 배송지가 없습니다</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = addresses.map((a,i)=>`
+  <div class="addr-card">
+    <div class="addr-head">
+      <div style="display:flex;align-items:center">
+        <span style="font-size:.92rem;font-weight:700;color:var(--dark)">${a.recipient}</span>
+        ${a.isDefault?'<span class="addr-default-badge">기본</span>':''}
+      </div>
+      <span style="font-size:.78rem;color:var(--gray-500)">${a.phone}</span>
+    </div>
+    <div class="addr-body">
+      [${a.zipCode}] ${a.address1} ${a.address2||''}<br>
+      ${a.deliveryNote?`<span style="color:var(--secondary);font-size:.8rem">📝 ${a.deliveryNote}</span>`:''}
+    </div>
+    <div class="addr-actions">
+      ${!a.isDefault?`<button class="addr-action" style="color:var(--primary)" onclick="setDefault(${i})">기본 설정</button>`:''}
+      <button class="addr-action" style="color:var(--gray-700)" onclick="editAddress(${i})">수정</button>
+      <button class="addr-action" style="color:var(--red)" onclick="deleteAddress(${i})">삭제</button>
+    </div>
+  </div>`).join('');
+}
+
+// ── 폼 열기/닫기 ──────────────────────────────────────────
+function openForm(idx=null){
+  editingId = idx;
+  phoneVerified = false;
+  document.getElementById('phone-verified').style.display='none';
+  document.getElementById('code-area').style.display='none';
+  document.getElementById('form-title').textContent = idx!==null ? '배송지 수정' : '새 배송지 추가';
+
+  if(idx !== null){
+    const a = addresses[idx];
+    document.getElementById('f-recipient').value = a.recipient||'';
+    document.getElementById('f-phone').value     = a.phone||'';
+    document.getElementById('f-zip').value       = a.zipCode||'';
+    document.getElementById('f-addr1').value     = a.address1||'';
+    document.getElementById('f-addr2').value     = a.address2||'';
+    document.getElementById('f-default').checked = a.isDefault||false;
+    phoneVerified = true; // 수정 시엔 이미 인증됨
+    document.getElementById('phone-verified').style.display='block';
+  } else {
+    ['f-recipient','f-phone','f-zip','f-addr1','f-addr2'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-default').checked=false;
+  }
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('addr-sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeForm(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('addr-sheet').classList.remove('open');
+  document.body.style.overflow='';
+  clearInterval(smsTimer);
+}
+
+// ── 주소 검색 (카카오 우편번호) ───────────────────────────
+function searchAddress(){
+  new daum.Postcode({
+    oncomplete: function(data){
+      document.getElementById('f-zip').value   = data.zonecode;
+      document.getElementById('f-addr1').value = data.roadAddress || data.jibunAddress;
+      document.getElementById('f-addr2').focus();
+    }
+  }).open();
+}
+
+// ── 전화번호 포맷 ─────────────────────────────────────────
+function fmtPhone(el){
+  let v = el.value.replace(/\D/g,'');
+  if(v.length>3&&v.length<=7) v=v.slice(0,3)+'-'+v.slice(3);
+  else if(v.length>7) v=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);
+  el.value=v;
+  phoneVerified=false;
+  document.getElementById('phone-verified').style.display='none';
+}
+
+// ── SMS 인증 ──────────────────────────────────────────────
+function sendCode(){
+  const phone = document.getElementById('f-phone').value;
+  if(!phone || phone.replace(/\D/g,'').length < 10){
+    toast('올바른 휴대폰 번호를 입력해주세요'); return;
+  }
+  document.getElementById('code-area').style.display='block';
+  document.getElementById('send-btn').textContent='재발송';
+  toast('인증번호가 발송됐습니다 (테스트: 123456)');
+  // 카운트다운 3분
+  let t=180; clearInterval(smsTimer);
+  smsTimer=setInterval(()=>{
+    t--;
+    const m=String(Math.floor(t/60)).padStart(2,'0');
+    const s=String(t%60).padStart(2,'0');
+    document.getElementById('timer-txt').textContent=`${m}:${s} 남음`;
+    if(t<=0){ clearInterval(smsTimer); document.getElementById('timer-txt').textContent='시간 초과. 재발송 해주세요.'; }
+  },1000);
+}
+
+function verifyCode(){
+  const code = document.getElementById('f-code').value;
+  if(code === testCode){
+    phoneVerified=true;
+    clearInterval(smsTimer);
+    document.getElementById('code-area').style.display='none';
+    document.getElementById('phone-verified').style.display='block';
+    toast('✅ 인증 완료됐습니다');
+  } else {
+    toast('❌ 인증번호가 올바르지 않습니다');
+  }
+}
+
+// ── 배송지 저장 ───────────────────────────────────────────
+function saveAddress(){
+  const recipient = document.getElementById('f-recipient').value.trim();
+  const phone     = document.getElementById('f-phone').value.trim();
+  const zipCode   = document.getElementById('f-zip').value.trim();
+  const address1  = document.getElementById('f-addr1').value.trim();
+  const address2  = document.getElementById('f-addr2').value.trim();
+  const isDefault = document.getElementById('f-default').checked;
+  const noteVal   = document.getElementById('f-note').value;
+  const deliveryNote = noteVal==='직접 입력'
+    ? document.getElementById('f-note-custom').value.trim()
+    : noteVal;
+
+  if(!recipient){ toast('수령인 이름을 입력해주세요'); return; }
+  if(!phone)    { toast('휴대폰 번호를 입력해주세요'); return; }
+  if(!phoneVerified){ toast('휴대폰 번호 인증을 완료해주세요'); return; }
+  if(!zipCode||!address1){ toast('주소를 검색해주세요'); return; }
+
+  const newAddr = { recipient, phone, zipCode, address1, address2, deliveryNote, isDefault };
+
+  if(isDefault) addresses.forEach(a=>a.isDefault=false);
+
+  if(editingId !== null){
+    addresses[editingId] = newAddr;
+    toast('배송지가 수정됐습니다');
+  } else {
+    if(addresses.length===0) newAddr.isDefault=true;
+    addresses.push(newAddr);
+    toast('배송지가 추가됐습니다');
+  }
+
+  localStorage.setItem('mm_addresses', JSON.stringify(addresses));
+  closeForm();
+  renderAddresses();
+}
+
+function setDefault(i){
+  addresses.forEach((a,j)=>a.isDefault=(j===i));
+  localStorage.setItem('mm_addresses', JSON.stringify(addresses));
+  renderAddresses();
+  toast('기본 배송지로 설정됐습니다');
+}
+
+function editAddress(i){ openForm(i); }
+
+function deleteAddress(i){
+  if(!confirm('이 배송지를 삭제하시겠습니까?')) return;
+  addresses.splice(i,1);
+  if(addresses.length>0 && !addresses.find(a=>a.isDefault)) addresses[0].isDefault=true;
+  localStorage.setItem('mm_addresses', JSON.stringify(addresses));
+  renderAddresses();
+  toast('삭제됐습니다');
+}
+
+// 배송 요청사항 직접입력
+document.getElementById('f-note').addEventListener('change',function(){
+  document.getElementById('note-custom').style.display=this.value==='직접 입력'?'block':'none';
+});
+
+loadAddresses();
+</script>
+</body>
+</html>
