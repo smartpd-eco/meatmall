@@ -692,7 +692,9 @@ function adminLogout(){
   sessionStorage.removeItem('mm_admin');
   localStorage.removeItem('mm_access_token');
   localStorage.removeItem('mm_user_cache');
-  renderLogin();
+  localStorage.removeItem('mm_token');
+  // 일반 로그인 페이지로 이동
+  window.location.href = '../login.html';
 }
 
 // 페이지 떠날 때 탭 상태 초기화
