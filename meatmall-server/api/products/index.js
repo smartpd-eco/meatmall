@@ -50,8 +50,7 @@ router.get('/', optionalAuth, async (req, res) => {
     if (is_subscribe) query = query.eq('is_subscribe', true);
     if (search)       query = query.ilike('name', `%${search}%`);
 
-    // 정렬
-    if (sort === 'price_asc')  query = query.order('price', { ascending: true });
+    if (sort === 'price_asc') query = query.order('price', { ascending: true });
     else if (sort === 'price_desc') query = query.order('price', { ascending: false });
     else query = query.order(sort, { ascending: order === 'asc' });
 
@@ -65,12 +64,8 @@ router.get('/', optionalAuth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════════
-// GET /api/products/best — 베스트셀러
-// ════════════════════════════════════════════════════
 router.get('/best', async (req, res) => {
   try {
-    // 주문 수 기준 상위 8개
     const { data: products } = await supabase
       .from('products')
       .select('*')
@@ -84,9 +79,6 @@ router.get('/best', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════════
-// GET /api/products/:id — 상품 상세
-// ════════════════════════════════════════════════════
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const { data: product, error } = await supabase
@@ -105,9 +97,6 @@ router.get('/:id', optionalAuth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════════
-// POST /api/products — 상품 등록 (관리자)
-// ════════════════════════════════════════════════════
 router.post('/', requireAdmin, async (req, res) => {
   try {
     const {
@@ -123,10 +112,14 @@ router.post('/', requireAdmin, async (req, res) => {
       .from('products')
       .insert({
         name, description, category, source_type, origin,
-        weight_g, price, origin_price, stock: stock||0,
-        min_stock: min_stock||10, expiry_days,
-        is_subscribe: !!is_subscribe, haccp: !!haccp,
-        emoji: emoji||'🥩', thumbnail_url, is_active: true
+        weight_g, price, origin_price, stock: stock || 0,
+        min_stock: min_stock || 10,
+        expiry_days,
+        is_subscribe: !!is_subscribe,
+        haccp: !!haccp,
+        emoji: emoji || '🥩',
+        thumbnail_url,
+        is_active: true
       })
       .select()
       .single();
@@ -139,9 +132,6 @@ router.post('/', requireAdmin, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════════
-// PATCH /api/products/:id — 상품 수정 (관리자)
-// ════════════════════════════════════════════════════
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
     const { data: product, error } = await supabase
@@ -158,12 +148,13 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════════
-// DELETE /api/products/:id — 상품 삭제(비활성화) (관리자)
-// ════════════════════════════════════════════════════
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
-    await supabase.from('products').update({ is_active: false }).eq('id', req.params.id);
+    await supabase
+      .from('products')
+      .update({ is_active: false })
+      .eq('id', req.params.id);
+
     res.json({ ok: true, message: '상품이 비활성화됐습니다' });
   } catch (err) {
     res.status(500).json({ error: '삭제 오류' });
