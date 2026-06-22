@@ -40,14 +40,8 @@ app.use((req, res, next) => {
   }
 
   res.setHeader('Vary', 'Origin');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET,POST,PUT,PATCH,DELETE,OPTIONS'
-  );
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type,Authorization,Cookie'
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Cookie');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
@@ -72,6 +66,7 @@ app.use(cors({
 
 // ====================================================
 // 기본 미들웨어
+// request entity too large 방지
 // ====================================================
 
 app.use(helmet({
@@ -80,8 +75,15 @@ app.use(helmet({
 }));
 
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+app.use(express.json({
+  limit: '50mb'
+}));
+
+app.use(express.urlencoded({
+  extended: true,
+  limit: '50mb'
+}));
 
 // ====================================================
 // Rate Limiting
@@ -119,7 +121,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     ok: true,
     service: '정육본가 API',
-    version: '2.2',
+    version: '2.3',
     time: new Date().toISOString(),
     endpoints: ['/auth', '/products', '/payment', '/admin', '/notify']
   });
@@ -137,7 +139,6 @@ app.use((req, res) => {
 
 // ====================================================
 // 전역 에러 핸들러
-// CORS 에러도 브라우저에서 볼 수 있게 JSON 반환
 // ====================================================
 
 app.use((err, req, res, next) => {
@@ -153,7 +154,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🥩 정육본가 API v2.2 — http://localhost:${PORT}\n`);
+  console.log(`\n🥩 정육본가 API v2.3 — http://localhost:${PORT}\n`);
 });
 
 module.exports = app;
