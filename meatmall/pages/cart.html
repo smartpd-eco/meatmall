@@ -62,7 +62,7 @@
   <header class="header">
     <button class="header__icon-btn" onclick="history.back()">←</button>
     <div style="font-size:1rem;font-weight:700">장바구니 <span id="cart-cnt" style="color:var(--gray-400);font-weight:400;font-size:.88rem"></span></div>
-    <button style="font-size:.78rem;font-weight:700;color:var(--primary);background:none;border:none;cursor:pointer" onclick="toggleSelectAll()">전체선택</button>
+    <button class="header__icon-btn" id="admin-btn" onclick="go('../admin/dashboard.html')" style="display:none;margin-right:4px" title="관리자">⚙️</button><button style="font-size:.78rem;font-weight:700;color:var(--primary);background:none;border:none;cursor:pointer" onclick="toggleSelectAll()">전체선택</button>
   </header>
 
   <div id="cart-main" style="padding-bottom:130px"></div>

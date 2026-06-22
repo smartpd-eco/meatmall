@@ -167,3 +167,18 @@ function toggleWish(pid, btn) {
 
 // ── 초기화 ───────────────────────────────────────────────
 Store.load();
+
+// ── 관리자 버튼 자동 표시 ──────────────────────────────
+function showAdminBtn() {
+  const user = JSON.parse(localStorage.getItem('mm_user_cache') || '{}');
+  if (user.is_admin) {
+    const btn = document.getElementById('admin-btn');
+    if (btn) btn.style.display = 'flex';
+  }
+}
+// DOM 로드 후 자동 실행
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', showAdminBtn);
+} else {
+  showAdminBtn();
+}
