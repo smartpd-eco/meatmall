@@ -59,9 +59,13 @@ router.get('/', optionalAuth, async (req, res) => {
 
     res.json({ ok: true, products, total: count, page: Number(page), limit: Number(limit) });
   } catch (err) {
-    console.error('[products]', err);
-    res.status(500).json({ error: '상품 조회 중 오류가 발생했습니다' });
-  }
+  console.error('[products/post]', err);
+
+  res.status(500).json({
+    error: err.message || '상품 등록 오류',
+    details: err
+  });
+}
 });
 
 router.get('/best', async (req, res) => {
