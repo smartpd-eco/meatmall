@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
+body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
+
 .faq-item{background:var(--charcoal);border:1px solid var(--line);border-radius:12px;margin:0 14px 8px;overflow:hidden;cursor:pointer}
 .faq-q{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font-size:.88rem;font-weight:600;color:var(--txt-hi)}
 .faq-a{display:none;padding:12px 16px 14px;font-size:.84rem;color:var(--txt-md);line-height:1.75;border-top:1px solid var(--line)}
@@ -19,7 +21,7 @@
 <script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
 </head>
 <body>
-<div class="app-wrap">
+<div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
   <header class="dark-header">
     <button class="dh-btn" onclick="history.back()">←</button>
     <div class="dh-title">고객센터</div>

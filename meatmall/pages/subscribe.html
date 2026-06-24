@@ -8,9 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
+body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
+
 .sub-hero{
   background:linear-gradient(160deg,#0D0D0D,#1A1208);
-  border-bottom:1px solid var(--gold-bdr);
+  border-bottom:2px solid var(--gold);
   padding:24px 20px;
 }
 .plan-card{
@@ -31,7 +33,7 @@
 <script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
 </head>
 <body>
-<div class="app-wrap">
+<div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
   <header class="dark-header">
     <button class="dh-btn" onclick="history.back()">←</button>
     <div class="dh-title">정기배송</div>

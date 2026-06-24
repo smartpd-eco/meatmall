@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
+body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
+
 :root { --max-w: 480px; }
 body { background: #F1F0EF; }
 
@@ -109,7 +111,7 @@ window.addEventListener('pageshow', function(e){
 </script>
 </head>
 <body>
-<div class="app-wrap" id="app">
+<div class="app-wrap" id="app;display:flex;flex-direction:column;min-height:100vh">
 
   <!-- 관리자 로그인 체크 (JS로 처리) -->
   <div class="admin-header">

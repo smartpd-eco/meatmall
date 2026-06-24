@@ -10,13 +10,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
+body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
+
 body{background:#F1F0EF}
 .admin-header{background:var(--primary-dark);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
 .admin-logo{font-size:1rem;font-weight:700;color:#fff}
 .admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
-.setting-card{background:#fff;margin:12px 14px;border-radius:var(--radius-lg);box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden}
-.card-head{padding:14px 16px 10px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-size:.95rem;font-weight:700;color:var(--dark)}
+.setting-card{background:#1C1C1C;margin:12px 14px;border:1.5px solid rgba(201,168,76,.25);border-radius:var(--radius-lg);overflow:hidden}
+.card-head{padding:14px 16px 10px;border-bottom:1px solid rgba(201,168,76,.15);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.95rem;font-weight:700;color:var(--gold,#C9A84C)}
 .card-body{padding:16px}
 .status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .dot-live{background:#16A34A;animation:pulse 2s infinite}
@@ -27,26 +29,26 @@ body{background:#F1F0EF}
 .badge-test{background:#FEF3C7;color:#92400E}
 .key-row{margin-bottom:12px}
 .key-label{font-size:.8rem;font-weight:600;color:var(--gray-600);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
-.key-input{width:100%;height:44px;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);padding:0 12px;font-size:.84rem;font-family:monospace;outline:none;color:var(--dark)}
+.key-input{width:100%;height:44px;border:1.5px solid rgba(201,168,76,.25);background:#1C1C1C;color:#fff;border-radius:var(--radius-md);padding:0 12px;font-size:.84rem;font-family:monospace;outline:none;color:var(--dark)}
 .key-input:focus{border-color:var(--primary)}
-.key-input.filled{border-color:var(--green);background:#F0FDF4}
+.key-input.filled{border-color:#22C55E;background:rgba(34,197,94,.08)}
 .key-input.empty{border-color:var(--gray-200)}
 .method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.method-item{border:1.5px solid var(--gray-200);border-radius:var(--radius-md);padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s}
-.method-item.active{border-color:var(--primary);background:var(--cream)}
+.method-item{border:1.5px solid rgba(201,168,76,.2);background:#1C1C1C;border-radius:var(--radius-md);padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s}
+.method-item.active{border-color:var(--gold,#C9A84C);background:rgba(201,168,76,.1)}
 .method-icon{font-size:1.5rem;margin-bottom:5px}
-.method-name{font-size:.76rem;font-weight:700;color:var(--dark)}
+.method-name{font-size:.76rem;font-weight:700;color:#fff}
 .method-fee{font-size:.68rem;color:var(--gray-500);margin-top:2px}
 .method-status{font-size:.66rem;font-weight:700;margin-top:3px}
 .status-on{color:var(--green)}
 .status-off{color:var(--gray-400)}
-.info-box{background:var(--gray-100);border-radius:var(--radius-md);padding:12px 14px;font-size:.82rem;color:var(--gray-700);line-height:1.8}
-.info-box.warn{background:#FEF3C7;color:#78350F}
-.info-box.success{background:#F0FDF4;color:#166534}
+.info-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-md);padding:12px 14px;font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.8}
+.info-box.warn{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:rgba(201,168,76,.9)}
+.info-box.success{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.25);color:#86EFAC}
 .step-list{display:flex;flex-direction:column;gap:10px}
 .step-item{display:flex;gap:12px;align-items:flex-start}
-.step-num{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.step-text{flex:1;font-size:.84rem;color:var(--gray-700);line-height:1.6}
+.step-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#fff;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{flex:1;font-size:.84rem;color:rgba(255,255,255,.65);line-height:1.6}
 .step-text strong{color:var(--dark)}
 .copy-btn{font-size:.72rem;font-weight:600;color:var(--primary);background:none;border:1px solid var(--primary);padding:2px 8px;border-radius:4px;cursor:pointer}
 code{font-family:monospace;background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:.8rem}
@@ -59,7 +61,7 @@ window.addEventListener('pageshow', function(e){
 </script>
 </head>
 <body>
-<div class="app-wrap">
+<div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
   <div class="admin-header">
     <div class="admin-logo">💳 결제 설정</div>
     <div style="display:flex;gap:6px">

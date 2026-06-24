@@ -10,52 +10,54 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
+body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
+
 :root{--max-w:480px}
 body{background:#F1F0EF}
-.admin-header{background:var(--primary-dark);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;width:100%!important;max-width:430px!important;box-sizing:border-box;max-width:var(--max-w,430px)}
+.admin-header{background:linear-gradient(180deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold);box-shadow:0 2px 12px rgba(201,168,76,.15);width:100%!important;max-width:430px!important;box-sizing:border-box;max-width:var(--max-w,430px)}
 .admin-logo{font-family:var(--font-display);font-size:1rem;font-weight:700;color:#fff}
 .admin-logo small{font-size:.68rem;font-weight:400;opacity:.7;margin-left:6px}
 .admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
-.admin-tabs{display:flex;background:var(--primary);overflow-x:auto;scrollbar-width:none;width:100%;box-sizing:border-box}
+.admin-tabs{display:flex;background:linear-gradient(180deg,#1C1A12,#111);overflow-x:auto;scrollbar-width:none;width:100%;box-sizing:border-box;border-bottom:1px solid rgba(201,168,76,.3)}
 .admin-tabs::-webkit-scrollbar{display:none}
-.admin-tab{flex-shrink:0;padding:10px 14px;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.65);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s}
-.admin-tab.active{color:#fff;border-bottom-color:var(--amber)}
+.admin-tab{flex-shrink:0;padding:10px 14px;font-size:.8rem;font-weight:600;color:rgba(201,168,76,.45);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s}
+.admin-tab.active{color:var(--gold,#C9A84C);border-bottom-color:var(--gold,#C9A84C);font-weight:800}
 
 /* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
-.kpi-card{background:#fff;border-radius:var(--radius-md);padding:16px;box-shadow:var(--shadow-sm)}
-.kpi-label{font-size:.74rem;color:var(--gray-500);margin-bottom:6px}
-.kpi-value{font-size:1.3rem;font-weight:800;color:var(--dark)}
+.kpi-card{background:#1C1C1C;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:16px;box-shadow:0 2px 12px rgba(201,168,76,.1)}
+.kpi-label{font-size:.74rem;color:rgba(201,168,76,.6);margin-bottom:6px}
+.kpi-value{font-size:1.3rem;font-weight:800;color:#fff}
 .kpi-delta{font-size:.74rem;font-weight:700;margin-top:4px}
 .up{color:var(--red)}.down{color:var(--blue)}
 
 /* 알림 배너 */
 .alert-bar{margin:0 14px 10px;border-radius:var(--radius-md);padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:.82rem}
-.alert-urgent{background:var(--red-light);border-left:3px solid var(--red)}
-.alert-warn{background:#FEF3C7;border-left:3px solid var(--amber)}
-.alert-text{flex:1;color:var(--gray-700);line-height:1.4}
+.alert-urgent{background:rgba(239,68,68,.1);border-left:3px solid #EF4444}
+.alert-warn{background:rgba(201,168,76,.1);border-left:3px solid var(--gold,#C9A84C)}
+.alert-text{flex:1;color:rgba(255,255,255,.8);line-height:1.4}
 .alert-text strong{font-weight:700}
-.alert-btn{font-size:.74rem;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border:1px solid var(--primary);border-radius:var(--radius-sm);white-space:nowrap;background:none}
+.alert-btn{font-size:.74rem;font-weight:700;color:var(--gold,#C9A84C);cursor:pointer;padding:4px 8px;border:1px solid var(--gold,#C9A84C);border-radius:var(--radius-sm);white-space:nowrap;background:none}
 
 /* 섹션 카드 */
-.admin-section{background:#fff;margin:0 14px 12px;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
-.section-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 10px;border-bottom:1px solid var(--gray-100)}
-.section-title{font-size:.9rem;font-weight:700;color:var(--dark)}
-.section-action{font-size:.76rem;color:var(--primary);font-weight:600;cursor:pointer;background:none;border:none}
+.admin-section{background:#1C1C1C;margin:0 14px 12px;border:1.5px solid rgba(201,168,76,.25);border-radius:var(--radius-md);overflow:hidden}
+.section-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 10px;border-bottom:1px solid rgba(201,168,76,.15)}
+.section-title{font-size:.9rem;font-weight:700;color:var(--gold,#C9A84C)}
+.section-action{font-size:.76rem;color:var(--gold,#C9A84C);font-weight:600;cursor:pointer;background:none;border:none}
 
 /* 매출 차트 */
 .chart-wrap{padding:14px 16px;overflow-x:auto}
 .rev-bars{display:flex;gap:6px;align-items:flex-end;height:100px}
 .rev-bar-w{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:28px}
-.rev-bar{width:100%;border-radius:4px 4px 0 0;background:var(--primary);transition:height .4s;cursor:pointer;min-height:4px}
+.rev-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(0deg,#A8862A,#E8C97A);transition:height .4s;cursor:pointer;min-height:4px}
 .rev-bar:hover{background:var(--accent)}
 .rev-label{font-size:.62rem;color:var(--gray-500)}
 .rev-value{font-size:.65rem;font-weight:700;color:var(--dark)}
 
 /* 주문 목록 */
-.order-row{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--gray-100);font-size:.8rem;cursor:pointer;transition:background .1s}
+.order-row{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.8rem;cursor:pointer;transition:background .1s}
 .order-row:last-child{border-bottom:none}
-.order-row:active{background:var(--gray-100)}
+.order-row:active{background:rgba(201,168,76,.05)}
 .order-id{font-weight:700;color:var(--dark);min-width:80px;font-size:.76rem}
 .order-buyer{color:var(--gray-700);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .order-amt{font-weight:700;color:var(--dark);white-space:nowrap}
@@ -92,10 +94,10 @@ body{background:#F1F0EF}
 
 /* 빠른 액션 */
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
-.qa-btn{background:#fff;border-radius:var(--radius-md);padding:14px 8px;text-align:center;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .15s;border:none}
+.qa-btn{background:#1C1C1C;border:1.5px solid rgba(201,168,76,.35);border-radius:var(--radius-md);padding:14px 8px;text-align:center;cursor:pointer;transition:all .15s}
 .qa-btn:active{transform:scale(.95)}
 .qa-ico{font-size:1.5rem;margin-bottom:6px}
-.qa-lbl{font-size:.68rem;font-weight:700;color:var(--gray-700)}
+.qa-lbl{font-size:.68rem;font-weight:700;color:rgba(201,168,76,.8)}
 
 /* 로그인 */
 .login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,var(--primary-dark),var(--primary))}
@@ -120,7 +122,7 @@ window.addEventListener('pageshow', function(e){
 </script>
 </head>
 <body>
-<div class="app-wrap" id="app">
+<div class="app-wrap" id="app;display:flex;flex-direction:column;min-height:100vh">
   <div style="text-align:center;padding:60px 24px;color:var(--gray-400)">🔄 로딩 중...</div>
 </div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
