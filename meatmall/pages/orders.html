@@ -3,302 +3,266 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>주문 내역 · 정육본가</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
-.order-filter{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;background:#1E1E1E;border-bottom:1px solid var(--line)}
-.order-filter::-webkit-scrollbar{display:none}
-.filter-pill{flex-shrink:0;padding:6px 14px;border:1.5px solid rgba(255,255,255,.1);border-radius:999px;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;background:rgba(255,255,255,.04);transition:all .15s}
-.filter-pill.on{border-color:var(--gold,#C9A84C);background:rgba(201,168,76,.1);color:var(--gold,#C9A84C)}
+/* 주문페이지 = 흰 배경 + 골드 테두리 */
+body { background: #F8F6F0 !important; }
+.app-wrap { background: #F8F6F0 !important; }
 
-.order-card{background:var(--charcoal);border:1px solid var(--line)!important;margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
-.order-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+.ord-header {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff; border-bottom: 2px solid var(--gold);
+  height: 56px; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 16px;
+  width: 100%; box-sizing: border-box;
+}
+.ord-header-title {
+  font-family: var(--font-display); font-size: .95rem;
+  font-weight: 700; color: #111;
+  position: absolute; left: 50%; transform: translateX(-50%);
+}
+.ord-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; border: none; background: none; position: relative; z-index: 1; }
 
-/* 상태 + 입금대기 뱃지 행 */
-.status-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.deposit-badge{display:inline-flex;align-items:center;gap:3px;background:var(--gold-dim);color:var(--gold);font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid var(--gold-bdr);line-height:1}
+/* 필터 탭 */
+.ord-filter {
+  display: flex; gap: 6px; padding: 12px 14px;
+  overflow-x: auto; scrollbar-width: none;
+  background: #fff; border-bottom: 1px solid #F0EDE6;
+  width: 100%; box-sizing: border-box;
+}
+.ord-filter::-webkit-scrollbar { display: none; }
+.ord-pill {
+  flex-shrink: 0; padding: 6px 14px;
+  border: 1.5px solid #ddd; border-radius: 999px;
+  font-size: .8rem; font-weight: 600; color: #888;
+  cursor: pointer; background: #fff; transition: all .15s;
+  white-space: nowrap;
+}
+.ord-pill.on { border-color: var(--gold); background: #FFF7ED; color: var(--gold); font-weight: 700; }
 
-.order-date-no{font-size:.76rem;color:var(--txt-lo);line-height:1.6}
-.order-item-row{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
-.order-item-thumb{width:56px;height:56px;border-radius:var(--radius-md);background:var(--smoke);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
-.order-item-info{flex:1;min-width:0}
-.order-item-name{font-size:.88rem;font-weight:600;color:var(--txt-hi);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.order-item-meta{font-size:.76rem;color:var(--gray-500)}
-.order-item-price{font-size:.9rem;font-weight:800;color:var(--gold);flex-shrink:0}
-.vbank-notice{background:rgba(201,168,76,.07);border-left:3px solid var(--gold);padding:10px 14px;font-size:.8rem;color:var(--txt-md);line-height:1.75}
-.order-card-foot{background:var(--charcoal);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.order-actions{display:flex;gap:6px;flex-wrap:wrap}
-.oabtn{font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:var(--radius-sm);cursor:pointer;border:none;transition:all .15s}
-.oabtn-primary{background:var(--gold);color:#111}
-.oabtn-outline{background:transparent;color:var(--gold);border:1.5px solid var(--gold-bdr)!important}
-.oabtn-gray{background:transparent;color:var(--txt-lo);border:1.5px solid var(--line)!important}
-.empty-orders{text-align:center;padding:80px 24px;color:var(--txt-lo)}
+/* 주문 카드 — 흰 배경 + 골드 테두리 */
+.ord-card {
+  background: #fff;
+  border: 1.5px solid var(--gold);
+  border-radius: 14px;
+  margin: 8px 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(201,168,76,.1);
+}
+.ord-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #F0EDE6;
+  background: linear-gradient(135deg, #FFFBF5, #FFF7ED);
+}
+.ord-num { font-size: .72rem; font-weight: 700; color: var(--gold); }
+.ord-date { font-size: .72rem; color: #999; margin-top: 2px; }
+
+/* 상태 칩 — 흰 배경용 */
+.oc-preparing { background: #FFF7ED; color: #92400E; border: 1px solid var(--gold); font-size: .72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; }
+.oc-deposit   { background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; font-size: .72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; }
+.oc-shipping  { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; font-size: .72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; }
+.oc-done      { background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; font-size: .72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; }
+.oc-cancel    { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; font-size: .72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; }
+.oc-pending   { background: #F9FAFB; color: #6B7280; border: 1px solid #E5E7EB; font-size: .72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; }
+
+/* 입금대기 뱃지 */
+.dep-badge { background: #FEF3C7; color: #92400E; font-size: .7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid #FCD34D; display: inline-flex; align-items: center; gap: 3px; }
+
+/* 상품 행 */
+.ord-item-row {
+  display: flex; gap: 10px; padding: 12px 14px;
+  border-bottom: 1px solid #F5F5F5;
+}
+.ord-thumb {
+  width: 56px; height: 56px; border-radius: 10px;
+  background: linear-gradient(135deg, #FFF7ED, #FEF3C7);
+  border: 1px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; flex-shrink: 0;
+}
+.ord-item-name { font-size: .88rem; font-weight: 600; color: #111; margin-bottom: 3px; }
+.ord-item-meta { font-size: .76rem; color: #888; }
+.ord-item-price { font-size: .9rem; font-weight: 800; color: var(--gold); flex-shrink: 0; }
+
+/* 무통장 안내 */
+.vbank-notice {
+  background: #FFFBF5; border-left: 3px solid var(--gold);
+  padding: 10px 14px; font-size: .8rem; color: #78350F; line-height: 1.75;
+}
+
+/* 푸터 */
+.ord-card-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; flex-wrap: wrap; gap: 8px;
+  background: #FAFAFA;
+}
+.ord-total { font-size: .9rem; font-weight: 700; color: #111; }
+.ord-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.oabtn {
+  font-size: .76rem; font-weight: 700; padding: 6px 12px;
+  border-radius: 8px; cursor: pointer; transition: all .15s; border: none;
+}
+.oabtn-gold    { background: var(--gold); color: #111; }
+.oabtn-outline { background: #fff; color: var(--gold); border: 1.5px solid var(--gold) !important; }
+.oabtn-gray    { background: #fff; color: #666; border: 1.5px solid #ddd !important; }
+
+.empty-orders { text-align: center; padding: 80px 24px; }
+
+/* 하단 네비 */
+.ord-nav {
+  position: sticky; bottom: 0; z-index: 100;
+  width: 100%; height: 62px; background: #fff;
+  border-top: 2px solid var(--gold);
+  display: flex; box-sizing: border-box; margin-top: auto;
+}
+.ord-nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px; cursor: pointer;
+}
+.ord-nav-ico { font-size: 1.1rem; }
+.ord-nav-lbl { font-size: .58rem; font-weight: 600; color: #999; }
+.ord-nav-item.on .ord-nav-lbl { color: var(--gold); font-weight: 800; }
 </style>
-<script>
-window.addEventListener('pageshow', function(e){
-  if(e.persisted){ window.location.reload(); }
-});
-</script>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
 </head>
 <body>
 <div class="app-wrap">
-  <header class="dark-header">
-    <button class="header__icon-btn" onclick="history.back()">←</button>
-    <div style="font-size:1rem;font-weight:700">주문 내역</div>
-    <button id="admin-btn" class="header__icon-btn" onclick="go('../admin/dashboard.html')" style="display:none">⚙️</button>
+
+  <header class="ord-header">
+    <button class="ord-btn" onclick="history.back()">←</button>
+    <div class="ord-header-title">주문 내역</div>
+    <button class="ord-btn" id="admin-btn" onclick="go('../admin/dashboard.html')" style="display:none">⚙️</button>
   </header>
 
-  <div class="order-filter">
-    <div class="filter-pill on" onclick="filterOrders('',this)">전체</div>
-    <div class="filter-pill"    onclick="filterOrders('preparing',this)">준비중</div>
-    <div class="filter-pill"    onclick="filterOrders('shipping',this)">배송중</div>
-    <div class="filter-pill"    onclick="filterOrders('delivered',this)">완료</div>
-    <div class="filter-pill"    onclick="filterOrders('cancelled',this)">취소</div>
+  <div class="ord-filter">
+    <div class="ord-pill on" onclick="filterOrders('',this)">전체</div>
+    <div class="ord-pill" onclick="filterOrders('preparing',this)">준비중</div>
+    <div class="ord-pill" onclick="filterOrders('shipping',this)">배송중</div>
+    <div class="ord-pill" onclick="filterOrders('delivered',this)">완료</div>
+    <div class="ord-pill" onclick="filterOrders('cancelled',this)">취소</div>
   </div>
 
-  <div id="order-list" style="padding-bottom:32px">
-    <div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 불러오는 중...</div>
-    <nav class="dark-nav">
-    <div class="dnav-item" onclick="go('../index.html')"><div class="dnav-ico">🏠</div><div class="dnav-lbl">홈</div></div>
-    <div class="dnav-item" onclick="go('../pages/category.html')"><div class="dnav-ico">🥩</div><div class="dnav-lbl">정육</div></div>
-    <div class="dnav-item" onclick="go('../pages/cart.html')"><div class="dnav-ico">🛒</div><div class="dnav-lbl">장바구니</div></div>
-    <div class="dnav-item" onclick="go('../pages/orders.html')" ><div class="dnav-ico">📦</div><div class="dnav-lbl">주문</div></div>
-    <div class="dnav-item" onclick="go('../pages/mypage.html')"><div class="dnav-ico">👤</div><div class="dnav-lbl">마이</div></div>
+  <div id="order-list" style="padding: 4px 0 8px">
+    <div style="text-align:center;padding:40px;color:#999">🔄 불러오는 중...</div>
+  </div>
+
+  <!-- 하단 네비 -->
+  <nav class="ord-nav">
+    <div class="ord-nav-item" onclick="go('../index.html')"><div class="ord-nav-ico">🏠</div><div class="ord-nav-lbl">홈</div></div>
+    <div class="ord-nav-item" onclick="go('../pages/category.html')"><div class="ord-nav-ico">🥩</div><div class="ord-nav-lbl">정육</div></div>
+    <div class="ord-nav-item" onclick="go('../pages/cart.html')"><div class="ord-nav-ico">🛒</div><div class="ord-nav-lbl">장바구니</div></div>
+    <div class="ord-nav-item on"><div class="ord-nav-ico">📦</div><div class="ord-nav-lbl">주문</div></div>
+    <div class="ord-nav-item" onclick="go('../pages/mypage.html')"><div class="ord-nav-ico">👤</div><div class="ord-nav-lbl">마이</div></div>
   </nav>
-</div>
+
 </div>
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
-const API = 'https://meatmall.vercel.app/api';
-function go(url){ window.location.href=url; }
-function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
-function toast(msg){
-  const el=document.getElementById('toast-global');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2400);
-}
+const API='https://meatmall.vercel.app/api';
+function go(u){window.location.href=u}
+function fmt(n){return Number(n).toLocaleString('ko-KR')}
+function toast(msg){const el=document.getElementById('toast-global');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400)}
 
 Store.load(); showAdminBtn();
 
-function getToken(){
-  return localStorage.getItem('mm_access_token') || localStorage.getItem('mm_token') || null;
-}
+function getToken(){ return localStorage.getItem('mm_access_token')||localStorage.getItem('mm_token')||null; }
 
-// 상태 → 한글 레이블
-const STATUS_LABEL = {
-  pending:          '결제대기',
-  pending_deposit:  '준비중',
-  awaiting_deposit: '준비중',
-  preparing:        '준비중',
-  shipping:         '배송중',
-  delivered:        '배송완료',
-  cancelled:        '취소됨',
-  refund_req:       '환불요청',
-  refunded:         '환불완료',
-  partial_cancel:   '부분취소',
-};
-const STATUS_CLASS = {
-  pending:          'status-pending',
-  pending_deposit:  'status-preparing',
-  awaiting_deposit: 'status-preparing',
-  preparing:        'status-preparing',
-  shipping:         'status-shipping',
-  delivered:        'status-done',
-  cancelled:        'status-cancel',
-  refunded:         'status-cancel',
-};
-const PAY_LABEL = {
-  CARD:'카드결제', KAKAO:'카카오페이', NAVER:'네이버페이',
-  TOSS:'토스페이', VBANK:'무통장입금', PHONE:'휴대폰결제',
-};
+const STATUS_LABEL={pending:'결제대기',pending_deposit:'준비중',awaiting_deposit:'준비중',preparing:'준비중',shipping:'배송중',delivered:'배송완료',cancelled:'취소됨',refunded:'환불완료'};
+const STATUS_CLASS={pending:'oc-pending',pending_deposit:'oc-preparing',awaiting_deposit:'oc-preparing',preparing:'oc-preparing',shipping:'oc-shipping',delivered:'oc-done',cancelled:'oc-cancel',refunded:'oc-cancel'};
+const PAY_LABEL={CARD:'카드결제',KAKAO:'카카오페이',NAVER:'네이버페이',TOSS:'토스페이',VBANK:'무통장입금',PHONE:'휴대폰결제'};
 
-let currentFilter = '';
+let currentFilter='';
 
-// ── 주문 목록 로드 ──────────────────────────────────────────
 async function loadOrders(){
-  const token = getToken();
-  if(!token){ toast('로그인이 필요합니다'); setTimeout(()=>go('../login.html'),800); return; }
-
-  document.getElementById('order-list').innerHTML =
-    '<div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 불러오는 중...</div>';
-
-  try {
-    let orders = [];
-
-    if(currentFilter === 'preparing'){
-      // 준비중 탭: preparing + pending_deposit 동시 조회
-      const [r1, r2] = await Promise.all([
-        fetch(`${API}/payment/orders?page=1&limit=20&status=preparing`,
-          { headers:{'Authorization':'Bearer '+token}, credentials:'include' }),
-        fetch(`${API}/payment/orders?page=1&limit=20&status=pending_deposit`,
-          { headers:{'Authorization':'Bearer '+token}, credentials:'include' }),
+  const token=getToken();
+  if(!token){toast('로그인이 필요합니다');setTimeout(()=>go('../login.html'),800);return;}
+  document.getElementById('order-list').innerHTML='<div style="text-align:center;padding:40px;color:#999">🔄 불러오는 중...</div>';
+  try{
+    let orders=[];
+    if(currentFilter==='preparing'){
+      const [r1,r2]=await Promise.all([
+        fetch(`${API}/payment/orders?page=1&limit=20&status=preparing`,{headers:{'Authorization':'Bearer '+token},credentials:'include'}),
+        fetch(`${API}/payment/orders?page=1&limit=20&status=pending_deposit`,{headers:{'Authorization':'Bearer '+token},credentials:'include'}),
       ]);
-      if(r1.status===401||r2.status===401){ await tryRefresh(); await loadOrders(); return; }
-      const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
-      orders = [...(d1.orders||[]), ...(d2.orders||[])];
+      if(r1.status===401||r2.status===401){go('../login.html');return;}
+      const [d1,d2]=await Promise.all([r1.json(),r2.json()]);
+      orders=[...(d1.orders||[]),...(d2.orders||[])];
       orders.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
     } else {
-      let url = `${API}/payment/orders?page=1&limit=30`;
-      if(currentFilter) url += `&status=${currentFilter}`;
-      const r = await fetch(url, { headers:{'Authorization':'Bearer '+token}, credentials:'include' });
-      if(r.status===401){ await tryRefresh(); await loadOrders(); return; }
-      const d = await r.json();
-      if(!r.ok) throw new Error(d.error||'서버 오류');
-      orders = d.orders||[];
+      let url=`${API}/payment/orders?page=1&limit=30`;
+      if(currentFilter) url+=`&status=${currentFilter}`;
+      const r=await fetch(url,{headers:{'Authorization':'Bearer '+token},credentials:'include'});
+      if(r.status===401){go('../login.html');return;}
+      const d=await r.json();
+      if(!r.ok) throw new Error(d.error||'오류');
+      orders=d.orders||[];
     }
-
     renderOrders(orders);
-  } catch(e){
-    document.getElementById('order-list').innerHTML=`
-    <div class="empty-orders">
-      <div style="font-size:3rem;margin-bottom:12px">😢</div>
-      <div style="margin-bottom:8px">주문 내역을 불러오지 못했습니다</div>
-      <div style="font-size:.78rem;color:var(--gray-400);margin-bottom:16px">${e.message}</div>
-      <button class="btn btn-primary btn-sm" onclick="loadOrders()">다시 시도</button>
-    </div>`;
+  }catch(e){
+    document.getElementById('order-list').innerHTML=`<div class="empty-orders"><div style="font-size:3rem;margin-bottom:12px">😢</div><div style="color:#999">${e.message}</div><button onclick="loadOrders()" style="margin-top:16px;padding:8px 20px;background:var(--gold);color:#111;border:none;border-radius:8px;font-weight:700;cursor:pointer">다시 시도</button></div>`;
   }
 }
 
-async function tryRefresh(){
-  try {
-    const r = await fetch(API+'/auth/refresh',{method:'POST',credentials:'include'});
-    if(!r.ok) return false;
-    const d = await r.json();
-    localStorage.setItem('mm_access_token', d.accessToken);
-    return true;
-  } catch{ return false; }
-}
-
-// ── 주문 카드 렌더 ──────────────────────────────────────────
 function renderOrders(orders){
-  const list = document.getElementById('order-list');
-
-  if(orders.length === 0){
-    list.innerHTML=`
-    <div class="empty-orders">
-      <div style="font-size:3.5rem;margin-bottom:14px">📦</div>
-      <div style="font-size:.95rem;margin-bottom:6px">주문 내역이 없습니다</div>
-      <div style="font-size:.82rem;color:var(--gray-400);margin-bottom:20px">
-        ${currentFilter==='preparing'?'준비중인 주문이 없습니다':'아직 주문하신 내역이 없습니다'}
-      </div>
-      <button class="btn btn-primary" onclick="go('../index.html')">쇼핑하러 가기</button>
-    </div>`;
+  const list=document.getElementById('order-list');
+  if(!orders.length){
+    list.innerHTML=`<div class="empty-orders"><div style="font-size:3.5rem;margin-bottom:14px">📦</div><div style="color:#999;margin-bottom:20px">${currentFilter==='preparing'?'준비중인 주문이 없습니다':'아직 주문 내역이 없습니다'}</div><button onclick="go('../index.html')" style="padding:10px 24px;background:var(--gold);color:#111;border:none;border-radius:8px;font-weight:700;cursor:pointer">쇼핑하러 가기</button></div>`;
     return;
   }
-
-  list.innerHTML = orders.map(o => {
-    const d = new Date(o.created_at);
-    const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
-
-    // 무통장 입금 대기 여부
-    const isVbankWait = o.payment_method==='VBANK' &&
-      (o.payment_status==='awaiting_deposit' || o.status==='pending_deposit');
-
-    const items   = o.order_items || [];
-    const first   = items[0];
-    const more    = items.length - 1;
-
-    const isShipping    = o.status === 'shipping';
-    const isDone        = o.status === 'delivered';
-    const isCancellable = ['pending','preparing'].includes(o.status) && o.payment_status==='paid';
-    const isVbankCancel = isVbankWait;
-
+  list.innerHTML=orders.map(o=>{
+    const d=new Date(o.created_at);
+    const dateStr=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    const isVbankWait=o.payment_method==='VBANK'&&(o.payment_status==='awaiting_deposit'||o.status==='pending_deposit');
+    const items=o.order_items||[];
+    const first=items[0];
+    const more=items.length-1;
+    const isShipping=o.status==='shipping';
+    const isDone=o.status==='delivered';
+    const isCancellable=['pending','preparing'].includes(o.status)&&o.payment_status==='paid';
     return `
-    <div class="order-card">
-
-      <!-- 헤더: 상태칩 + 입금대기 뱃지 (같은 줄, 자연스럽게) -->
-      <div class="order-card-head">
-        <div class="order-date-no">
-          ${dateStr}<br>
-          <span style="font-size:.7rem">주문번호 ${o.order_number}</span>
-        </div>
-        <div class="status-row">
-          <span class="status-chip ${STATUS_CLASS[o.status]||'status-pending'}">
-            ${STATUS_LABEL[o.status]||o.status}
-          </span>
-          ${isVbankWait
-            ? `<span class="deposit-badge">🏦 입금대기중</span>`
-            : ''}
+    <div class="ord-card">
+      <div class="ord-card-head">
+        <div><div class="ord-num">주문번호 ${o.order_number}</div><div class="ord-date">${dateStr}</div></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="${STATUS_CLASS[o.status]||'oc-pending'}">${STATUS_LABEL[o.status]||o.status}</span>
+          ${isVbankWait?'<span class="dep-badge">🏦 입금대기중</span>':''}
         </div>
       </div>
-
-      <!-- 무통장 입금 안내 -->
-      ${isVbankWait ? `
-      <div class="vbank-notice">
-        입금계좌 <strong>${o.bank_name||'기업은행'} · (주)정육본가</strong><br>
-        입금자명 <strong>${o.depositor_name||'미등록'}</strong> ·
-        입금금액 <strong style="color:var(--primary)">${fmt(o.final_amount)}원</strong>
-        ${o.deposit_deadline
-          ? ` · 기한 <strong style="color:var(--red)">${new Date(o.deposit_deadline).toLocaleDateString('ko-KR')}</strong>`
-          : ''}
-      </div>` : ''}
-
-      <!-- 상품 -->
-      ${first ? `
-      <div class="order-item-row">
-        <div class="order-item-thumb">🥩</div>
-        <div class="order-item-info">
-          <div class="order-item-name">${first.name}${more>0?` 외 ${more}건`:''}</div>
-          <div class="order-item-meta">수량 ${first.qty}개${first.option?' · '+first.option:''}</div>
-        </div>
-        <div class="order-item-price">${fmt(first.subtotal||first.price*first.qty)}원</div>
-      </div>` : ''}
-
-      <!-- 푸터 -->
-      <div class="order-card-foot">
-        <div>
-          <span style="font-size:.88rem;font-weight:700;color:var(--dark)">
-            총 <strong style="color:var(--gold)">${fmt(o.final_amount)}원</strong>
-          </span>
-          <span style="font-size:.74rem;color:var(--gray-400);margin-left:6px">
-            ${PAY_LABEL[o.payment_method]||''}
-          </span>
-        </div>
-        <div class="order-actions">
-          ${isShipping    ? `<button class="oabtn oabtn-primary" onclick="trackOrder('${o.tracking_number||''}','${o.carrier||''}')">📦 배송조회</button>` : ''}
-          ${isDone        ? `<button class="oabtn oabtn-outline" onclick="toast('리뷰 준비 중')">⭐ 리뷰</button>` : ''}
-          ${isDone        ? `<button class="oabtn oabtn-gray"    onclick="toast('재주문 준비 중')">🔄 재주문</button>` : ''}
-          ${isCancellable ? `<button class="oabtn oabtn-gray"    onclick="cancelOrder('${o.order_number}')">✕ 취소</button>` : ''}
-          ${isVbankCancel ? `<button class="oabtn oabtn-gray"    onclick="cancelOrder('${o.order_number}')">✕ 주문취소</button>` : ''}
+      ${isVbankWait?`<div class="vbank-notice">입금계좌 <strong>${o.bank_name||'기업은행'} · (주)정육본가</strong><br>입금자명 <strong>${o.depositor_name||'미등록'}</strong> · 금액 <strong style="color:var(--gold)">${fmt(o.final_amount)}원</strong>${o.deposit_deadline?` · 기한 <strong style="color:#DC2626">${new Date(o.deposit_deadline).toLocaleDateString('ko-KR')}</strong>`:''}</div>`:''}
+      ${first?`<div class="ord-item-row"><div class="ord-thumb">🥩</div><div style="flex:1;min-width:0"><div class="ord-item-name">${first.name}${more>0?` 외 ${more}건`:''}</div><div class="ord-item-meta">수량 ${first.qty}개${first.option?' · '+first.option:''}</div></div><div class="ord-item-price">${fmt(first.subtotal||first.price*first.qty)}원</div></div>`:''}
+      <div class="ord-card-foot">
+        <div class="ord-total">총 <strong style="color:var(--gold)">${fmt(o.final_amount)}원</strong> <span style="font-size:.74rem;color:#999;font-weight:400">${PAY_LABEL[o.payment_method]||''}</span></div>
+        <div class="ord-actions">
+          ${isShipping?`<button class="oabtn oabtn-gold" onclick="toast('운송장: ${o.tracking_number||'등록 전'}')">📦 배송조회</button>`:''}
+          ${isDone?`<button class="oabtn oabtn-outline" onclick="toast('리뷰 준비 중')">⭐ 리뷰</button>`:''}
+          ${isCancellable||isVbankWait?`<button class="oabtn oabtn-gray" onclick="cancelOrder('${o.order_number}')">✕ 취소</button>`:''}
           <button class="oabtn oabtn-gray" onclick="go('../pages/cs.html')">💬 문의</button>
         </div>
       </div>
-
     </div>`;
   }).join('');
 }
 
-function filterOrders(status, el){
-  currentFilter = status;
-  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('on'));
+function filterOrders(status,el){
+  currentFilter=status;
+  document.querySelectorAll('.ord-pill').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
   loadOrders();
 }
 
-function trackOrder(no, carrier){
-  if(!no){ toast('운송장 번호가 아직 등록되지 않았습니다'); return; }
-  toast(`${carrier||'CJ대한통운'} ${no}`);
-}
-
 async function cancelOrder(orderId){
-  if(!confirm('주문을 취소하시겠습니까?')) return;
-  try {
-    const r = await fetch(API+'/payment/cancel',{
-      method:'POST', credentials:'include',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
-      body: JSON.stringify({orderId, reason:'고객 요청 취소'})
-    });
-    const d = await r.json();
+  if(!confirm('주문을 취소하시겠습니까?'))return;
+  try{
+    const r=await fetch(API+'/payment/cancel',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},body:JSON.stringify({orderId,reason:'고객 요청'})});
+    const d=await r.json();
     if(!r.ok) throw new Error(d.error);
-    toast('주문이 취소됐습니다');
-    loadOrders();
-  } catch(e){ toast('❌ '+e.message); }
+    toast('주문이 취소됐습니다');loadOrders();
+  }catch(e){toast('❌ '+e.message);}
 }
 
 loadOrders();
