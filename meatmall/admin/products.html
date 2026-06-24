@@ -115,7 +115,7 @@ window.addEventListener('pageshow', function(e){
 
   <!-- 관리자 로그인 체크 (JS로 처리) -->
   <div class="admin-header">
-    <div class="admin-logo">🥩 상품 관리</div>
+    <div class="admin-logo" style="padding:0"><img src="../images/logo.png" alt="정육본가" style="height:32px;width:auto;object-fit:contain;display:block"></div>
     <div style="display:flex;gap:8px">
       <button class="admin-hbtn" onclick="go('dashboard.html')" title="대시보드">🏠</button>
       <button class="admin-hbtn" onclick="adminLogout()" title="로그아웃">🚪</button>
@@ -149,7 +149,7 @@ window.addEventListener('pageshow', function(e){
 
   <!-- 상품 등록/수정 탭 -->
   <div id="tab-add" style="display:none;padding-bottom:80px">
-    <div style="padding:12px 14px 0;font-size:.82rem;color:var(--gray-500)" id="form-mode-label">새 상품 등록</div>
+    <div style="padding:12px 14px 0;font-size:.82rem;color:rgba(201,168,76,.5)" id="form-mode-label">새 상품 등록</div>
 
     <div class="form-card">
 
@@ -158,7 +158,7 @@ window.addEventListener('pageshow', function(e){
         <div class="form-section-title">📷 상품 이미지</div>
         <div class="img-upload-area" id="img-area" onclick="document.getElementById('img-file').click()">
           <div class="img-upload-icon">📸</div>
-          <div class="img-upload-text">클릭하여 이미지 업로드<br><span style="font-size:.72rem;color:var(--gray-400)">JPG, PNG, WEBP 최대 500KB</span></div>
+          <div class="img-upload-text">클릭하여 이미지 업로드<br><span style="font-size:.72rem;color:rgba(255,255,255,.3)">JPG, PNG, WEBP 최대 500KB</span></div>
         </div>
         <input type="file" id="img-file" accept="image/*" onchange="previewImage(this)">
 
@@ -183,7 +183,7 @@ window.addEventListener('pageshow', function(e){
       <div class="form-section">
         <div class="form-section-title">📝 기본 정보</div>
         <div class="form-group">
-          <label class="form-label">상품명 <span style="color:var(--red)">*</span></label>
+          <label class="form-label">상품명 <span style="color:#F87171">*</span></label>
           <input class="form-input" id="f-name" placeholder="예: 국내산 한우 1++ 등심 (냉장)">
           <span class="form-error" id="err-name">상품명을 입력해주세요</span>
         </div>
@@ -195,7 +195,7 @@ window.addEventListener('pageshow', function(e){
 
       <!-- 카테고리 -->
       <div class="form-section">
-        <div class="form-section-title">📦 카테고리 <span style="color:var(--red)">*</span></div>
+        <div class="form-section-title">📦 카테고리 <span style="color:#F87171">*</span></div>
         <div class="cat-grid-admin" id="cat-grid-admin">
           <div class="cat-btn-admin" id="cat-samgyeop" onclick="selectCat('samgyeop')"><span class="cat-ico">🥩</span>삼겹살</div>
           <div class="cat-btn-admin" id="cat-ogyeop" onclick="selectCat('ogyeop')"><span class="cat-ico">🥩</span>오겹살</div>
@@ -222,10 +222,10 @@ window.addEventListener('pageshow', function(e){
         <div class="form-section-title">💰 가격 정보</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div class="form-group">
-            <label class="form-label">판매가 <span style="color:var(--red)">*</span></label>
+            <label class="form-label">판매가 <span style="color:#F87171">*</span></label>
             <div style="position:relative">
               <input class="form-input" id="f-price" type="number" placeholder="0" style="padding-right:28px" oninput="calcDiscount()">
-              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--gray-500)">원</span>
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;color:rgba(201,168,76,.5)">원</span>
             </div>
             <span class="form-error" id="err-price">판매가를 입력해주세요</span>
           </div>
@@ -233,7 +233,7 @@ window.addEventListener('pageshow', function(e){
             <label class="form-label">정가 (할인 전)</label>
             <div style="position:relative">
               <input class="form-input" id="f-origin-price" type="number" placeholder="0" style="padding-right:28px" oninput="calcDiscount()">
-              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--gray-500)">원</span>
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;color:rgba(201,168,76,.5)">원</span>
             </div>
           </div>
         </div>
@@ -268,7 +268,7 @@ window.addEventListener('pageshow', function(e){
         <div class="form-section-title">🗄️ 재고 관리</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div class="form-group">
-            <label class="form-label">현재 재고 <span style="color:var(--red)">*</span></label>
+            <label class="form-label">현재 재고 <span style="color:#F87171">*</span></label>
             <input class="form-input" id="f-stock" type="number" placeholder="0">
             <span class="form-error" id="err-stock">재고 수량을 입력해주세요</span>
           </div>
@@ -404,7 +404,7 @@ function renderProductList(products) {
   const srcLabels = { direct:'직접가공', oem:'OEM PB', wholesale:'거래처' };
 
   wrap.innerHTML = `
-  <div style="padding:8px 14px 4px;font-size:.78rem;color:var(--gray-500)">총 ${products.length}개 상품</div>
+  <div style="padding:8px 14px 4px;font-size:.78rem;color:rgba(201,168,76,.5)">총 ${products.length}개 상품</div>
   ${products.map(p => {
     const stockPct = Math.min(100, Math.round(p.stock / (p.min_stock*5) * 100));
     const stockCls = p.stock <= 0 ? 'stock-low' : p.stock <= p.min_stock ? 'stock-low' : p.stock <= p.min_stock*2 ? 'stock-warn' : 'stock-ok';
@@ -498,7 +498,7 @@ function removeImage(event) {
   area.classList.remove('has-img');
   area.innerHTML = `
     <div class="img-upload-icon">📸</div>
-    <div class="img-upload-text">클릭하여 이미지 업로드<br><span style="font-size:.72rem;color:var(--gray-400)">JPG, PNG 최대 5MB</span></div>`;
+    <div class="img-upload-text">클릭하여 이미지 업로드<br><span style="font-size:.72rem;color:rgba(255,255,255,.3)">JPG, PNG 최대 5MB</span></div>`;
   document.getElementById('img-file').value = '';
 }
 

@@ -13,9 +13,9 @@
 body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
 
 body{background:#F1F0EF}
-.admin-header{background:var(--primary-dark);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.admin-header{background:linear-gradient(135deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
 .admin-logo{font-size:1rem;font-weight:700;color:#fff}
-.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
+.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
 .setting-card{background:#1C1C1C;margin:12px 14px;border:1.5px solid rgba(201,168,76,.25);border-radius:var(--radius-lg);overflow:hidden}
 .card-head{padding:14px 16px 10px;border-bottom:1px solid rgba(201,168,76,.15);display:flex;align-items:center;justify-content:space-between}
 .card-title{font-size:.95rem;font-weight:700;color:var(--gold,#C9A84C)}
@@ -29,7 +29,7 @@ body{background:#F1F0EF}
 .badge-test{background:#FEF3C7;color:#92400E}
 .key-row{margin-bottom:12px}
 .key-label{font-size:.8rem;font-weight:600;color:var(--gray-600);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
-.key-input{width:100%;height:44px;border:1.5px solid rgba(201,168,76,.25);background:#1C1C1C;color:#fff;border-radius:var(--radius-md);padding:0 12px;font-size:.84rem;font-family:monospace;outline:none;color:var(--dark)}
+.key-input{width:100%;height:44px;border:1.5px solid rgba(201,168,76,.25);background:#1C1C1C;color:#fff;border-radius:var(--radius-md);padding:0 12px;font-size:.84rem;font-family:monospace;outline:none;color:#fff}
 .key-input:focus{border-color:var(--primary)}
 .key-input.filled{border-color:#22C55E;background:rgba(34,197,94,.08)}
 .key-input.empty{border-color:var(--gray-200)}
@@ -38,7 +38,7 @@ body{background:#F1F0EF}
 .method-item.active{border-color:var(--gold,#C9A84C);background:rgba(201,168,76,.1)}
 .method-icon{font-size:1.5rem;margin-bottom:5px}
 .method-name{font-size:.76rem;font-weight:700;color:#fff}
-.method-fee{font-size:.68rem;color:var(--gray-500);margin-top:2px}
+.method-fee{font-size:.68rem;color:rgba(201,168,76,.5);margin-top:2px}
 .method-status{font-size:.66rem;font-weight:700;margin-top:3px}
 .status-on{color:var(--green)}
 .status-off{color:var(--gray-400)}
@@ -49,8 +49,8 @@ body{background:#F1F0EF}
 .step-item{display:flex;gap:12px;align-items:flex-start}
 .step-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#fff;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .step-text{flex:1;font-size:.84rem;color:rgba(255,255,255,.65);line-height:1.6}
-.step-text strong{color:var(--dark)}
-.copy-btn{font-size:.72rem;font-weight:600;color:var(--primary);background:none;border:1px solid var(--primary);padding:2px 8px;border-radius:4px;cursor:pointer}
+.step-text strong{color:#fff}
+.copy-btn{font-size:.72rem;font-weight:600;color:var(--gold,#C9A84C);background:none;border:1px solid var(--gold,#C9A84C);padding:2px 8px;border-radius:4px;cursor:pointer}
 code{font-family:monospace;background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:.8rem}
 </style>
 <script>
@@ -63,7 +63,7 @@ window.addEventListener('pageshow', function(e){
 <body>
 <div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
   <div class="admin-header">
-    <div class="admin-logo">💳 결제 설정</div>
+    <div class="admin-logo" style="padding:0"><img src="../images/logo.png" alt="정육본가" style="height:32px;width:auto;object-fit:contain;display:block"></div>
     <div style="display:flex;gap:6px">
       <button class="admin-hbtn" onclick="window.open('../index.html','_blank')" title="쇼핑몰">🛍️</button>
       <button class="admin-hbtn" onclick="go('dashboard.html')" title="대시보드">🏠</button>
@@ -91,7 +91,7 @@ window.addEventListener('pageshow', function(e){
     <div class="setting-card">
       <div class="card-head">
         <div class="card-title">🔑 나이스페이먼츠 키 등록</div>
-        <a href="https://www.nicepay.co.kr" target="_blank" style="font-size:.76rem;color:var(--primary);font-weight:600">공식사이트 →</a>
+        <a href="https://www.nicepay.co.kr" target="_blank" style="font-size:.76rem;color:var(--gold,#C9A84C);font-weight:600">공식사이트 →</a>
       </div>
       <div class="card-body">
         <div class="info-box warn" style="margin-bottom:14px">
@@ -115,11 +115,11 @@ window.addEventListener('pageshow', function(e){
         </div>
 
         <div style="margin-top:16px">
-          <div style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:10px">📋 Vercel 등록 방법</div>
+          <div style="font-size:.88rem;font-weight:700;color:#fff;margin-bottom:10px">📋 Vercel 등록 방법</div>
           <div class="step-list">
             <div class="step-item">
               <div class="step-num">1</div>
-              <div class="step-text"><a href="https://vercel.com/happyboyx000-4031s-projects/meatmall/settings/environment-variables" target="_blank" style="color:var(--primary);font-weight:600">Vercel 환경변수 설정 →</a><br>Settings → Environment Variables</div>
+              <div class="step-text"><a href="https://vercel.com/happyboyx000-4031s-projects/meatmall/settings/environment-variables" target="_blank" style="color:var(--gold,#C9A84C);font-weight:600">Vercel 환경변수 설정 →</a><br>Settings → Environment Variables</div>
             </div>
             <div class="step-item">
               <div class="step-num">2</div>
@@ -150,7 +150,7 @@ window.addEventListener('pageshow', function(e){
       <div class="card-body">
         <div class="info-box" id="vbank-info" style="margin-bottom:14px">로딩 중...</div>
 
-        <div style="font-size:.84rem;font-weight:700;color:var(--dark);margin-bottom:10px">계좌 변경 방법 (Vercel 환경변수)</div>
+        <div style="font-size:.84rem;font-weight:700;color:#fff;margin-bottom:10px">계좌 변경 방법 (Vercel 환경변수)</div>
         <div class="step-list">
           <div class="step-item">
             <div class="step-num">①</div>
@@ -205,9 +205,9 @@ window.addEventListener('pageshow', function(e){
       <div class="card-body">
         <table style="width:100%;border-collapse:collapse;font-size:.83rem">
           <tr style="background:var(--gray-100)">
-            <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--dark)">결제수단</th>
-            <th style="padding:8px 10px;text-align:right;font-weight:700;color:var(--dark)">수수료율</th>
-            <th style="padding:8px 10px;text-align:right;font-weight:700;color:var(--dark)">비고</th>
+            <th style="padding:8px 10px;text-align:left;font-weight:700;color:#fff">결제수단</th>
+            <th style="padding:8px 10px;text-align:right;font-weight:700;color:#fff">수수료율</th>
+            <th style="padding:8px 10px;text-align:right;font-weight:700;color:#fff">비고</th>
           </tr>
           ${[
             ['신용카드','2.5~3.5%','카드사별 상이'],
@@ -218,9 +218,9 @@ window.addEventListener('pageshow', function(e){
             ['휴대폰결제','4.5%','통신사별 상이'],
           ].map(([m,f,n])=>`
           <tr style="border-bottom:1px solid var(--gray-100)">
-            <td style="padding:9px 10px;color:var(--dark)">${m}</td>
+            <td style="padding:9px 10px;color:#fff">${m}</td>
             <td style="padding:9px 10px;text-align:right;font-weight:700;color:var(--primary)">${f}</td>
-            <td style="padding:9px 10px;text-align:right;color:var(--gray-500)">${n}</td>
+            <td style="padding:9px 10px;text-align:right;color:rgba(201,168,76,.5)">${n}</td>
           </tr>`).join('')}
         </table>
         <div class="info-box warn" style="margin-top:12px;font-size:.78rem">

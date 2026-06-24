@@ -60,7 +60,10 @@ window.addEventListener('pageshow', function(e){
 </head>
 <body>
 <div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
-  <header class="dark-header">
+    <div style="background:linear-gradient(135deg,#0F0F0F,#1C1A12);border-bottom:1px solid rgba(201,168,76,.2);padding:6px 16px;display:flex;align-items:center;justify-content:center">
+    <img src="../images/logo.png" alt="정육본가" style="height:34px;width:auto;object-fit:contain;display:block">
+  </div>
+<header class="dark-header">
     <button class="header__icon-btn" onclick="history.back()">←</button>
     <div style="font-size:1rem;font-weight:700">장바구니 <span id="cart-cnt" style="color:var(--gray-400);font-weight:400;font-size:.88rem"></span></div>
     <button style="font-size:.78rem;font-weight:700;color:var(--primary);background:none;border:none;cursor:pointer" onclick="toggleSelectAll()">전체선택</button>

@@ -17,7 +17,7 @@ body{background:#F1F0EF}
 .admin-header{background:linear-gradient(180deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold);box-shadow:0 2px 12px rgba(201,168,76,.15);width:100%!important;max-width:430px!important;box-sizing:border-box;max-width:var(--max-w,430px)}
 .admin-logo{font-family:var(--font-display);font-size:1rem;font-weight:700;color:#fff}
 .admin-logo small{font-size:.68rem;font-weight:400;opacity:.7;margin-left:6px}
-.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
+.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
 .admin-tabs{display:flex;background:linear-gradient(180deg,#1C1A12,#111);overflow-x:auto;scrollbar-width:none;width:100%;box-sizing:border-box;border-bottom:1px solid rgba(201,168,76,.3)}
 .admin-tabs::-webkit-scrollbar{display:none}
 .admin-tab{flex-shrink:0;padding:10px 14px;font-size:.8rem;font-weight:600;color:rgba(201,168,76,.45);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s}
@@ -29,7 +29,7 @@ body{background:#F1F0EF}
 .kpi-label{font-size:.74rem;color:rgba(201,168,76,.6);margin-bottom:6px}
 .kpi-value{font-size:1.3rem;font-weight:800;color:#fff}
 .kpi-delta{font-size:.74rem;font-weight:700;margin-top:4px}
-.up{color:var(--red)}.down{color:var(--blue)}
+.up{color:#EF4444}.down{color:var(--blue)}
 
 /* 알림 배너 */
 .alert-bar{margin:0 14px 10px;border-radius:var(--radius-md);padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:.82rem}
@@ -50,47 +50,47 @@ body{background:#F1F0EF}
 .rev-bars{display:flex;gap:6px;align-items:flex-end;height:100px}
 .rev-bar-w{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:28px}
 .rev-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(0deg,#A8862A,#E8C97A);transition:height .4s;cursor:pointer;min-height:4px}
-.rev-bar:hover{background:var(--accent)}
-.rev-label{font-size:.62rem;color:var(--gray-500)}
-.rev-value{font-size:.65rem;font-weight:700;color:var(--dark)}
+.rev-bar:hover{background:var(--gold,#C9A84C)}
+.rev-label{font-size:.62rem;color:rgba(201,168,76,.55)}
+.rev-value{font-size:.65rem;font-weight:700;color:#fff}
 
 /* 주문 목록 */
 .order-row{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.8rem;cursor:pointer;transition:background .1s}
 .order-row:last-child{border-bottom:none}
 .order-row:active{background:rgba(201,168,76,.05)}
-.order-id{font-weight:700;color:var(--dark);min-width:80px;font-size:.76rem}
-.order-buyer{color:var(--gray-700);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.order-amt{font-weight:700;color:var(--dark);white-space:nowrap}
+.order-id{font-weight:700;color:#fff;min-width:80px;font-size:.76rem}
+.order-buyer{color:rgba(255,255,255,.65);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.order-amt{font-weight:700;color:#fff;white-space:nowrap}
 
 /* 재고 목록 */
-.stock-row{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--gray-100);font-size:.82rem}
+.stock-row{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.12);font-size:.82rem}
 .stock-row:last-child{border-bottom:none}
 .stock-emo{font-size:1.3rem;flex-shrink:0}
-.stock-name{flex:1;font-weight:600;color:var(--dark);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:130px}
+.stock-name{flex:1;font-weight:600;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:130px}
 .stock-bar-bg{height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;width:70px}
 .stock-bar-fill{height:100%;border-radius:3px;transition:width .3s}
-.stock-qty{font-size:.76rem;color:var(--gray-500);min-width:36px;text-align:right}
+.stock-qty{font-size:.76rem;color:rgba(201,168,76,.55);min-width:36px;text-align:right}
 .stock-status{font-size:.7rem;font-weight:700;padding:2px 6px;border-radius:999px}
-.s-ok{background:var(--green-light);color:var(--green)}
+.s-ok{background:rgba(34,197,94,.12);color:#86EFAC}
 .s-warn{background:#FEF3C7;color:#92400E}
-.s-low{background:var(--red-light);color:var(--red)}
-.s-out{background:var(--gray-100);color:var(--gray-500)}
+.s-low{background:var(--red-light);color:#EF4444}
+.s-out{background:#1C1C1C;color:rgba(201,168,76,.55)}
 
 /* 매출 테이블 */
-.rev-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid var(--gray-100);font-size:.82rem}
+.rev-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.12);font-size:.82rem}
 .rev-row:last-child{border-bottom:none}
-.rev-pg{flex:1;font-weight:600;color:var(--dark)}
-.rev-fee{color:var(--red);margin-right:8px;font-size:.76rem}
-.rev-amt{font-weight:800;color:var(--dark)}
+.rev-pg{flex:1;font-weight:600;color:#fff}
+.rev-fee{color:#EF4444;margin-right:8px;font-size:.76rem}
+.rev-amt{font-weight:800;color:#fff}
 .rev-pct-bar{height:5px;border-radius:3px;margin-top:3px}
 
 /* CS 티켓 */
-.ticket-row{padding:12px 16px;border-bottom:1px solid var(--gray-100);cursor:pointer}
+.ticket-row{padding:12px 16px;border-bottom:1px solid rgba(201,168,76,.12);cursor:pointer}
 .ticket-row:last-child{border-bottom:none}
-.ticket-row:active{background:var(--gray-100)}
+.ticket-row:active{background:#1C1C1C}
 .ticket-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.ticket-title{font-size:.88rem;font-weight:600;color:var(--dark);flex:1}
-.ticket-meta{font-size:.74rem;color:var(--gray-500);display:flex;gap:8px}
+.ticket-title{font-size:.88rem;font-weight:600;color:#fff;flex:1}
+.ticket-meta{font-size:.74rem;color:rgba(201,168,76,.55);display:flex;gap:8px}
 
 /* 빠른 액션 */
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
@@ -100,15 +100,15 @@ body{background:#F1F0EF}
 .qa-lbl{font-size:.68rem;font-weight:700;color:rgba(201,168,76,.8)}
 
 /* 로그인 */
-.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,var(--primary-dark),var(--primary))}
-.login-box{background:#fff;border-radius:var(--radius-lg);padding:32px 24px;width:100%;max-width:360px;box-shadow:var(--shadow-lg)}
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,#0F0F0F,#1C1A12)}
+.login-box{background:#1C1C1C;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-lg);padding:32px 24px;width:100%;max-width:360px}
 
 /* 주문 상세 바텀시트 */
-.order-detail-content{padding:16px;font-size:.88rem;line-height:1.8}
-.detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray-100)}
+.order-detail-content{padding:16px;font-size:.88rem;line-height:1.8;color:#fff}
+.detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(201,168,76,.12)}
 .detail-row:last-child{border-bottom:none}
-.detail-key{color:var(--gray-600)}
-.detail-val{font-weight:600;color:var(--dark)}
+.detail-key{color:rgba(255,255,255,.5)}
+.detail-val{font-weight:600;color:#fff}
 
 /* 로딩 스켈레톤 */
 .skel{background:linear-gradient(90deg,var(--gray-100) 25%,#ece9e6 50%,var(--gray-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
@@ -123,7 +123,7 @@ window.addEventListener('pageshow', function(e){
 </head>
 <body>
 <div class="app-wrap" id="app;display:flex;flex-direction:column;min-height:100vh">
-  <div style="text-align:center;padding:60px 24px;color:var(--gray-400)">🔄 로딩 중...</div>
+  <div style="text-align:center;padding:60px 24px;color:rgba(255,255,255,.3)">🔄 로딩 중...</div>
 </div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
 <div class="bottom-sheet" id="detail-sheet">
@@ -177,14 +177,14 @@ function init(){
 // ── 로그인 ───────────────────────────────────────────────
 function renderLogin(){
   document.getElementById('app').innerHTML=`
-  <div class="login-wrap">
+  <div class="login-wrap" style="background:linear-gradient(160deg,#0F0F0F,#1C1A12)">
     <div style="text-align:center;margin-bottom:28px">
       <div style="font-size:3rem;margin-bottom:10px">🥩</div>
       <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:#fff">정육본가</div>
       <div style="font-size:.85rem;color:rgba(255,255,255,.7);margin-top:4px">관리자 시스템</div>
     </div>
     <div class="login-box">
-      <div style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:20px">🔐 관리자 로그인</div>
+      <div style="font-size:1rem;font-weight:800;color:#fff;margin-bottom:20px">🔐 관리자 로그인</div>
       <div class="form-group" style="margin-bottom:12px">
         <div class="form-label">이메일</div>
         <input class="form-input" id="aid" type="email" placeholder="admin@meatmall.co.kr">
@@ -194,7 +194,7 @@ function renderLogin(){
         <input class="form-input" id="apw" type="password" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')adminLogin()">
       </div>
       <button class="btn btn-primary btn-full btn-lg" id="login-btn" onclick="adminLogin()">로그인</button>
-      <div style="margin-top:14px;text-align:center;font-size:.76rem;color:var(--gray-400)">
+      <div style="margin-top:14px;text-align:center;font-size:.76rem;color:rgba(255,255,255,.3)">
         정육본가 관리자 전용 시스템
       </div>
     </div>
@@ -235,7 +235,7 @@ async function adminLogin(){
 function renderDashboard(){
   document.getElementById('app').innerHTML=`
   <div class="admin-header">
-    <div class="admin-logo">🥩 정육본가 <small>관리자</small></div>
+    <div class="admin-logo" style="padding:0"><img src="../images/logo.png" alt="정육본가" style="height:30px;width:auto;object-fit:contain;display:block"></div>
     <div style="display:flex;gap:6px">
       <div class="admin-hbtn" onclick="window.open('../index.html','_blank')" title="쇼핑몰 보기" style="font-size:.8rem;width:auto;padding:0 8px;border-radius:var(--radius-sm)">🛍️ 쇼핑몰</div>
       <div class="admin-hbtn" onclick="go('products.html')" title="상품관리">📦</div>
@@ -254,7 +254,7 @@ function renderDashboard(){
     <div class="admin-tab" onclick="window.open('../index.html','_blank')">🛍️ 쇼핑몰</div>
   </div>
   <div id="tab-content" style="min-height:80vh;padding-bottom:32px">
-    <div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 로딩 중...</div>
+    <div style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">🔄 로딩 중...</div>
   </div>`;
   switchTab('dashboard', document.querySelector('.admin-tab'));
 }
@@ -264,7 +264,7 @@ async function switchTab(name, el){
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
   const content = document.getElementById('tab-content');
-  content.innerHTML='<div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 불러오는 중...</div>';
+  content.innerHTML='<div style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">🔄 불러오는 중...</div>';
 
   const renders = {
     dashboard:  renderTabDashboard,
@@ -306,7 +306,7 @@ async function renderTabDashboard(){
     <div class="kpi-card">
       <div class="kpi-label">오늘 매출</div>
       <div class="kpi-value" style="font-size:1.1rem">${fmt(kpi.todayRevenue||0)}원</div>
-      <div class="kpi-delta" style="color:var(--gray-500)">${kpi.todayOrders||0}건</div>
+      <div class="kpi-delta" style="color:rgba(201,168,76,.55)">${kpi.todayOrders||0}건</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">이번달 매출</div>
@@ -315,7 +315,7 @@ async function renderTabDashboard(){
     <div class="kpi-card">
       <div class="kpi-label">미처리 주문</div>
       <div class="kpi-value" style="color:${(kpi.pendingOrders||0)>0?'var(--red)':'var(--dark)'}">${kpi.pendingOrders||0}건</div>
-      <div class="kpi-delta" style="color:var(--gray-500)">처리 필요</div>
+      <div class="kpi-delta" style="color:rgba(201,168,76,.55)">처리 필요</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">활성 구독자</div>
@@ -355,20 +355,20 @@ async function renderTabOrders(){
 
   document.getElementById('tab-content').innerHTML=`
   <div style="padding:12px 14px 6px;display:flex;gap:8px;align-items:center">
-    <input style="flex:1;height:36px;border:0.5px solid var(--gray-300);border-radius:var(--radius-md);padding:0 12px;font-size:.82rem;outline:none" placeholder="🔍 주문번호·수령인 검색">
-    <select style="height:36px;border:0.5px solid var(--gray-300);border-radius:var(--radius-md);padding:0 8px;font-size:.8rem;outline:none;background:#fff">
+    <input style="flex:1;height:36px;border:1px solid rgba(201,168,76,.25);border-radius:var(--radius-md);padding:0 12px;font-size:.82rem;outline:none" placeholder="🔍 주문번호·수령인 검색">
+    <select style="height:36px;border:1px solid rgba(201,168,76,.25);border-radius:var(--radius-md);padding:0 8px;font-size:.8rem;outline:none;background:#fff">
       <option>전체 ${total}건</option>
       <option>준비중</option><option>배송중</option><option>완료</option><option>취소</option>
     </select>
   </div>
   <div class="admin-section" style="margin-top:4px">
     ${orders.length===0
-      ? '<div style="padding:40px;text-align:center;color:var(--gray-400)">주문이 없습니다</div>'
+      ? '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">주문이 없습니다</div>'
       : orders.map(o=>`
       <div class="order-row" onclick="showOrderDetail('${o.id}')">
         <div>
           <div class="order-id">${o.order_number}</div>
-          <div style="font-size:.72rem;color:var(--gray-500);margin-top:1px">${o.recipient} · ${o.users?.name||''}</div>
+          <div style="font-size:.72rem;color:rgba(201,168,76,.55);margin-top:1px">${o.recipient} · ${o.users?.name||''}</div>
         </div>
         <div class="order-buyer">${(o.order_items||[]).length>0?o.order_items[0].name+(o.order_items.length>1?` 외 ${o.order_items.length-1}건`:''):'상품없음'}</div>
         <div style="text-align:right;flex-shrink:0">
@@ -397,20 +397,20 @@ async function showOrderDetail(id){
       <div class="detail-row"><span class="detail-key">결제금액</span><span class="detail-val">${fmt(o.final_amount)}원</span></div>
       <div class="detail-row"><span class="detail-key">결제수단</span><span class="detail-val">${o.payment_method||'-'}</span></div>
       <div class="detail-row"><span class="detail-key">결제일시</span><span class="detail-val">${o.paid_at?new Date(o.paid_at).toLocaleString('ko-KR'):'-'}</span></div>
-      <div style="margin:12px 0 8px;font-weight:700;font-size:.88rem;color:var(--dark)">주문 상품</div>
+      <div style="margin:12px 0 8px;font-weight:700;font-size:.88rem;color:#fff">주문 상품</div>
       ${(o.order_items||[]).map(i=>`
       <div class="detail-row">
         <span class="detail-key">${i.name} ×${i.qty}</span>
         <span class="detail-val">${fmt(i.subtotal)}원</span>
       </div>`).join('')}
-      <div style="margin:14px 0 8px;font-weight:700;font-size:.88rem;color:var(--dark)">상태 변경</div>
+      <div style="margin:14px 0 8px;font-weight:700;font-size:.88rem;color:#fff">상태 변경</div>
       <div style="display:flex;gap:8px">
-        <select id="new-status" style="flex:1;height:40px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);padding:0 10px;font-size:.84rem;outline:none">
+        <select id="new-status" style="flex:1;height:40px;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 10px;font-size:.84rem;outline:none;background:#1C1C1C;color:#fff">
           ${statusOptions}
         </select>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="tracking-no" style="flex:1;height:36px;border:1px solid var(--gray-300);border-radius:var(--radius-md);padding:0 10px;font-size:.82rem;outline:none" placeholder="운송장번호 (배송 시)" value="${o.tracking_number||''}">
+        <input id="tracking-no" style="flex:1;height:36px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 10px;font-size:.82rem;outline:none;background:#1C1C1C;color:#fff" placeholder="운송장번호 (배송 시)" value="${o.tracking_number||''}">
         <select id="carrier-sel" style="width:110px;height:36px;border:1px solid var(--gray-300);border-radius:var(--radius-md);padding:0 6px;font-size:.78rem;outline:none">
           <option>CJ대한통운</option><option>한진</option><option>롯데</option><option>우체국</option>
         </select>
@@ -418,7 +418,7 @@ async function showOrderDetail(id){
       ${o.payment_method==='VBANK'&&o.payment_status!=='paid'?`
       <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--radius-md);padding:12px;margin-top:8px;font-size:.84rem">
         <div style="font-weight:700;color:#92400E;margin-bottom:8px">🏦 무통장 입금 확인</div>
-        <div style="color:var(--gray-700);margin-bottom:8px">
+        <div style="color:rgba(255,255,255,.65);margin-bottom:8px">
           입금계좌: <strong>기업은행 123-456789-01-001 (주)정육본가</strong><br>
           주문금액: <strong style="color:var(--primary)">${fmt(o.final_amount)}원</strong><br>
           입금기한: <strong>${o.deposit_deadline?new Date(o.deposit_deadline).toLocaleDateString('ko-KR'):'3일 이내'}</strong>
@@ -429,7 +429,7 @@ async function showOrderDetail(id){
         </div>
         <button class="btn btn-primary btn-full" style="margin-top:8px;height:44px" onclick="confirmVbank('${o.order_number}')">✅ 입금 확인 처리</button>
       </div>` : ''}
-      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="updateOrderStatus('${o.id}')">상태 변경 저장</button>
+      <button class="btn btn-primary btn-full" style="margin-top:12px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F" onclick="updateOrderStatus('${o.id}')">상태 변경 저장</button>
     </div>`);
   } catch(e){ toast('상세 정보 로드 실패'); }
 }
@@ -465,22 +465,22 @@ async function renderTabInventory(){
 
   document.getElementById('tab-content').innerHTML=`
   <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center">
-    <span style="font-size:.82rem;color:var(--gray-500)">총 ${inventory.length}개 SKU</span>
+    <span style="font-size:.82rem;color:rgba(201,168,76,.55)">총 ${inventory.length}개 SKU</span>
     <button class="btn btn-sm btn-outline" onclick="toast('발주서 기능 준비중')">📋 발주서 생성</button>
   </div>
   <div class="admin-section" style="margin-top:4px">
     ${inventory.length===0
-      ? '<div style="padding:40px;text-align:center;color:var(--gray-400)">상품이 없습니다</div>'
+      ? '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">상품이 없습니다</div>'
       : inventory.map(p=>`
       <div class="stock-row" onclick="showStockEdit('${p.id}','${p.name}',${p.stock},${p.min_stock})">
         <span class="stock-emo">${p.emoji||'🥩'}</span>
         <div style="flex:1;min-width:0">
           <div class="stock-name">${p.name}</div>
-          <div style="font-size:.7rem;color:var(--gray-500)">${p.category}</div>
+          <div style="font-size:.7rem;color:rgba(201,168,76,.55)">${p.category}</div>
         </div>
         <div>
           <div class="stock-bar-bg"><div class="stock-bar-fill" style="width:${p.pct||0}%;background:${barColor[p.status||'ok']}"></div></div>
-          <div style="font-size:.65rem;color:var(--gray-400);margin-top:2px;text-align:right">${p.pct||0}%</div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.3);margin-top:2px;text-align:right">${p.pct||0}%</div>
         </div>
         <div class="stock-qty">${p.stock}개</div>
         <span class="stock-status ${statusCls[p.status||'ok']}">${statusTxt[p.status||'ok']}</span>
@@ -491,7 +491,7 @@ async function renderTabInventory(){
 function showStockEdit(id,name,stock,minStock){
   openSheet('재고 수정', `
   <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
-    <div style="font-size:.88rem;font-weight:600;color:var(--dark)">${name}</div>
+    <div style="font-size:.88rem;font-weight:600;color:#fff">${name}</div>
     <div class="form-group">
       <div class="form-label">현재 재고</div>
       <input class="form-input" id="new-stock" type="number" value="${stock}">
@@ -540,11 +540,11 @@ async function renderTabRevenue(){
     <div class="kpi-card">
       <div class="kpi-label">기간 매출</div>
       <div class="kpi-value" style="font-size:1rem">${fmt(data.totalRevenue||0)}원</div>
-      <div class="kpi-delta" style="color:var(--gray-500)">${data.orderCount||0}건</div>
+      <div class="kpi-delta" style="color:rgba(201,168,76,.55)">${data.orderCount||0}건</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">PG 수수료</div>
-      <div class="kpi-value" style="font-size:1rem;color:var(--red)">${fmt(data.totalFee||0)}원</div>
+      <div class="kpi-value" style="font-size:1rem;color:#EF4444">${fmt(data.totalFee||0)}원</div>
     </div>
     <div class="kpi-card" style="grid-column:1/-1">
       <div class="kpi-label">순수익 (추정)</div>
@@ -557,7 +557,7 @@ async function renderTabRevenue(){
     <div class="chart-wrap">
       <div class="rev-bars">
         ${days.length===0
-          ? '<div style="color:var(--gray-400);font-size:.82rem;padding:20px">데이터 없음</div>'
+          ? '<div style="color:rgba(255,255,255,.3);font-size:.82rem;padding:20px">데이터 없음</div>'
           : days.map((d,i)=>{
               const h=Math.round((values[i]/maxVal)*90);
               const label=d.slice(5);
@@ -580,11 +580,11 @@ async function renderTabRevenue(){
     <div class="rev-row">
       <div style="flex:1">
         <div class="rev-pg">${methodLabel[m]||m}</div>
-        <div class="rev-pct-bar" style="background:var(--primary);opacity:.3;width:${Math.round(v.amount/totalAmt*100)}%"></div>
+        <div class="rev-pct-bar" style="background:linear-gradient(135deg,#1C1A12,#0F0F0F);opacity:.3;width:${Math.round(v.amount/totalAmt*100)}%"></div>
       </div>
       <span class="rev-fee">수수료 -${fmt(v.fee||0)}원</span>
       <span class="rev-amt">${fmt(v.amount||0)}원</span>
-    </div>`).join('') || '<div style="padding:20px;text-align:center;color:var(--gray-400)">결제 데이터 없음</div>'}
+    </div>`).join('') || '<div style="padding:20px;text-align:center;color:rgba(255,255,255,.3)">결제 데이터 없음</div>'}
   </div>`;
 }
 
@@ -602,12 +602,12 @@ async function renderTabCS(){
 
   document.getElementById('tab-content').innerHTML=`
   <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center">
-    <span style="font-size:.82rem;color:var(--gray-500)">총 ${total}건</span>
-    <span style="font-size:.78rem;color:var(--red);font-weight:700">미답변 ${tickets.filter(t=>t.status==='pending').length}건 ⚠️</span>
+    <span style="font-size:.82rem;color:rgba(201,168,76,.55)">총 ${total}건</span>
+    <span style="font-size:.78rem;color:#EF4444;font-weight:700">미답변 ${tickets.filter(t=>t.status==='pending').length}건 ⚠️</span>
   </div>
   <div class="admin-section" style="margin-top:4px">
     ${tickets.length===0
-      ? '<div style="padding:40px;text-align:center;color:var(--gray-400)">CS 문의가 없습니다</div>'
+      ? '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">CS 문의가 없습니다</div>'
       : tickets.map(t=>`
       <div class="ticket-row" onclick="showCSDetail('${t.id}')">
         <div class="ticket-head">
@@ -633,10 +633,10 @@ async function showCSDetail(id){
 
     openSheet('CS 문의 처리', `
     <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
-      <div style="background:var(--gray-100);border-radius:var(--radius-md);padding:12px;font-size:.84rem;line-height:1.7">
-        <div style="font-weight:700;color:var(--dark);margin-bottom:4px">${t.title}</div>
-        <div style="color:var(--gray-700)">${t.content}</div>
-        <div style="font-size:.74rem;color:var(--gray-500);margin-top:8px">
+      <div style="background:#1C1C1C;border-radius:var(--radius-md);padding:12px;font-size:.84rem;line-height:1.7">
+        <div style="font-weight:700;color:#fff;margin-bottom:4px">${t.title}</div>
+        <div style="color:rgba(255,255,255,.65)">${t.content}</div>
+        <div style="font-size:.74rem;color:rgba(201,168,76,.55);margin-top:8px">
           ${t.users?.name||'비회원'} · ${t.users?.phone||''} · ${new Date(t.created_at).toLocaleString('ko-KR')}
         </div>
       </div>
@@ -650,10 +650,10 @@ async function showCSDetail(id){
         <textarea id="cs-answer" class="form-input" rows="5" style="height:120px;resize:vertical;padding:10px" placeholder="고객에게 보낼 답변을 입력하세요...">${t.answer||''}</textarea>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-primary" style="flex:2" onclick="submitCSAnswer('${t.id}')">📨 답변 전송</button>
+        <button class="btn btn-primary" style="flex:2;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F" onclick="submitCSAnswer('${t.id}')">📨 답변 전송</button>
         <button class="btn btn-secondary" style="flex:1" onclick="closeSheet()">취소</button>
       </div>
-      <p style="text-align:center;font-size:.74rem;color:var(--gray-400)">답변 전송 시 카카오 알림톡으로 고객에게 발송됩니다</p>
+      <p style="text-align:center;font-size:.74rem;color:rgba(255,255,255,.3)">답변 전송 시 카카오 알림톡으로 고객에게 발송됩니다</p>
     </div>`);
   } catch(e){ toast('문의 로드 실패'); }
 }
@@ -695,8 +695,8 @@ async function renderTabCategories(){
     <div style="background:#fff;border-radius:var(--radius-md);margin-bottom:8px;padding:13px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)">
       <div style="width:42px;height:42px;background:var(--cream);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">${c.emoji}</div>
       <div style="flex:1">
-        <div style="font-size:.9rem;font-weight:700;color:var(--dark)">${c.name}</div>
-        <div style="font-size:.74rem;color:var(--gray-500)">${c.desc} · ID: ${c.id}</div>
+        <div style="font-size:.9rem;font-weight:700;color:#fff">${c.name}</div>
+        <div style="font-size:.74rem;color:rgba(201,168,76,.55)">${c.desc} · ID: ${c.id}</div>
       </div>
       <div style="display:flex;gap:6px">
         <button style="font-size:.74rem;font-weight:600;padding:5px 10px;border-radius:var(--radius-sm);background:var(--cream);color:var(--primary);border:1px solid var(--primary);cursor:pointer" onclick="go('products.html')">상품보기</button>
