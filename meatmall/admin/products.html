@@ -130,12 +130,12 @@ window.addEventListener('pageshow', function(e){
     <div class="filter-bar">
       <select class="filter-select" id="filter-cat" onchange="loadProducts()">
         <option value="">전체 카테고리</option>
-        <option value="beef">소고기</option>
-        <option value="pork">돼지고기</option>
-        <option value="chicken">닭/오리</option>
-        <option value="processed">가공육PB</option>
-        <option value="giftset">선물세트</option>
-        <option value="mealkit">밀키트</option>
+        <option value="samgyeop">삼겹살</option>
+        <option value="ogyeop">오겹살</option>
+        <option value="moksal">목살</option>
+        <option value="apdaree">앞다리살</option>
+        <option value="mibakapdaree">미박앞다리살</option>
+        <option value="deungshim">등심</option>
       </select>
       <input class="search-inp" id="search-inp" placeholder="🔍 상품명 검색" oninput="searchProducts()">
       <button class="btn btn-sm btn-primary" onclick="showTab('add')" style="white-space:nowrap">+ 등록</button>
@@ -195,14 +195,12 @@ window.addEventListener('pageshow', function(e){
       <div class="form-section">
         <div class="form-section-title">📦 카테고리 <span style="color:var(--red)">*</span></div>
         <div class="cat-grid-admin" id="cat-grid-admin">
-          <div class="cat-btn-admin" id="cat-beef" onclick="selectCat('beef')"><span class="cat-ico">🐄</span>소고기</div>
-          <div class="cat-btn-admin" id="cat-pork" onclick="selectCat('pork')"><span class="cat-ico">🐷</span>돼지고기</div>
-          <div class="cat-btn-admin" id="cat-chicken" onclick="selectCat('chicken')"><span class="cat-ico">🐔</span>닭/오리</div>
-          <div class="cat-btn-admin" id="cat-processed" onclick="selectCat('processed')"><span class="cat-ico">🌭</span>가공육PB</div>
-          <div class="cat-btn-admin" id="cat-giftset" onclick="selectCat('giftset')"><span class="cat-ico">🎁</span>선물세트</div>
-          <div class="cat-btn-admin" id="cat-mealkit" onclick="selectCat('mealkit')"><span class="cat-ico">🍱</span>밀키트</div>
-          <div class="cat-btn-admin" id="cat-sausage" onclick="selectCat('sausage')"><span class="cat-ico">🥓</span>소시지</div>
-          <div class="cat-btn-admin" id="cat-sale" onclick="selectCat('sale')"><span class="cat-ico">🔥</span>특가</div>
+          <div class="cat-btn-admin" id="cat-samgyeop" onclick="selectCat('samgyeop')"><span class="cat-ico">🥩</span>삼겹살</div>
+          <div class="cat-btn-admin" id="cat-ogyeop" onclick="selectCat('ogyeop')"><span class="cat-ico">🥩</span>오겹살</div>
+          <div class="cat-btn-admin" id="cat-moksal" onclick="selectCat('moksal')"><span class="cat-ico">🥩</span>목살</div>
+          <div class="cat-btn-admin" id="cat-apdaree" onclick="selectCat('apdaree')"><span class="cat-ico">🥩</span>앞다리살</div>
+          <div class="cat-btn-admin" id="cat-mibakapdaree" onclick="selectCat('mibakapdaree')"><span class="cat-ico">🥩</span>미박앞다리</div>
+          <div class="cat-btn-admin" id="cat-deungshim" onclick="selectCat('deungshim')"><span class="cat-ico">🥩</span>등심</div>
         </div>
         <span class="form-error" id="err-cat">카테고리를 선택해주세요</span>
       </div>
@@ -400,7 +398,7 @@ function renderProductList(products) {
     return;
   }
 
-  const catLabels = { beef:'소고기', pork:'돼지고기', chicken:'닭/오리', processed:'가공육PB', giftset:'선물세트', mealkit:'밀키트', sausage:'소시지', sale:'특가' };
+  const catLabels = { samgyeop:'삼겹살', ogyeop:'오겹살', moksal:'목살', apdaree:'앞다리살', mibakapdaree:'미박앞다리살', deungshim:'등심' };
   const srcLabels = { direct:'직접가공', oem:'OEM PB', wholesale:'거래처' };
 
   wrap.innerHTML = `

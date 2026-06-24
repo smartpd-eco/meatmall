@@ -10,7 +10,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-.product-hero{background:var(--cream);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:8rem;position:relative;overflow:hidden}
+body{background:#111}.app-wrap{background:#111}
+.product-hero{background:#1A1208!important}
+
+.product-hero{background:linear-gradient(135deg,#0D0D0D,#1A1208);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:8rem;position:relative;overflow:hidden}
 .product-hero img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
 .hero-badges{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px}
 .wish-btn{position:absolute;top:12px;right:12px;width:40px;height:40px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;border:none;backdrop-filter:blur(4px)}
@@ -99,7 +102,7 @@ window.addEventListener('pageshow', function(e){
 </head>
 <body>
 <div class="app-wrap">
-  <header class="header">
+  <header class="dark-header">
     <button class="header__icon-btn" onclick="history.back()">←</button>
     <div style="font-size:1rem;font-weight:700" id="header-title">상품 상세</div>
     <button class="header__icon-btn" <button class="header__icon-btn" id="admin-btn" onclick="go('../admin/dashboard.html')" style="display:none" title="관리자">⚙️</button>
@@ -135,7 +138,7 @@ const productId = params.get('id');
 let product = null;
 let qty = 1;
 
-const catLabel={beef:'소고기',pork:'돼지고기',chicken:'닭/오리',processed:'가공육PB',giftset:'선물세트',mealkit:'밀키트',sausage:'소시지'};
+const catLabel={samgyeop:'삼겹살',ogyeop:'오겹살',moksal:'목살',apdaree:'앞다리살',mibakapdaree:'미박앞다리살',deungshim:'등심',beef:'소고기',pork:'돼지고기',chicken:'닭/오리',processed:'가공육PB',giftset:'선물세트',mealkit:'밀키트'};
 const srcLabel={direct:'직접가공',oem:'OEM PB',wholesale:'거래처 유통'};
 
 async function loadProduct(){

@@ -2,393 +2,172 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>마이페이지 · 정육본가</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-.profile-hero{background:linear-gradient(160deg,var(--primary-dark),var(--primary));padding:24px 20px 28px}
-.profile-top{display:flex;align-items:center;gap:14px;margin-bottom:20px}
-.profile-avatar{width:58px;height:58px;border-radius:var(--radius-full);background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;border:2.5px solid rgba(255,255,255,.35);flex-shrink:0}
-.profile-name{font-size:1.1rem;font-weight:800;color:var(--white)}
-.profile-grade{font-size:.78rem;color:rgba(255,255,255,.7);margin-top:3px}
-.profile-login-type{font-size:.72rem;color:rgba(255,255,255,.55);margin-top:2px}
-.profile-edit-btn{margin-left:auto;background:rgba(255,255,255,.18);color:var(--white);font-size:.76rem;font-weight:600;padding:6px 12px;border-radius:var(--radius-full);border:none;cursor:pointer;white-space:nowrap}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.stat-box{background:rgba(255,255,255,.12);border-radius:var(--radius-md);padding:12px 8px;text-align:center;cursor:pointer}
-.stat-value{font-size:1.15rem;font-weight:800;color:var(--white);margin-bottom:3px}
-.stat-label{font-size:.68rem;color:rgba(255,255,255,.7)}
+body{background:#111}.app-wrap{background:#111}
+.profile-hero{
+  background:linear-gradient(160deg,#0D0D0D,#1A1208);
+  border-bottom:1px solid rgba(201,168,76,.15);
+  padding:28px 20px 24px;
+}
+.profile-avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:linear-gradient(135deg,#2A1A0A,#1A1208);
+  border:2px solid rgba(201,168,76,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;margin-bottom:14px;
+}
+.profile-name{font-family:'Noto Serif KR',serif;font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:4px}
+.profile-email{font-size:.78rem;color:rgba(255,255,255,.3);margin-bottom:12px}
+.grade-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);
+  border-radius:999px;padding:5px 14px;
+  font-size:.74rem;font-weight:700;color:var(--gold);letter-spacing:.08em;
+}
+.point-card{
+  background:#1E1E1E;border:1px solid rgba(201,168,76,.15);
+  border-radius:var(--radius-md);padding:16px;margin-top:14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.point-label{font-size:.74rem;color:rgba(255,255,255,.4);margin-bottom:4px}
+.point-val{font-size:1.4rem;font-weight:800;color:var(--gold)}
 
-/* 비로그인 */
-.login-prompt{background:rgba(255,255,255,.12);border-radius:var(--radius-md);padding:18px;text-align:center;margin-bottom:16px}
-.login-prompt p{font-size:.88rem;color:rgba(255,255,255,.8);margin-bottom:14px}
-.login-prompt-btn{background:var(--white);color:var(--primary);font-size:.9rem;font-weight:700;padding:10px 24px;border-radius:var(--radius-full);border:none;cursor:pointer}
-
-/* 주문 탭 */
-.order-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200)}
-.order-tab{flex:1;padding:12px 4px;text-align:center;font-size:.82rem;font-weight:600;color:var(--gray-500);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s}
-.order-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
-.order-item{padding:14px 16px;border-bottom:1px solid var(--gray-100);display:flex;gap:12px;cursor:pointer}
-.order-thumb{width:68px;height:68px;border-radius:var(--radius-md);background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0}
-.order-info{flex:1}
-.order-date{font-size:.74rem;color:var(--gray-500);margin-bottom:4px}
-.order-name{font-size:.9rem;font-weight:600;color:var(--dark);margin-bottom:5px}
-.order-price-row{display:flex;align-items:center;justify-content:space-between}
-.order-price{font-size:.95rem;font-weight:800;color:var(--primary)}
-.order-actions{display:flex;gap:6px;margin-top:8px}
-.order-btn{font-size:.74rem;font-weight:600;padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--gray-300);color:var(--gray-700);background:var(--white);cursor:pointer}
-.order-btn-primary{border-color:var(--primary);color:var(--primary)}
-
-/* 구독 */
-.subscribe-card{margin:12px 16px;background:var(--cream);border:1.5px solid var(--peach);border-radius:var(--radius-lg);padding:18px}
-.sub-status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.sub-status-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-light);color:var(--green);font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:var(--radius-full)}
-.sub-items{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.sub-item-chip{background:var(--white);border:1px solid var(--peach);border-radius:var(--radius-sm);padding:5px 10px;font-size:.78rem;color:var(--gray-700)}
-
-/* 메뉴 */
-.menu-section{background:var(--white);margin-bottom:8px}
-.menu-section-title{font-size:.75rem;font-weight:700;color:var(--gray-500);padding:14px 16px 8px;text-transform:uppercase;letter-spacing:.05em}
-.menu-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .1s}
+.menu-section{padding:8px 0}
+.menu-label{font-size:.68rem;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:.12em;padding:14px 16px 6px;text-transform:uppercase}
+.menu-item{
+  display:flex;align-items:center;gap:12px;
+  padding:15px 16px;border-bottom:1px solid rgba(255,255,255,.05);
+  cursor:pointer;transition:background .12s;
+}
+.menu-item:hover{background:rgba(255,255,255,.03)}
 .menu-item:last-child{border-bottom:none}
-.menu-item:active{background:var(--gray-100)}
-.menu-icon{width:36px;height:36px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.menu-text{flex:1;font-size:.92rem;font-weight:500;color:var(--dark)}
-.menu-sub{font-size:.74rem;color:var(--gray-500);margin-top:1px}
-.menu-arrow{color:var(--gray-400);font-size:1rem}
-.menu-badge{background:var(--red);color:var(--white);font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:var(--radius-full)}
-
-.logout-btn{width:calc(100% - 32px);margin:8px 16px 16px;height:48px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);color:var(--gray-500);font-size:.9rem;font-weight:600;background:var(--white);cursor:pointer;transition:all .15s}
-.logout-btn:active{background:var(--gray-100)}
-
-/* 로딩 스켈레톤 */
-.skel{background:linear-gradient(90deg,rgba(255,255,255,.15) 25%,rgba(255,255,255,.25) 50%,rgba(255,255,255,.15) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
-@keyframes shimmer{to{background-position:-200% 0}}
+.menu-ico{width:36px;height:36px;border-radius:var(--radius-sm);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.menu-text{flex:1}
+.menu-name{font-size:.9rem;font-weight:600;color:#fff}
+.menu-sub{font-size:.74rem;color:rgba(255,255,255,.25);margin-top:2px}
+.menu-arrow{color:rgba(255,255,255,.2);font-size:.9rem}
+.logout-btn{
+  width:calc(100% - 28px);margin:16px 14px;height:50px;
+  background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.2);
+  border-radius:var(--radius-md);color:#F87171;
+  font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s;
+}
+.logout-btn:hover{background:rgba(220,38,38,.18)}
 </style>
-<script>
-// 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
-window.addEventListener('pageshow', function(e){
-  if(e.persisted){ window.location.reload(); }
-});
-</script>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
 </head>
 <body>
 <div class="app-wrap">
-
-  <header class="header">
-    <div class="header__logo"><span>🥩</span>마이페이지</div>
-    <div class="header__actions">
-      <button class="header__icon-btn" <button class="header__icon-btn" id="admin-btn" onclick="go('../admin/dashboard.html')" style="display:none" title="관리자">⚙️</button>
-      <button class="header__icon-btn" onclick="go('../pages/cart.html')">🛒<span class="badge cart-badge" style="display:none">0</span></button>
-    </div>
+  <header class="dark-header">
+    <button class="dh-btn" onclick="history.back()">←</button>
+    <div class="dh-title">마이페이지</div>
+    <button id="admin-btn" class="dh-btn" onclick="go('../admin/dashboard.html')" style="display:none">⚙️</button>
   </header>
 
-  <div class="main-content">
-
-    <!-- 프로필 히어로 -->
-    <div class="profile-hero" id="profile-hero">
-      <div style="text-align:center;padding:20px 0">
-        <div class="skel" style="width:58px;height:58px;border-radius:50%;margin:0 auto 12px"></div>
-        <div class="skel" style="width:120px;height:16px;margin:0 auto 8px"></div>
-        <div class="skel" style="width:80px;height:12px;margin:0 auto"></div>
-      </div>
-    </div>
-
-    <!-- 최근 주문 -->
-    <div class="section-header" style="padding-bottom:0">
-      <div class="section-title">📦 주문 내역</div>
-      <div class="section-more" onclick="go('../pages/orders.html')">전체보기 ›</div>
-    </div>
-    <div class="order-tabs">
-      <div class="order-tab active" onclick="filterOrders('all',this)">전체</div>
-      <div class="order-tab" onclick="filterOrders('preparing',this)">준비중</div>
-      <div class="order-tab" onclick="filterOrders('shipping',this)">배송중</div>
-      <div class="order-tab" onclick="filterOrders('done',this)">완료</div>
-    </div>
-    <div id="order-list"></div>
-
-    <div class="divider"></div>
-
-    <!-- 구독 현황 -->
-    <div class="subscribe-card" id="subscribe-area" style="display:none">
-      <div class="sub-status-row">
-        <div>
-          <div style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:4px">🔄 정기배송 구독중</div>
-          <div style="font-size:.82rem;color:var(--gray-700)">다음 배송: <strong style="color:var(--primary)">미정</strong></div>
+  <div id="profile-area">
+    <div class="profile-hero">
+      <div style="text-align:center">
+        <div class="profile-avatar" style="margin:0 auto 14px">👤</div>
+        <div class="profile-name" id="user-name">불러오는 중...</div>
+        <div class="profile-email" id="user-email"></div>
+        <div class="grade-badge">👑 <span id="user-grade">VIP</span> 회원</div>
+        <div class="point-card">
+          <div><div class="point-label">보유 포인트</div><div class="point-val" id="user-point">0P</div></div>
+          <div style="font-size:.76rem;color:rgba(255,255,255,.25)">구매금액 1% 적립</div>
         </div>
-        <span class="sub-status-badge">● 활성</span>
-      </div>
-      <div class="sub-items">
-        <span class="sub-item-chip">🥩 한우 등심 300g</span>
-        <span class="sub-item-chip">🐷 삼겹살 500g</span>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button class="btn btn-outline btn-sm" style="flex:1" onclick="go('../pages/subscribe.html')">구성 변경</button>
-        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="toast('정기배송을 일시정지했습니다')">일시정지</button>
       </div>
     </div>
-
-    <!-- 혜택 메뉴 -->
-    <div class="menu-section">
-      <div class="menu-section-title">혜택</div>
-      <div class="menu-item" onclick="go('../pages/coupon.html')">
-        <div class="menu-icon" style="background:#FEF3C7">🎫</div>
-        <div style="flex:1"><div class="menu-text">쿠폰함</div><div class="menu-sub" id="coupon-sub">사용 가능 쿠폰 확인</div></div>
-        <span class="menu-arrow">›</span>
-      </div>
-      <div class="menu-item" onclick="go('../pages/point.html')">
-        <div class="menu-icon" style="background:#DBEAFE">💎</div>
-        <div style="flex:1"><div class="menu-text">포인트</div><div class="menu-sub" id="point-sub">보유 포인트 확인</div></div>
-        <span class="menu-arrow">›</span>
-      </div>
-      <div class="menu-item" onclick="go('../pages/wishlist.html')">
-        <div class="menu-icon" style="background:#FEE2E2">❤️</div>
-        <div class="menu-text">찜 목록</div>
-        <span class="menu-arrow">›</span>
-      </div>
-      <div class="menu-item" onclick="go('../pages/review.html')">
-        <div class="menu-icon" style="background:#D1FAE5">⭐</div>
-        <div class="menu-text">내 리뷰</div>
-        <span class="menu-arrow">›</span>
-      </div>
-    </div>
-
-    <!-- 계정 메뉴 -->
-    <div class="menu-section">
-      <div class="menu-section-title">계정</div>
-      <div class="menu-item" onclick="go('../pages/profile-edit.html')">
-        <div class="menu-icon" style="background:var(--gray-100)">👤</div>
-        <div class="menu-text">회원정보 수정</div>
-        <span class="menu-arrow">›</span>
-      </div>
-      <div class="menu-item" onclick="go('../pages/address.html')">
-        <div class="menu-icon" style="background:var(--gray-100)">📍</div>
-        <div class="menu-text">배송지 관리</div>
-        <span class="menu-arrow">›</span>
-      </div>
-      <div class="menu-item" onclick="go('../pages/payment-method.html')">
-        <div class="menu-icon" style="background:var(--gray-100)">💳</div>
-        <div class="menu-text">결제 수단 관리</div>
-        <span class="menu-arrow">›</span>
-      </div>
-    </div>
-
-    <!-- 고객지원 -->
-    <div class="menu-section">
-      <div class="menu-section-title">고객지원</div>
-      <div class="menu-item" onclick="go('../pages/cs.html')">
-        <div class="menu-icon" style="background:#FEF3C7">💬</div>
-        <div class="menu-text">1:1 문의</div>
-        <span class="menu-arrow">›</span>
-      </div>
-      <div class="menu-item" onclick="go('../pages/faq.html')">
-        <div class="menu-icon" style="background:#F0FDF4">❓</div>
-        <div class="menu-text">자주 묻는 질문</div>
-        <span class="menu-arrow">›</span>
-      </div>
-      <div class="menu-item" onclick="go('../pages/notice.html')">
-        <div class="menu-icon" style="background:#EDE9FE">📢</div>
-        <div class="menu-text">공지사항</div>
-        <span class="menu-arrow">›</span>
-      </div>
-    </div>
-
-    <button class="logout-btn" id="logout-btn" onclick="doLogout()" style="display:none">로그아웃</button>
-
-    <div style="text-align:center;padding:0 16px 16px;font-size:.72rem;color:var(--gray-400);line-height:1.7">
-      정육본가 | 사업자번호: 000-00-00000<br>
-      통신판매업: 제 0000-서울XX-0000호 | 고객센터: 1588-0000
-    </div>
-
   </div>
 
-  <nav class="bottom-nav">
-    <div class="nav-item" onclick="go('../index.html')"><span class="nav-icon">🏠</span><span>홈</span></div>
-    <div class="nav-item" onclick="go('../pages/category.html')"><span class="nav-icon">📦</span><span>카테고리</span></div>
-    <div class="nav-item" onclick="go('../pages/subscribe.html')"><span class="nav-icon">🔄</span><span>정기배송</span></div>
-    <div class="nav-item active"><span class="nav-icon">👤</span><span>마이</span></div>
-    <div class="nav-item" onclick="go('../pages/cs.html')"><span class="nav-icon">💬</span><span>CS</span></div>
-  </nav>
+  <div class="menu-section">
+    <div class="menu-label">쇼핑</div>
+    <div class="menu-item" onclick="go('../pages/orders.html')">
+      <div class="menu-ico">📦</div>
+      <div class="menu-text"><div class="menu-name">주문 내역</div><div class="menu-sub">주문 현황 및 배송 조회</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="go('../pages/address.html')">
+      <div class="menu-ico">📍</div>
+      <div class="menu-text"><div class="menu-name">배송지 관리</div><div class="menu-sub">배송지 추가·수정·삭제</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="go('../pages/subscribe.html')">
+      <div class="menu-ico">🔄</div>
+      <div class="menu-text"><div class="menu-name">정기배송 구독</div><div class="menu-sub">매주 신선한 정육 배송</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-label">고객센터</div>
+    <div class="menu-item" onclick="go('../pages/cs.html')">
+      <div class="menu-ico">💬</div>
+      <div class="menu-text"><div class="menu-name">1:1 문의</div><div class="menu-sub">주문·배송·상품 문의</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="go('../pages/cs.html')">
+      <div class="menu-ico">❓</div>
+      <div class="menu-text"><div class="menu-name">자주 묻는 질문</div><div class="menu-sub">FAQ 바로가기</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+  </div>
 
+  <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+  <div style="height:70px"></div>
+
+  <nav class="dark-nav">
+    <div class="dnav-item" onclick="go('../index.html')"><div class="dnav-ico">🏠</div><div class="dnav-lbl">홈</div></div>
+    <div class="dnav-item" onclick="go('../pages/category.html')"><div class="dnav-ico">🥩</div><div class="dnav-lbl">정육</div></div>
+    <div class="dnav-item" onclick="go('../pages/cart.html')"><div class="dnav-ico">🛒</div><div class="dnav-lbl">장바구니</div></div>
+    <div class="dnav-item" onclick="go('../pages/orders.html')"><div class="dnav-ico">📦</div><div class="dnav-lbl">주문</div></div>
+    <div class="dnav-item on"><div class="dnav-ico">👤</div><div class="dnav-lbl">마이</div></div>
+  </nav>
 </div>
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
-const API = 'https://meatmall.vercel.app/api';
-function go(url) { window.location.href = url; }
-function fmt(n) { return Number(n).toLocaleString('ko-KR'); }
-function toast(msg) {
-  const el = document.getElementById('toast-global');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'),2200);
-}
+const API='https://meatmall.vercel.app/api';
+function go(u){window.location.href=u}
+function fmt(n){return Number(n).toLocaleString('ko-KR')}
+function toast(msg){const el=document.getElementById('toast-global');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200)}
 
-// ── 초기화 ──────────────────────────────────────────────
-async function init() {
-  updateCartBadge();
-  const token = localStorage.getItem('mm_access_token');
-  const cached = localStorage.getItem('mm_user_cache');
+Store.load(); showAdminBtn();
 
-  if (!token && !cached) {
-    renderGuest(); return;
+async function loadUser(){
+  const token=localStorage.getItem('mm_access_token');
+  if(!token){go('../login.html');return;}
+  const cached=JSON.parse(localStorage.getItem('mm_user_cache')||'{}');
+  if(cached.name){
+    document.getElementById('user-name').textContent=cached.name;
+    document.getElementById('user-email').textContent=cached.email||'';
+    document.getElementById('user-grade').textContent=cached.grade||'VVIP';
+    document.getElementById('user-point').textContent=fmt(cached.point||0)+'P';
   }
-
-  // 캐시로 먼저 빠르게 렌더
-  if (cached) {
-    try { renderProfile(JSON.parse(cached)); } catch(e) {}
-  }
-
-  // 실제 API로 최신 정보 갱신
-  if (token) {
-    try {
-      const res = await fetch(API + '/auth/me', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (res.status === 401) {
-        // 토큰 만료 → refresh 시도
-        const refreshed = await tryRefresh();
-        if (!refreshed) { renderGuest(); return; }
-        // refresh 후 재시도
-        const res2 = await fetch(API + '/auth/me', {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('mm_access_token') }
-        });
-        if (res2.ok) {
-          const d = await res2.json();
-          renderProfile(d.user);
-          localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
-        }
-      } else if (res.ok) {
-        const d = await res.json();
-        renderProfile(d.user);
-        localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
-      }
-    } catch(e) { console.error(e); }
-  }
-
-  renderOrders();
+  try{
+    const r=await fetch(API+'/auth/me',{headers:{Authorization:'Bearer '+token},credentials:'include'});
+    if(r.ok){
+      const d=await r.json();
+      const u=d.user;
+      document.getElementById('user-name').textContent=u.name;
+      document.getElementById('user-email').textContent=u.email;
+      document.getElementById('user-grade').textContent=u.grade||'VVIP';
+      document.getElementById('user-point').textContent=fmt(u.point||0)+'P';
+      localStorage.setItem('mm_user_cache',JSON.stringify(u));
+    }
+  }catch(e){}
 }
 
-async function tryRefresh() {
-  try {
-    const r = await fetch(API + '/auth/refresh', {
-      method:'POST', credentials:'include',
-      headers:{'Content-Type':'application/json'}
-    });
-    if (!r.ok) return false;
-    const d = await r.json();
-    localStorage.setItem('mm_access_token', d.accessToken);
-    if (d.user) localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
-    return true;
-  } catch { return false; }
-}
-
-// ── 프로필 렌더 ──────────────────────────────────────────
-function renderProfile(user) {
-  if (!user) { renderGuest(); return; }
-
-  const loginTypeLabel = {
-    kakao: '카카오 계정', naver: '네이버 계정',
-    google: '구글 계정', email: '이메일 계정'
-  };
-  const gradeLabel = {
-    BASIC:'🥉 BASIC', SILVER:'🥈 SILVER', GOLD:'🥇 GOLD', VIP:'💎 VIP'
-  };
-
-  document.getElementById('profile-hero').innerHTML = `
-  <div class="profile-top">
-    <div class="profile-avatar">👤</div>
-    <div>
-      <div class="profile-name">${user.name || '회원'}님</div>
-      <div class="profile-grade">${gradeLabel[user.grade] || '🥉 BASIC'} 등급</div>
-      <div class="profile-login-type">${loginTypeLabel[user.loginType || 'email'] || ''} · ${user.email || ''}</div>
-    </div>
-    <button class="profile-edit-btn" onclick="go('../pages/profile-edit.html')">수정</button>
-  </div>
-  <div class="stats-row">
-    <div class="stat-box" onclick="go('../pages/orders.html')">
-      <div class="stat-value">0</div><div class="stat-label">주문 내역</div>
-    </div>
-    <div class="stat-box" onclick="go('../pages/point.html')">
-      <div class="stat-value">${fmt(user.point || 0)}</div><div class="stat-label">포인트 (P)</div>
-    </div>
-    <div class="stat-box" onclick="go('../pages/coupon.html')">
-      <div class="stat-value">0</div><div class="stat-label">쿠폰</div>
-    </div>
-  </div>`;
-
-  document.getElementById('point-sub').textContent = `${fmt(user.point || 0)}P 보유`;
-  document.getElementById('logout-btn').style.display = 'block';
-}
-
-function renderGuest() {
-  document.getElementById('profile-hero').innerHTML = `
-  <div class="login-prompt">
-    <div style="font-size:2rem;margin-bottom:10px">👤</div>
-    <p>로그인하고 혜택을 받아보세요<br>가입 시 1,000P 즉시 지급!</p>
-    <button class="login-prompt-btn" onclick="go('../login.html')">로그인 / 회원가입</button>
-  </div>`;
-}
-
-// ── 주문 내역 ────────────────────────────────────────────
-const ORDERS = [
-  { id:'ORD-20260618', emoji:'🥩', name:'국내산 한우 1++ 등심 외 2건', date:'2026.06.18', price:67800, status:'shipping', statusText:'배송중', statusClass:'status-shipping' },
-  { id:'ORD-20260610', emoji:'🌭', name:'수제 프랑크소시지 PB × 2',    date:'2026.06.10', price:17800, status:'done',     statusText:'배송완료', statusClass:'status-done' },
-];
-let currentFilter = 'all';
-
-function filterOrders(f, el) {
-  currentFilter = f;
-  document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderOrders();
-}
-
-function renderOrders() {
-  const filtered = currentFilter === 'all' ? ORDERS : ORDERS.filter(o => o.status === currentFilter);
-  const list = document.getElementById('order-list');
-  if (filtered.length === 0) {
-    list.innerHTML = `<div style="padding:40px;text-align:center;color:var(--gray-400);font-size:.88rem">해당 주문이 없습니다</div>`;
-    return;
-  }
-  list.innerHTML = filtered.map(o => `
-  <div class="order-item">
-    <div class="order-thumb">${o.emoji}</div>
-    <div class="order-info">
-      <div class="order-date">${o.date} · ${o.id}</div>
-      <div class="order-name">${o.name}</div>
-      <div class="order-price-row">
-        <span class="order-price">${fmt(o.price)}원</span>
-        <span class="status-chip ${o.statusClass}">${o.statusText}</span>
-      </div>
-      <div class="order-actions">
-        ${o.status==='shipping' ? `<button class="order-btn order-btn-primary" onclick="toast('배송 조회 페이지로 이동합니다')">배송 조회</button>` : ''}
-        ${o.status==='done' ? `<button class="order-btn order-btn-primary" onclick="toast('리뷰 작성 페이지로 이동합니다')">리뷰 작성</button>` : ''}
-        ${o.status==='done' ? `<button class="order-btn" onclick="toast('장바구니에 담겼습니다 🛒')">재주문</button>` : ''}
-      </div>
-    </div>
-  </div>`).join('');
-}
-
-// ── 로그아웃 ─────────────────────────────────────────────
-async function doLogout() {
-  if (!confirm('로그아웃 하시겠습니까?')) return;
-  try {
-    const token = localStorage.getItem('mm_access_token');
-    await fetch(API + '/auth/logout', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
-    });
-  } catch(e) {}
+function doLogout(){
+  if(!confirm('로그아웃 하시겠습니까?')) return;
   localStorage.removeItem('mm_access_token');
   localStorage.removeItem('mm_user_cache');
-  toast('로그아웃 됐습니다');
-  setTimeout(() => go('../login.html'), 700);
+  sessionStorage.removeItem('mm_admin');
+  go('../login.html');
 }
 
-init();
+loadUser();
 </script>
 </body>
 </html>

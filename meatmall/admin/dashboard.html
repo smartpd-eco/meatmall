@@ -241,13 +241,15 @@ function renderDashboard(){
     </div>
   </div>
   <div class="admin-tabs" id="admin-tabs">
+    <div class="admin-tab" onclick="go('products.html')" style="color:#F59E0B;font-weight:800">➕ 상품등록</div>
     <div class="admin-tab active" onclick="switchTab('dashboard',this)">📊 대시보드</div>
     <div class="admin-tab" onclick="switchTab('orders',this)">📦 주문관리</div>
     <div class="admin-tab" onclick="switchTab('inventory',this)">🗄️ 재고관리</div>
+    <div class="admin-tab" onclick="switchTab('categories',this)">🏷️ 카테고리</div>
     <div class="admin-tab" onclick="switchTab('revenue',this)">💰 매출정산</div>
     <div class="admin-tab" onclick="switchTab('cs',this)">💬 CS관리</div>
-    <div class="admin-tab" onclick="go('payment-settings.html')" style="color:var(--amber)">💳 결제설정</div>
-    <div class="admin-tab" onclick="window.open('../index.html','_blank')" style="color:var(--amber)">🛍️ 쇼핑몰</div>
+    <div class="admin-tab" onclick="go('payment-settings.html')">💳 결제설정</div>
+    <div class="admin-tab" onclick="window.open('../index.html','_blank')">🛍️ 쇼핑몰</div>
   </div>
   <div id="tab-content" style="min-height:80vh;padding-bottom:32px">
     <div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 로딩 중...</div>
@@ -263,11 +265,12 @@ async function switchTab(name, el){
   content.innerHTML='<div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 불러오는 중...</div>';
 
   const renders = {
-    dashboard: renderTabDashboard,
-    orders:    renderTabOrders,
-    inventory: renderTabInventory,
-    revenue:   renderTabRevenue,
-    cs:        renderTabCS,
+    dashboard:  renderTabDashboard,
+    orders:     renderTabOrders,
+    inventory:  renderTabInventory,
+    categories: renderTabCategories,
+    revenue:    renderTabRevenue,
+    cs:         renderTabCS,
   };
   if(renders[name]) await renders[name]();
 }
@@ -326,10 +329,10 @@ async function renderTabDashboard(){
     <div class="qa-btn" onclick="go('products.html')">
       <div class="qa-ico">📦</div><div class="qa-lbl">상품관리</div>
     </div>
-    <div class="qa-btn" onclick="go('payment-settings.html')">
-      <div class="qa-ico">💳</div><div class="qa-lbl">결제설정</div>
+    <div class="qa-btn" onclick="switchTab('categories',document.querySelectorAll('.admin-tab')[4])">
+      <div class="qa-ico">🏷️</div><div class="qa-lbl">카테고리</div>
     </div>
-    <div class="qa-btn" onclick="switchTab('orders',document.querySelectorAll('.admin-tab')[1])">
+    <div class="qa-btn" onclick="switchTab('orders',document.querySelectorAll('.admin-tab')[2])">
       <div class="qa-ico">🧾</div><div class="qa-lbl">주문처리</div>
     </div>
   </div>`;
@@ -667,6 +670,41 @@ async function submitCSAnswer(id){
     closeSheet();
     switchTab('cs',document.querySelectorAll('.admin-tab')[4]);
   } catch(e){ toast('❌ 답변 전송 실패'); }
+}
+
+// ── 카테고리 관리 탭 ──────────────────────────────────────
+async function renderTabCategories(){
+  const CATS = [
+    {id:'samgyeop',      emoji:'🥩', name:'삼겹살',       desc:'5층 삼겹살 전용'},
+    {id:'ogyeop',        emoji:'🥩', name:'오겹살',       desc:'껍데기 포함 오겹살'},
+    {id:'moksal',        emoji:'🥩', name:'목살',         desc:'구이·찌개용 목살'},
+    {id:'apdaree',       emoji:'🥩', name:'앞다리살',     desc:'제육볶음·보쌈용'},
+    {id:'mibakapdaree',  emoji:'🥩', name:'미박앞다리살', desc:'껍데기 제거 앞다리'},
+    {id:'deungshim',     emoji:'🥩', name:'등심',         desc:'돈까스·구이용'},
+  ];
+
+  const content = document.getElementById('tab-content');
+  content.innerHTML = `
+  <div style="padding:14px">
+    <div style="background:#1A2744;border-radius:var(--radius-md);padding:14px;margin-bottom:14px;font-size:.82rem;color:#A8BDD4;line-height:1.7">
+      💡 카테고리 순서와 상태를 관리합니다.<br>상품 등록 시 이 카테고리가 사용됩니다.
+    </div>
+    ${CATS.map((c,i)=>`
+    <div style="background:#fff;border-radius:var(--radius-md);margin-bottom:8px;padding:13px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)">
+      <div style="width:42px;height:42px;background:var(--cream);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">${c.emoji}</div>
+      <div style="flex:1">
+        <div style="font-size:.9rem;font-weight:700;color:var(--dark)">${c.name}</div>
+        <div style="font-size:.74rem;color:var(--gray-500)">${c.desc} · ID: ${c.id}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button style="font-size:.74rem;font-weight:600;padding:5px 10px;border-radius:var(--radius-sm);background:var(--cream);color:var(--primary);border:1px solid var(--primary);cursor:pointer" onclick="go('products.html')">상품보기</button>
+      </div>
+    </div>`).join('')}
+    <div style="margin-top:16px;padding:14px;background:var(--cream);border-radius:var(--radius-md);font-size:.8rem;color:var(--secondary);line-height:1.7">
+      📌 현재 취급 부위: 삼겹살·오겹살·목살·앞다리살·미박앞다리살·등심 (돈육 전문 6종)<br>
+      카테고리 추가/변경이 필요하면 개발자에게 문의하세요.
+    </div>
+  </div>`;
 }
 
 async function confirmVbank(orderId){

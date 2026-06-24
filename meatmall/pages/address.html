@@ -10,7 +10,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-.addr-card{background:#fff;margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
+body{background:#111}.app-wrap{background:#111}
+
+.addr-card{background:#1E1E1E;border:1px solid rgba(255,255,255,.07);margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
 .addr-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--gray-100)}
 .addr-default-badge{background:var(--primary);color:#fff;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:8px}
 .addr-body{padding:13px 16px;font-size:.88rem;color:var(--gray-700);line-height:1.7}
@@ -37,7 +39,7 @@ window.addEventListener('pageshow', function(e){
 </head>
 <body>
 <div class="app-wrap">
-  <header class="header">
+  <header class="dark-header">
     <button class="header__icon-btn" onclick="history.back()">←</button>
     <div style="font-size:1rem;font-weight:700">배송지 관리</div>
     <div style="width:40px"></div>

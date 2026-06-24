@@ -10,27 +10,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-.order-filter{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid var(--gray-100)}
+body{background:#111}.app-wrap{background:#111}
+.order-filter{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;background:#1E1E1E;border-bottom:1px solid rgba(255,255,255,.06)}
 .order-filter::-webkit-scrollbar{display:none}
-.filter-pill{flex-shrink:0;padding:6px 14px;border:1.5px solid var(--gray-300);border-radius:999px;font-size:.8rem;font-weight:600;color:var(--gray-600);cursor:pointer;background:#fff;transition:all .15s}
-.filter-pill.on{border-color:var(--primary);background:var(--cream);color:var(--primary)}
+.filter-pill{flex-shrink:0;padding:6px 14px;border:1.5px solid rgba(255,255,255,.1);border-radius:999px;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;background:rgba(255,255,255,.04);transition:all .15s}
+.filter-pill.on{border-color:var(--gold,#C9A84C);background:rgba(201,168,76,.1);color:var(--gold,#C9A84C)}
 
-.order-card{background:#fff;margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
-.order-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--gray-100)}
+.order-card{background:#1E1E1E;border:1px solid rgba(255,255,255,.07)!important;margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
+.order-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
 
 /* 상태 + 입금대기 뱃지 행 */
 .status-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .deposit-badge{display:inline-flex;align-items:center;gap:3px;background:#FEF3C7;color:#92400E;font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid #FCD34D;line-height:1}
 
-.order-date-no{font-size:.76rem;color:var(--gray-500);line-height:1.6}
-.order-item-row{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--gray-100)}
-.order-item-thumb{width:56px;height:56px;border-radius:var(--radius-md);background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
+.order-date-no{font-size:.76rem;color:rgba(255,255,255,.35);line-height:1.6}
+.order-item-row{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.order-item-thumb{width:56px;height:56px;border-radius:var(--radius-md);background:#2A2A2A;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
 .order-item-info{flex:1;min-width:0}
-.order-item-name{font-size:.88rem;font-weight:600;color:var(--dark);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.order-item-name{font-size:.88rem;font-weight:600;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .order-item-meta{font-size:.76rem;color:var(--gray-500)}
-.order-item-price{font-size:.9rem;font-weight:800;color:var(--primary);flex-shrink:0}
+.order-item-price{font-size:.9rem;font-weight:800;color:var(--gold,#C9A84C);flex-shrink:0}
 .vbank-notice{background:#FFFBEB;border-left:3px solid #F59E0B;padding:10px 14px;font-size:.8rem;color:#78350F;line-height:1.75}
-.order-card-foot{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.order-card-foot{background:#1E1E1E;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .order-actions{display:flex;gap:6px;flex-wrap:wrap}
 .oabtn{font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:var(--radius-sm);cursor:pointer;border:none;transition:all .15s}
 .oabtn-primary{background:var(--primary);color:#fff}
@@ -46,7 +47,7 @@ window.addEventListener('pageshow', function(e){
 </head>
 <body>
 <div class="app-wrap">
-  <header class="header">
+  <header class="dark-header">
     <button class="header__icon-btn" onclick="history.back()">←</button>
     <div style="font-size:1rem;font-weight:700">주문 내역</div>
     <button id="admin-btn" class="header__icon-btn" onclick="go('../admin/dashboard.html')" style="display:none">⚙️</button>
