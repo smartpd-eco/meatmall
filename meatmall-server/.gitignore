@@ -1,19 +1,5 @@
-# 환경변수 (절대 올리면 안 됨)
+node_modules/
 .env
 .env.local
-.env.production
-
-# 의존성
-node_modules/
-
-# 로그
 *.log
-npm-debug.log*
-
-# OS
 .DS_Store
-Thumbs.db
-
-# 빌드
-dist/
-.vercel/

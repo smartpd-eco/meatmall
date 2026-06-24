@@ -1,0 +1,12 @@
+{
+  "liveServer.settings.port": 5500,
+  "liveServer.settings.root": "/",
+  "liveServer.settings.CustomBrowser": "chrome",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "files.autoSave": "onFocusChange",
+  "emmet.includeLanguages": {
+    "html": "html"
+  }
+}
