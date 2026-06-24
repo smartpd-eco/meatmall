@@ -2,433 +2,695 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>정육본가 — 신선한 육가공 D2C</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<title>정육본가 — 주인장이 직접 고른 돈육</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/main.css">
 <style>
-/* ── 배너 (높이 2/3로 축소) ── */
-.banner-slider{position:relative;overflow:hidden;height:130px;background:var(--primary)}
-.banner-track{display:flex;transition:transform .45s cubic-bezier(.25,.46,.45,.94);height:100%}
-.banner-slide{min-width:100%;height:100%;display:flex;align-items:center;padding:0 20px;position:relative;overflow:hidden}
-.banner-slide:nth-child(1){background:linear-gradient(120deg,#5C1E08 0%,#B45309 100%)}
-.banner-slide:nth-child(2){background:linear-gradient(120deg,#1C3A5E 0%,#2D6A8F 100%)}
-.banner-slide:nth-child(3){background:linear-gradient(120deg,#1A4731 0%,#2D8A5E 100%)}
-.banner-emoji{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:4.5rem;opacity:.22}
-.banner-tag{display:inline-block;background:rgba(255,255,255,.2);color:#fff;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px;letter-spacing:.04em}
-.banner-title{font-size:1.1rem;font-weight:800;color:#fff;line-height:1.3;margin-bottom:5px}
-.banner-sub{font-size:.76rem;color:rgba(255,255,255,.78)}
-.banner-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px}
-.dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.35);transition:all .3s}
-.dot.active{width:14px;border-radius:3px;background:#fff}
+:root {
+  --gold:    #C9A84C;
+  --gold-lt: #F0D98A;
+  --onyx:    #111111;
+  --charcoal:#1E1E1E;
+  --smoke:   #2A2A2A;
+  --ivory:   #F8F4EE;
+  --ivory2:  #EDE7DC;
+}
 
-/* ── 카테고리 한 줄 텍스트 탭 ── */
-.cat-scroll{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:2px solid var(--gray-100);width:100%;box-sizing:border-box}
-.cat-scroll::-webkit-scrollbar{display:none}
-.cat-scroll-item{flex-shrink:0;padding:10px 14px;font-size:.82rem;font-weight:600;color:var(--gray-500);cursor:pointer;white-space:nowrap;border-bottom:2.5px solid transparent;transition:all .2s;margin-bottom:-2px}
-.cat-scroll-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:800}
-.cat-scroll-item:active{background:var(--gray-100)}
+body { background:#111; }
 
-/* ── 타임딜 섹션 ── */
-.timedeal-section{background:#fff;margin-bottom:8px}
-.timedeal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px}
-.timedeal-left{display:flex;align-items:center;gap:10px}
-.timedeal-title{font-size:1rem;font-weight:800;color:var(--dark)}
-.timer-box{display:flex;gap:3px;align-items:center}
-.timer-unit{background:var(--primary);color:#fff;font-size:.82rem;font-weight:800;padding:3px 6px;border-radius:4px;min-width:26px;text-align:center;font-variant-numeric:tabular-nums}
-.timer-sep{color:var(--primary);font-weight:900;font-size:.9rem;line-height:1}
-.timedeal-more{font-size:.78rem;font-weight:600;color:var(--gray-500)}
+/* ── 헤더 ── */
+.site-header {
+  position: sticky; top:0; z-index:200;
+  background:rgba(17,17,17,.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(201,168,76,.25);
+  height:58px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px;
+  max-width:430px; width:100%; box-sizing:border-box;
+}
+.site-logo {
+  display:flex; flex-direction:column; gap:0;
+}
+.logo-main {
+  font-family:'Noto Serif KR',serif;
+  font-size:.95rem; font-weight:700;
+  color:#fff; letter-spacing:.08em;
+}
+.logo-sub {
+  font-size:.58rem; font-weight:400;
+  color:var(--gold); letter-spacing:.15em; text-transform:uppercase;
+}
+.header-icons { display:flex; gap:4px; align-items:center; }
+.hico {
+  width:38px; height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem; cursor:pointer; border:none; background:none; color:#fff;
+  transition:background .15s;
+}
+.hico:hover { background:rgba(255,255,255,.08); }
+.cart-count {
+  position:absolute; top:6px; right:4px;
+  width:16px; height:16px; border-radius:50%;
+  background:var(--gold); color:var(--onyx);
+  font-size:.6rem; font-weight:900;
+  display:flex; align-items:center; justify-content:center;
+}
 
-/* 타임딜 상품 (가로 스크롤, 강조) */
-.timedeal-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:0 16px 14px}
-.timedeal-scroll::-webkit-scrollbar{display:none}
-.deal-card{min-width:140px;width:140px;flex-shrink:0;background:#fff;border-radius:var(--radius-md);border:1.5px solid var(--gray-100);overflow:hidden;cursor:pointer;transition:transform .15s;box-shadow:var(--shadow-sm)}
-.deal-card:active{transform:scale(.97)}
-.deal-thumb{aspect-ratio:1/1;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;overflow:hidden}
-.deal-thumb img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-.deal-badge{position:absolute;top:0;left:0;right:0;background:var(--primary);color:#fff;font-size:.72rem;font-weight:800;padding:3px 6px;text-align:center;letter-spacing:.04em}
-.deal-info{padding:8px 10px}
-.deal-name{font-size:.78rem;font-weight:600;color:var(--dark);line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.deal-disc{font-size:.82rem;font-weight:800;color:var(--red);margin-bottom:1px}
-.deal-price{font-size:.92rem;font-weight:800;color:var(--dark)}
-.deal-origin{font-size:.7rem;color:var(--gray-400);text-decoration:line-through}
-.deal-progress{height:3px;background:var(--gray-200);border-radius:2px;margin-top:6px;overflow:hidden}
-.deal-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--primary),var(--accent))}
-.deal-stock-txt{font-size:.66rem;color:var(--gray-500);margin-top:3px}
+/* ── 히어로 배너 ── */
+.hero {
+  position:relative; overflow:hidden;
+  height:260px;
+  background: linear-gradient(160deg, #0D0D0D 0%, #1A1208 50%, #0D0D0D 100%);
+}
+.hero-bg-text {
+  position:absolute; bottom:-10px; right:-10px;
+  font-family:'Noto Serif KR',serif;
+  font-size:7rem; font-weight:700; color:rgba(201,168,76,.06);
+  line-height:1; pointer-events:none; white-space:nowrap;
+}
+.hero-content { position:relative; z-index:2; padding:28px 20px 0; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(201,168,76,.12); border:1px solid rgba(201,168,76,.3);
+  border-radius:999px; padding:4px 12px;
+  font-size:.68rem; font-weight:700; color:var(--gold);
+  letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px;
+}
+.hero-title {
+  font-family:'Noto Serif KR',serif;
+  font-size:1.55rem; font-weight:700; color:#fff;
+  line-height:1.38; margin-bottom:10px; letter-spacing:-.01em;
+}
+.hero-title em { color:var(--gold); font-style:normal; }
+.hero-desc {
+  font-size:.8rem; color:rgba(255,255,255,.5);
+  line-height:1.7; font-weight:300;
+}
+.hero-gold-line {
+  position:absolute; bottom:0; left:0; right:0;
+  height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
 
-/* ── 이벤트 배너 띠 ── */
-.event-strip{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid var(--gray-100);width:100%;box-sizing:border-box}
-.event-strip::-webkit-scrollbar{display:none}
-.event-chip{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--radius-sm);font-size:.78rem;font-weight:700;cursor:pointer;transition:transform .12s}
-.event-chip:active{transform:scale(.95)}
-.ec-red{background:#FFF1F2;color:#E11D48;border:1px solid #FECDD3}
-.ec-amber{background:#FFFBEB;color:#B45309;border:1px solid #FDE68A}
-.ec-green{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
-.ec-purple{background:#FAF5FF;color:#7C3AED;border:1px solid #DDD6FE}
-.ec-blue{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+/* ── 주인장 철학 배너 ── */
+.philosophy {
+  background:var(--charcoal);
+  padding:18px 20px;
+  border-bottom:1px solid rgba(201,168,76,.15);
+}
+.philo-quote {
+  font-family:'Noto Serif KR',serif;
+  font-size:.95rem; color:var(--gold);
+  line-height:1.7; font-weight:400;
+  text-align:center; letter-spacing:.02em;
+}
+.philo-quote::before { content:'\201C'; font-size:1.4rem; opacity:.6; }
+.philo-quote::after  { content:'\201D'; font-size:1.4rem; opacity:.6; }
+.philo-name {
+  text-align:center; margin-top:10px;
+  font-size:.72rem; color:rgba(255,255,255,.35);
+  letter-spacing:.12em;
+}
 
-/* ── 구독 배너 ── */
-.sub-banner{margin:0 16px 8px;border-radius:var(--radius-md);background:linear-gradient(120deg,var(--primary-dark),var(--secondary));padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
-.sub-cta{background:rgba(255,255,255,.95);color:var(--primary);font-size:.76rem;font-weight:800;padding:6px 12px;border-radius:999px;flex-shrink:0}
+/* ── VVIP 뱃지 바 ── */
+.vvip-bar {
+  background: linear-gradient(135deg, #1A1208, #0D0D0D);
+  border-bottom:1px solid rgba(201,168,76,.2);
+  padding:14px 16px;
+  display:flex; gap:10px; overflow-x:auto; scrollbar-width:none;
+}
+.vvip-bar::-webkit-scrollbar { display:none; }
+.vvip-chip {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:6px;
+  border:1px solid rgba(201,168,76,.3);
+  border-radius:var(--radius-sm);
+  padding:8px 12px;
+  font-size:.72rem; font-weight:600; color:rgba(255,255,255,.7);
+  white-space:nowrap; background:rgba(201,168,76,.05);
+}
+.vvip-chip .ico { color:var(--gold); font-size:.9rem; }
 
-/* ── 상품 그리드 ── */
-.product-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px}
-.product-row-h{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:0 16px 6px}
-.product-row-h::-webkit-scrollbar{display:none}
-.product-row-h .product-card{min-width:148px;width:148px;flex-shrink:0}
+/* ── 카테고리 탭 ── */
+.cat-nav {
+  background:var(--onyx);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex; overflow-x:auto; scrollbar-width:none;
+  width:100%; box-sizing:border-box;
+}
+.cat-nav::-webkit-scrollbar { display:none; }
+.cat-tab {
+  flex-shrink:0;
+  padding:13px 16px;
+  font-size:.8rem; font-weight:600;
+  color:rgba(255,255,255,.4);
+  cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:all .2s;
+  letter-spacing:.02em;
+}
+.cat-tab.on {
+  color:var(--gold);
+  border-bottom-color:var(--gold);
+  font-weight:700;
+}
+
+/* ── 섹션 헤더 ── */
+.sec-head {
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding:20px 16px 10px;
+}
+.sec-title {
+  font-family:'Noto Serif KR',serif;
+  font-size:1rem; font-weight:600; color:#fff; letter-spacing:.02em;
+}
+.sec-title span { color:var(--gold); }
+.sec-more {
+  font-size:.72rem; color:rgba(255,255,255,.3);
+  cursor:pointer; letter-spacing:.05em;
+}
+
+/* ── 상품 카드 (다크) ── */
+.product-grid {
+  display:grid; grid-template-columns:repeat(2,1fr);
+  gap:12px; padding:0 14px 14px;
+}
+.pcard {
+  background:var(--charcoal);
+  border-radius:var(--radius-md);
+  overflow:hidden; cursor:pointer;
+  border:1px solid rgba(255,255,255,.06);
+  transition:transform .18s, border-color .18s;
+  position:relative;
+}
+.pcard:active { transform:scale(.97); }
+.pcard:hover  { border-color:rgba(201,168,76,.3); }
+.pcard-thumb {
+  aspect-ratio:1/1;
+  background: linear-gradient(135deg, #1E1E1E, #2A2A2A);
+  display:flex; align-items:center; justify-content:center;
+  font-size:3.2rem; position:relative; overflow:hidden;
+}
+.pcard-thumb img {
+  width:100%; height:100%; object-fit:cover;
+  position:absolute; inset:0;
+}
+.sold-overlay {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,.72);
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:4px;
+}
+.sold-text {
+  font-family:'Noto Serif KR',serif;
+  font-size:1rem; font-weight:700; color:rgba(255,255,255,.85);
+  letter-spacing:.1em;
+}
+.sold-sub {
+  font-size:.66rem; color:rgba(255,255,255,.4);
+  text-align:center; letter-spacing:.05em; line-height:1.5;
+}
+.disc-badge {
+  position:absolute; top:8px; left:8px;
+  background:var(--gold); color:var(--onyx);
+  font-size:.66rem; font-weight:900;
+  padding:3px 7px; border-radius:4px; letter-spacing:.03em;
+}
+.pick-badge {
+  position:absolute; top:8px; right:8px;
+  background:rgba(17,17,17,.85);
+  border:1px solid rgba(201,168,76,.5);
+  font-size:.62rem; font-weight:700; color:var(--gold);
+  padding:3px 7px; border-radius:4px; letter-spacing:.05em;
+}
+.wish-btn {
+  position:absolute; bottom:8px; right:8px;
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(0,0,0,.5); display:flex; align-items:center;
+  justify-content:center; font-size:1rem;
+  cursor:pointer; border:none;
+  transition:background .15s;
+}
+.pcard-info { padding:10px 12px 13px; }
+.pcard-cat {
+  font-size:.65rem; font-weight:600; color:var(--gold);
+  letter-spacing:.08em; margin-bottom:4px; text-transform:uppercase;
+}
+.pcard-name {
+  font-size:.86rem; font-weight:700; color:#fff;
+  line-height:1.35; margin-bottom:6px;
+}
+.pcard-desc {
+  font-size:.72rem; color:rgba(255,255,255,.35);
+  line-height:1.5; margin-bottom:8px;
+}
+.pcard-price-row { display:flex; align-items:baseline; gap:5px; }
+.pcard-price {
+  font-size:1.05rem; font-weight:800; color:#fff;
+  font-variant-numeric:tabular-nums;
+}
+.pcard-origin {
+  font-size:.72rem; color:rgba(255,255,255,.3);
+  text-decoration:line-through;
+}
+.pcard-disc { font-size:.74rem; font-weight:700; color:var(--gold); }
+
+/* ── 주인장 추천 배너 ── */
+.owner-banner {
+  margin:6px 14px 14px;
+  background: linear-gradient(135deg, #1A1208, #111);
+  border:1px solid rgba(201,168,76,.25);
+  border-radius:var(--radius-md);
+  padding:18px 16px;
+  position:relative; overflow:hidden;
+}
+.owner-banner::before {
+  content:''; position:absolute;
+  top:-30px; right:-30px;
+  width:120px; height:120px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(201,168,76,.15), transparent 70%);
+}
+.owner-tag {
+  font-size:.66rem; font-weight:700; color:var(--gold);
+  letter-spacing:.12em; text-transform:uppercase; margin-bottom:8px;
+}
+.owner-msg {
+  font-family:'Noto Serif KR',serif;
+  font-size:.92rem; color:#fff;
+  line-height:1.65; font-weight:400;
+}
+.owner-sig {
+  margin-top:12px; font-size:.72rem;
+  color:rgba(255,255,255,.3); text-align:right;
+  letter-spacing:.08em;
+}
+
+/* ── SOLD OUT 섹션 ── */
+.soldout-section {
+  margin:0 14px 14px;
+  background:var(--charcoal);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:var(--radius-md);
+  padding:16px;
+}
+.soldout-title {
+  font-size:.8rem; font-weight:700;
+  color:rgba(255,255,255,.5); letter-spacing:.08em;
+  margin-bottom:10px;
+}
+.soldout-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 0; border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:.82rem;
+}
+.soldout-item:last-child { border-bottom:none; }
+.soldout-name { color:rgba(255,255,255,.4); font-weight:500; }
+.soldout-badge {
+  font-size:.66rem; font-weight:700;
+  color:rgba(255,255,255,.2);
+  border:1px solid rgba(255,255,255,.12);
+  padding:2px 8px; border-radius:4px; letter-spacing:.06em;
+}
 
 /* ── 신뢰 배지 ── */
-.trust-row{display:flex;overflow-x:auto;scrollbar-width:none;padding:12px 16px;gap:10px;background:var(--cream);border-top:1px solid var(--peach);border-bottom:1px solid var(--peach)}
-.trust-row::-webkit-scrollbar{display:none}
-.trust-chip{flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:600;color:var(--gray-700);white-space:nowrap}
+.trust-section {
+  padding:20px 14px;
+  background:var(--charcoal);
+  border-top:1px solid rgba(201,168,76,.1);
+  margin-top:8px;
+}
+.trust-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+}
+.trust-item {
+  text-align:center; padding:14px 8px;
+  background:rgba(255,255,255,.03);
+  border-radius:var(--radius-sm);
+  border:1px solid rgba(255,255,255,.05);
+}
+.trust-ico { font-size:1.5rem; margin-bottom:6px; }
+.trust-label {
+  font-size:.68rem; font-weight:700;
+  color:var(--gold); line-height:1.4;
+  letter-spacing:.04em;
+}
+.trust-sub {
+  font-size:.62rem; color:rgba(255,255,255,.25);
+  margin-top:3px; line-height:1.4;
+}
 
-/* ── 섹션 구분선 ── */
-.section-divider{height:8px;background:var(--gray-100)}
+/* ── 하단 네비 (다크) ── */
+.dark-nav {
+  position:fixed; bottom:0;
+  left:50%; transform:translateX(-50%);
+  width:100%; max-width:430px;
+  height:62px;
+  background:rgba(17,17,17,.97);
+  backdrop-filter:blur(12px);
+  border-top:1px solid rgba(201,168,76,.15);
+  display:flex; z-index:200;
+  box-sizing:border-box;
+}
+.dnav-item {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:3px;
+  cursor:pointer; transition:color .15s;
+}
+.dnav-ico { font-size:1.15rem; }
+.dnav-lbl {
+  font-size:.58rem; font-weight:600;
+  color:rgba(255,255,255,.3); letter-spacing:.04em;
+}
+.dnav-item.on .dnav-lbl { color:var(--gold); }
+.dnav-item.on .dnav-ico { filter:drop-shadow(0 0 4px rgba(201,168,76,.5)); }
 
 /* 스켈레톤 */
-.skel{background:linear-gradient(90deg,#f0eeec 25%,#e5e2de 50%,#f0eeec 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px}
-@keyframes shimmer{to{background-position:-200% 0}}
+.skel {
+  background:linear-gradient(90deg,#222 25%,#2a2a2a 50%,#222 75%);
+  background-size:200% 100%;
+  animation:sk 1.5s infinite; border-radius:6px;
+}
+@keyframes sk { to{ background-position:-200% 0 } }
 </style>
 <script>
-// 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
 window.addEventListener('pageshow', function(e){
   if(e.persisted){ window.location.reload(); }
 });
 </script>
 </head>
 <body>
-<div class="app-wrap">
+<div class="app-wrap" style="background:var(--onyx)">
 
   <!-- 헤더 -->
-  <header class="header">
-    <div class="header__logo"><span>🥩</span>정육본가</div>
-    <div class="header__actions">
-      <button class="header__icon-btn" onclick="go('pages/category.html')">🔍</button>
-      <button class="header__icon-btn">🔔<span class="badge">2</span></button>
-      <button class="header__icon-btn" id="admin-btn" onclick="go('admin/dashboard.html')" style="display:none" title="관리자">⚙️</button>
-      <button class="header__icon-btn" onclick="go('pages/cart.html')">🛒<span class="badge cart-badge" style="display:none">0</span></button>
+  <header class="site-header">
+    <div class="site-logo">
+      <div class="logo-main">정육본가</div>
+      <div class="logo-sub">Jeong Yuk Bonga · Premium Pork</div>
+    </div>
+    <div class="header-icons">
+      <button class="hico" onclick="go('pages/category.html')">🔍</button>
+      <div style="position:relative">
+        <button class="hico" id="admin-btn" onclick="go('admin/dashboard.html')" style="display:none">⚙️</button>
+      </div>
+      <div style="position:relative">
+        <button class="hico" onclick="go('pages/cart.html')">🛒</button>
+        <div class="cart-count cart-badge" style="display:none">0</div>
+      </div>
+      <button class="hico" onclick="go('pages/mypage.html')">👤</button>
     </div>
   </header>
 
-  <div class="main-content">
-
-    <!-- ① 배너 (슬림) -->
-    <div class="banner-slider">
-      <div class="banner-track" id="bannerTrack">
-        <div class="banner-slide">
-          <div style="position:relative;z-index:1">
-            <div class="banner-tag">🔥 오늘만 특가</div>
-            <div class="banner-title">공장에서 식탁까지 48시간</div>
-            <div class="banner-sub">직접 가공 · 유통마진 제로</div>
-          </div>
-          <div class="banner-emoji">🥩</div>
-        </div>
-        <div class="banner-slide">
-          <div style="position:relative;z-index:1">
-            <div class="banner-tag">📬 구독 10% 할인</div>
-            <div class="banner-title">매주 달라지는 고기 큐레이션</div>
-            <div class="banner-sub">언제든 변경·해지 가능</div>
-          </div>
-          <div class="banner-emoji">📦</div>
-        </div>
-        <div class="banner-slide">
-          <div style="position:relative;z-index:1">
-            <div class="banner-tag">✅ HACCP 인증</div>
-            <div class="banner-title">국내산 원육만 사용합니다</div>
-            <div class="banner-sub">자체 HACCP 공장 직접 운영</div>
-          </div>
-          <div class="banner-emoji">🏭</div>
-        </div>
+  <!-- 히어로 -->
+  <div class="hero">
+    <div class="hero-bg-text">豚肉</div>
+    <div class="hero-content">
+      <div class="hero-badge">✦ 주인장 직접 선별</div>
+      <div class="hero-title">
+        자신있는 것만<br>
+        <em>팝니다.</em>
       </div>
-      <div class="banner-dots" id="dots">
-        <div class="dot active"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+      <div class="hero-desc">
+        20년 정육 노하우로 직접 고른<br>
+        제주 흑돼지 · 국내산 돈육 전문
       </div>
     </div>
-
-    <!-- ② 카테고리 한 줄 텍스트 탭 -->
-    <div class="cat-scroll" id="cat-scroll">
-      <div class="cat-scroll-item active" onclick="selectCat('',this)">전체</div>
-      <div class="cat-scroll-item" onclick="selectCat('beef',this)">소고기</div>
-      <div class="cat-scroll-item" onclick="selectCat('pork',this)">돼지고기</div>
-      <div class="cat-scroll-item" onclick="selectCat('chicken',this)">닭/오리</div>
-      <div class="cat-scroll-item" onclick="selectCat('processed',this)">가공육PB</div>
-      <div class="cat-scroll-item" onclick="selectCat('giftset',this)">선물세트</div>
-      <div class="cat-scroll-item" onclick="selectCat('mealkit',this)">밀키트</div>
-    </div>
-
-    <!-- ③ 이벤트 칩 -->
-    <div class="event-strip">
-      <div class="event-chip ec-red" onclick="go('pages/category.html')">🔥 오늘특가</div>
-      <div class="event-chip ec-amber" onclick="go('pages/category.html')">⏱️ 타임딜</div>
-      <div class="event-chip ec-green" onclick="go('pages/category.html?cat=beef')">🐄 한우특가</div>
-      <div class="event-chip ec-purple" onclick="go('pages/subscribe.html')">📬 구독박스</div>
-      <div class="event-chip ec-blue" onclick="go('pages/category.html?cat=giftset')">🎁 선물세트</div>
-    </div>
-
-    <!-- ④ 타임딜 (핵심 강조) -->
-    <div class="timedeal-section">
-      <div class="timedeal-header">
-        <div class="timedeal-left">
-          <div class="timedeal-title">⚡ 타임딜</div>
-          <div class="timer-box">
-            <span class="timer-unit" id="th">00</span>
-            <span class="timer-sep">:</span>
-            <span class="timer-unit" id="tm">00</span>
-            <span class="timer-sep">:</span>
-            <span class="timer-unit" id="ts">00</span>
-          </div>
-        </div>
-        <span class="timedeal-more" onclick="go('pages/category.html')">전체보기 ›</span>
-      </div>
-      <div class="timedeal-scroll" id="timedeal-list">
-        ${[1,2,3,4].map(()=>`
-        <div class="deal-card">
-          <div class="deal-thumb skel"></div>
-          <div class="deal-info">
-            <div class="skel" style="height:10px;margin-bottom:6px"></div>
-            <div class="skel" style="height:14px;width:60%"></div>
-          </div>
-        </div>`).join('')}
-      </div>
-    </div>
-
-    <!-- ⑤ 구독 배너 -->
-    <div class="sub-banner" onclick="go('pages/subscribe.html')">
-      <div>
-        <div style="font-size:.78rem;color:rgba(255,255,255,.75);margin-bottom:3px">매주 신선하게 · 10% 할인</div>
-        <div style="font-size:.95rem;font-weight:800;color:#fff">📬 정기배송 구독하기</div>
-      </div>
-      <div class="sub-cta">구독 신청 →</div>
-    </div>
-
-    <div class="section-divider"></div>
-
-    <!-- ⑥ 베스트셀러 -->
-    <div class="section-header">
-      <div class="section-title">🏆 베스트셀러</div>
-      <div class="section-more" onclick="go('pages/category.html')">전체보기 ›</div>
-    </div>
-    <div class="product-grid-2" id="best-list">
-      ${[1,2,3,4].map(()=>`
-      <div class="product-card" style="border:1px solid var(--gray-100)">
-        <div class="product-thumb skel" style="aspect-ratio:1/1"></div>
-        <div class="product-info">
-          <div class="skel" style="height:11px;margin-bottom:6px"></div>
-          <div class="skel" style="height:15px;width:65%"></div>
-        </div>
-      </div>`).join('')}
-    </div>
-
-    <div class="section-divider" style="margin-top:14px"></div>
-
-    <!-- ⑦ 신뢰 배지 -->
-    <div class="trust-row">
-      <div class="trust-chip">✅ HACCP 인증</div>
-      <div class="trust-chip">🏭 자체 공장</div>
-      <div class="trust-chip">❄️ 냉장·냉동 배송</div>
-      <div class="trust-chip">🇰🇷 국내산 원육</div>
-      <div class="trust-chip">⏱️ 당일 출고</div>
-      <div class="trust-chip">🔄 언제든 해지</div>
-    </div>
-
-    <div class="section-divider"></div>
-
-    <!-- ⑧ 신상품 -->
-    <div class="section-header">
-      <div class="section-title">✨ 신상품</div>
-      <div class="section-more" onclick="go('pages/category.html')">전체보기 ›</div>
-    </div>
-    <div class="product-row-h" id="new-list">
-      ${[1,2,3].map(()=>`
-      <div class="product-card" style="min-width:148px;width:148px;flex-shrink:0;border:1px solid var(--gray-100)">
-        <div class="product-thumb skel" style="aspect-ratio:1/1"></div>
-        <div class="product-info">
-          <div class="skel" style="height:11px;margin-bottom:6px"></div>
-          <div class="skel" style="height:15px;width:65%"></div>
-        </div>
-      </div>`).join('')}
-    </div>
-
-    <div class="section-divider"></div>
-
-    <!-- ⑨ PB 상품 -->
-    <div class="section-header">
-      <div class="section-title">🌭 정육본가 PB 상품</div>
-      <div class="section-more" onclick="go('pages/category.html?cat=processed')">전체보기 ›</div>
-    </div>
-    <div class="product-row-h" id="pb-list">
-      ${[1,2,3].map(()=>`
-      <div class="product-card" style="min-width:148px;width:148px;flex-shrink:0;border:1px solid var(--gray-100)">
-        <div class="product-thumb skel" style="aspect-ratio:1/1"></div>
-        <div class="product-info">
-          <div class="skel" style="height:11px;margin-bottom:6px"></div>
-          <div class="skel" style="height:15px;width:65%"></div>
-        </div>
-      </div>`).join('')}
-    </div>
-
-    <!-- 유저 포인트 배너 -->
-    <div id="grade-area" style="padding:0 16px 8px;margin-top:8px"></div>
-
-    <div style="height:16px"></div>
+    <div class="hero-gold-line"></div>
   </div>
 
-  <nav class="bottom-nav">
-    <div class="nav-item active"><span class="nav-icon">🏠</span><span>홈</span></div>
-    <div class="nav-item" onclick="go('pages/category.html')"><span class="nav-icon">📦</span><span>카테고리</span></div>
-    <div class="nav-item" onclick="go('pages/subscribe.html')"><span class="nav-icon">🔄</span><span>정기배송</span></div>
-    <div class="nav-item" onclick="go('pages/mypage.html')"><span class="nav-icon">👤</span><span>마이</span></div>
-    <div class="nav-item" onclick="go('pages/cs.html')"><span class="nav-icon">💬</span><span>CS</span></div>
+  <!-- 주인장 철학 -->
+  <div class="philosophy">
+    <div class="philo-quote">선별 기준에 미치지 못하면 판매하지 않습니다</div>
+    <div class="philo-name">— 정육본가 주인장 · 20년 정육 경력 —</div>
+  </div>
+
+  <!-- VVIP 혜택 바 -->
+  <div class="vvip-bar">
+    <div class="vvip-chip"><span class="ico">👑</span>소수만 아는 가게</div>
+    <div class="vvip-chip"><span class="ico">🔪</span>주인장 직접 선별</div>
+    <div class="vvip-chip"><span class="ico">❄️</span>당일 발골·당일 출고</div>
+    <div class="vvip-chip"><span class="ico">🎯</span>솔드아웃 시 정직 고지</div>
+    <div class="vvip-chip"><span class="ico">📞</span>1:1 전담 CS</div>
+  </div>
+
+  <!-- 카테고리 탭 -->
+  <div class="cat-nav" id="cat-nav">
+    <div class="cat-tab on"  onclick="selectCat('all',this)">전체</div>
+    <div class="cat-tab"     onclick="selectCat('samgyeop',this)">삼겹살</div>
+    <div class="cat-tab"     onclick="selectCat('ogyeop',this)">오겹살</div>
+    <div class="cat-tab"     onclick="selectCat('moksal',this)">목살</div>
+    <div class="cat-tab"     onclick="selectCat('apdaree',this)">앞다리살</div>
+    <div class="cat-tab"     onclick="selectCat('mibakapdaree',this)">미박앞다리</div>
+    <div class="cat-tab"     onclick="selectCat('deungshim',this)">등심</div>
+  </div>
+
+  <!-- 주인장 추천 -->
+  <div class="owner-banner">
+    <div class="owner-tag">✦ 이번 주 주인장 추천</div>
+    <div class="owner-msg">
+      이번 주 입고된 제주 흑돼지 삼겹살은<br>
+      지방층이 유난히 고릅니다.<br>
+      자신 있게 추천드립니다.
+    </div>
+    <div class="owner-sig">— 정육본가 주인장</div>
+  </div>
+
+  <!-- 상품 목록 -->
+  <div class="sec-head">
+    <div class="sec-title">주인장 <span>선별 정육</span></div>
+    <div class="sec-more" onclick="go('pages/category.html')">전체보기 ›</div>
+  </div>
+  <div class="product-grid" id="product-grid">
+    <!-- 스켈레톤 -->
+    ${[1,2,3,4].map(()=>`
+    <div class="pcard">
+      <div class="pcard-thumb skel"></div>
+      <div class="pcard-info">
+        <div class="skel" style="height:9px;width:40%;margin-bottom:6px"></div>
+        <div class="skel" style="height:13px;margin-bottom:8px"></div>
+        <div class="skel" style="height:16px;width:55%"></div>
+      </div>
+    </div>`).join('')}
+  </div>
+
+  <!-- SOLD OUT 정직 고지 -->
+  <div class="soldout-section" id="soldout-section" style="display:none">
+    <div class="soldout-title">✕ SOLD OUT — 현재 품절</div>
+    <div id="soldout-list"></div>
+    <div style="margin-top:12px;font-size:.76rem;color:rgba(255,255,255,.3);line-height:1.7">
+      기준 미달 정육은 입고되더라도 판매하지 않습니다.<br>
+      재입고 시 알림을 신청하시면 연락드립니다.
+    </div>
+  </div>
+
+  <!-- 신뢰 배지 -->
+  <div class="trust-section">
+    <div class="trust-grid">
+      <div class="trust-item">
+        <div class="trust-ico">🏅</div>
+        <div class="trust-label">20년<br>정육 경력</div>
+        <div class="trust-sub">주인장 직접<br>선별·가공</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-ico">🐷</div>
+        <div class="trust-label">국내산<br>돈육 전문</div>
+        <div class="trust-sub">제주 흑돼지<br>우선 취급</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-ico">❄️</div>
+        <div class="trust-label">당일 발골<br>당일 출고</div>
+        <div class="trust-sub">신선도<br>최우선</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-ico">✅</div>
+        <div class="trust-label">HACCP<br>인증 공장</div>
+        <div class="trust-sub">위생·안전<br>공식 인증</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-ico">🎯</div>
+        <div class="trust-label">기준 미달<br>NO SALE</div>
+        <div class="trust-sub">솔드아웃 시<br>정직 고지</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-ico">👑</div>
+        <div class="trust-label">VVIP<br>소수 운영</div>
+        <div class="trust-sub">지인 추천<br>위주 운영</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:70px"></div>
+
+  <!-- 하단 네비 -->
+  <nav class="dark-nav">
+    <div class="dnav-item on">
+      <div class="dnav-ico">🏠</div>
+      <div class="dnav-lbl">홈</div>
+    </div>
+    <div class="dnav-item" onclick="go('pages/category.html')">
+      <div class="dnav-ico">🥩</div>
+      <div class="dnav-lbl">정육</div>
+    </div>
+    <div class="dnav-item" onclick="go('pages/cart.html')">
+      <div class="dnav-ico">🛒</div>
+      <div class="dnav-lbl">장바구니</div>
+    </div>
+    <div class="dnav-item" onclick="go('pages/orders.html')">
+      <div class="dnav-ico">📦</div>
+      <div class="dnav-lbl">주문</div>
+    </div>
+    <div class="dnav-item" onclick="go('pages/mypage.html')">
+      <div class="dnav-ico">👤</div>
+      <div class="dnav-lbl">마이</div>
+    </div>
   </nav>
-</div>
+
+</div><!-- /app-wrap -->
 <div id="toast-global" class="toast"></div>
 <script src="js/app.js"></script>
 <script>
 const API='https://meatmall.vercel.app/api';
 function go(u){window.location.href=u}
 function fmt(n){return Number(n).toLocaleString('ko-KR')}
-Store.load(); updateCartBadge();
 
-// ── 상품 카드 ──────────────────────────────────────────
-function card(p){
-  const disc=p.origin_price?Math.round((1-p.price/p.origin_price)*100):0;
-  const wished=Store.isWished(p.id);
-  return `
-  <div class="product-card" onclick="go('pages/product.html?id=${p.id}')" style="border:1px solid var(--gray-100)">
-    <div class="product-thumb">
-      ${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`:''}
-      <div class="product-thumb-placeholder">${p.emoji||'🥩'}</div>
-      <button class="product-like-btn" onclick="event.stopPropagation();wish('${p.id}',this)">${wished?'❤️':'🤍'}</button>
-      <div style="position:absolute;top:6px;left:6px;display:flex;flex-direction:column;gap:3px">
-        ${disc>0?`<span class="tag tag-accent" style="font-size:.62rem">${disc}%</span>`:''}
-        ${p.haccp?`<span class="tag tag-green" style="font-size:.62rem">HACCP</span>`:''}
-      </div>
-    </div>
-    <div class="product-info">
-      <div class="product-name">${p.name}</div>
-      <div class="product-weight">${p.weight_g?p.weight_g+'g':''}</div>
-      <div class="product-price-wrap">
-        ${p.origin_price?`<span class="product-origin-price">${fmt(p.origin_price)}원</span>`:''}
-        ${disc>0?`<span class="product-discount">${disc}%</span>`:''}
-      </div>
-      <div class="product-price">${fmt(p.price)}원</div>
-    </div>
-  </div>`;
-}
+Store.load(); updateCartBadge(); showAdminBtn();
 
-// 타임딜 카드 (할인율 강조)
-function dealCard(p){
-  const disc=p.origin_price?Math.round((1-p.price/p.origin_price)*100):0;
-  const stockPct=Math.min(100,Math.round(p.stock/(p.stock+20)*100));
-  return `
-  <div class="deal-card" onclick="go('pages/product.html?id=${p.id}')">
-    <div class="deal-thumb">
-      ${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}">`:''}
-      <span style="position:relative;z-index:1">${p.emoji||'🥩'}</span>
-      ${disc>0?`<div class="deal-badge">🔥 ${disc}% 특가</div>`:'<div class="deal-badge">🔥 오늘특가</div>'}
-    </div>
-    <div class="deal-info">
-      <div class="deal-name">${p.name}</div>
-      ${disc>0?`<div class="deal-disc">${disc}% 할인</div>`:''}
-      <div style="display:flex;align-items:baseline;gap:5px">
-        <div class="deal-price">${fmt(p.price)}원</div>
-        ${p.origin_price?`<div class="deal-origin">${fmt(p.origin_price)}</div>`:''}
-      </div>
-      <div class="deal-progress"><div class="deal-progress-fill" style="width:${100-stockPct}%"></div></div>
-      <div class="deal-stock-txt">잔여 ${p.stock}개</div>
-    </div>
-  </div>`;
-}
+// 카테고리 맵핑 (DB category 값 → 탭 ID)
+const CAT_MAP = {
+  all:           null,
+  samgyeop:      'samgyeop',
+  ogyeop:        'ogyeop',
+  moksal:        'moksal',
+  apdaree:       'apdaree',
+  mibakapdaree:  'mibakapdaree',
+  deungshim:     'deungshim',
+};
 
-function wish(id,btn){
-  Store.toggleWish(id);
-  btn.textContent=Store.isWished(id)?'❤️':'🤍';
-  const el=document.getElementById('toast-global');
-  el.textContent=Store.isWished(id)?'찜 목록에 추가됐습니다':'찜 목록에서 제거됐습니다';
-  el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2000);
-}
+// 카테고리 한글명
+const CAT_KO = {
+  samgyeop:'삼겹살', ogyeop:'오겹살', moksal:'목살',
+  apdaree:'앞다리살', mibakapdaree:'미박앞다리살', deungshim:'등심',
+};
 
-// ── 카테고리 탭 선택 ────────────────────────────────────
+let currentCat = 'all';
+let allProducts = [];
+
 function selectCat(cat, el){
-  if(el){
-    document.querySelectorAll('.cat-scroll-item').forEach(e=>e.classList.remove('active'));
-    el.classList.add('active');
-  }
-  go('pages/category.html'+(cat?'?cat='+cat:''));
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderProducts(cat==='all' ? allProducts : allProducts.filter(p=>p.category===cat));
 }
 
-// ── API 상품 로드 ────────────────────────────────────────
-async function loadHome(){
-  try {
-    const r = await fetch(API+'/products?limit=20&sort=created_at&order=desc');
-    const d = await r.json();
-    const all = d.products || [];
+// 상품 카드 렌더
+function renderCard(p){
+  const disc   = p.origin_price ? Math.round((1-p.price/p.origin_price)*100) : 0;
+  const isSold = p.stock <= 0;
+  const catKo  = CAT_KO[p.category] || p.category || '';
+  const wished = Store.isWished ? Store.isWished(p.id) : false;
 
-    // 타임딜: 할인 있는 상품 우선 (최대 6개)
-    const deals = [...all.filter(p=>p.origin_price&&p.origin_price>p.price), ...all.filter(p=>!p.origin_price||p.origin_price<=p.price)].slice(0,6);
-    document.getElementById('timedeal-list').innerHTML = deals.map(dealCard).join('');
-
-    // 베스트셀러: 4개 그리드
-    document.getElementById('best-list').innerHTML = all.slice(0,6).map(card).join('');
-
-    // 신상품: 가로 스크롤
-    document.getElementById('new-list').innerHTML = all.slice(0,5).map(p=>`<div style="min-width:148px;width:148px;flex-shrink:0">${card(p)}</div>`).join('');
-
-    // PB 상품: processed 카테고리
-    const pb = all.filter(p=>p.source_type==='oem'||p.category==='processed');
-    document.getElementById('pb-list').innerHTML = (pb.length>0?pb:all.slice(2,6)).slice(0,5).map(p=>`<div style="min-width:148px;width:148px;flex-shrink:0">${card(p)}</div>`).join('');
-
-  } catch(e){ console.error('홈 로드 실패:', e); }
-}
-
-// ── 포인트 배너 ─────────────────────────────────────────
-const user=JSON.parse(localStorage.getItem('mm_user_cache')||'{}');
-if(user.name){
-  document.getElementById('grade-area').innerHTML=`
-  <div style="background:var(--cream);border:1px solid var(--peach);border-radius:var(--radius-md);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="go('pages/mypage.html')">
-    <div style="font-size:1.4rem">👤</div>
-    <div style="flex:1">
-      <div style="font-size:.88rem;font-weight:700;color:var(--dark)">${user.name}님 환영합니다!</div>
-      <div style="font-size:.78rem;color:var(--secondary);font-weight:600;margin-top:1px">💎 보유 포인트 ${fmt(user.point||0)}P</div>
+  return `
+  <div class="pcard" onclick="${isSold ? 'soldAlert()' : `go('pages/product.html?id=${p.id}')`}">
+    <div class="pcard-thumb">
+      ${p.thumbnail_url ? `<img src="${p.thumbnail_url}" alt="${p.name}">` : ''}
+      <span style="position:relative;z-index:1">${p.emoji||'🥩'}</span>
+      ${disc>0 ? `<div class="disc-badge">${disc}%</div>` : ''}
+      ${p.haccp ? `<div class="pick-badge">HACCP</div>` : ''}
+      ${isSold ? `
+      <div class="sold-overlay">
+        <div class="sold-text">SOLD OUT</div>
+        <div class="sold-sub">선별 기준 미달 시<br>재입고 없음</div>
+      </div>` : ''}
+      ${!isSold ? `
+      <button class="wish-btn" onclick="event.stopPropagation();doWish('${p.id}',this)">
+        ${wished?'❤️':'🤍'}
+      </button>` : ''}
     </div>
-    <div style="color:var(--gray-400)">›</div>
+    <div class="pcard-info">
+      <div class="pcard-cat">${catKo}</div>
+      <div class="pcard-name">${p.name}</div>
+      <div class="pcard-desc">${p.origin||'국내산'} · ${p.weight_g||0}g</div>
+      <div class="pcard-price-row">
+        <div class="pcard-price">${fmt(p.price)}원</div>
+        ${p.origin_price ? `<div class="pcard-origin">${fmt(p.origin_price)}</div>` : ''}
+        ${disc>0 ? `<div class="pcard-disc">${disc}%↓</div>` : ''}
+      </div>
+    </div>
   </div>`;
 }
 
-// ── 타이머 ──────────────────────────────────────────────
-(function(){
-  const end=new Date();end.setHours(23,59,59,0);
-  function tick(){
-    const d=Math.max(0,Math.floor((end-new Date())/1000));
-    document.getElementById('th').textContent=String(Math.floor(d/3600)).padStart(2,'0');
-    document.getElementById('tm').textContent=String(Math.floor((d%3600)/60)).padStart(2,'0');
-    document.getElementById('ts').textContent=String(d%60).padStart(2,'0');
-  }
-  tick();setInterval(tick,1000);
-})();
+function renderProducts(products){
+  const grid = document.getElementById('product-grid');
+  const available = products.filter(p=>p.stock>0);
+  const soldOut   = products.filter(p=>p.stock<=0);
 
-// ── 배너 슬라이드 ────────────────────────────────────────
-(function(){
-  let cur=0;const total=3;
-  const track=document.getElementById('bannerTrack');
-  const dots=document.querySelectorAll('.dot');
-  function move(n){
-    cur=(n+total)%total;
-    track.style.transform=`translateX(-${cur*100}%)`;
-    dots.forEach((d,i)=>d.classList.toggle('active',i===cur));
+  if(available.length===0 && soldOut.length===0){
+    grid.innerHTML=`
+    <div style="grid-column:1/-1;text-align:center;padding:48px 0">
+      <div style="font-size:2.5rem;margin-bottom:12px">🥩</div>
+      <div style="font-size:.88rem;color:rgba(255,255,255,.3)">현재 해당 부위는 준비 중입니다</div>
+    </div>`;
+    document.getElementById('soldout-section').style.display='none';
+    return;
   }
-  setInterval(()=>move(cur+1),4000);
-  let sx=0;
-  track.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
-  track.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)move(cur+(dx<0?1:-1));});
-})();
 
-loadHome();
+  grid.innerHTML = available.map(renderCard).join('');
+
+  // 품절 고지
+  const so = document.getElementById('soldout-section');
+  const sl = document.getElementById('soldout-list');
+  if(soldOut.length > 0){
+    so.style.display='block';
+    sl.innerHTML = soldOut.map(p=>`
+    <div class="soldout-item">
+      <span class="soldout-name">${p.emoji||''} ${p.name}</span>
+      <span class="soldout-badge">SOLD OUT</span>
+    </div>`).join('');
+  } else {
+    so.style.display='none';
+  }
+}
+
+function doWish(id, btn){
+  Store.toggleWish(id);
+  btn.textContent = Store.isWished(id) ? '❤️' : '🤍';
+  const el=document.getElementById('toast-global');
+  el.textContent=Store.isWished(id)?'찜했습니다 ❤️':'찜 취소됐습니다';
+  el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+function soldAlert(){
+  const el=document.getElementById('toast-global');
+  el.textContent='현재 품절입니다. 기준에 맞는 정육 입고 시 알려드립니다.';
+  el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// 상품 로드
+async function loadProducts(){
+  try {
+    const r = await fetch(API+'/products?limit=30&sort=created_at&order=desc');
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    allProducts = d.products || [];
+    // 돈육 카테고리만 필터 (혹여 다른 카테고리 데이터가 있을 경우 대비)
+    const porkCats = ['samgyeop','ogyeop','moksal','apdaree','mibakapdaree','deungshim',
+                      'pork','beef','chicken','processed','giftset','mealkit']; // 기존 데이터 호환
+    renderProducts(allProducts);
+  } catch(e){
+    document.getElementById('product-grid').innerHTML=`
+    <div style="grid-column:1/-1;text-align:center;padding:40px 0">
+      <div style="font-size:.82rem;color:rgba(255,255,255,.25)">상품을 불러오지 못했습니다</div>
+    </div>`;
+  }
+}
+
+loadProducts();
 </script>
 </body>
 </html>
