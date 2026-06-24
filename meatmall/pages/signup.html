@@ -2,417 +2,138 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>회원가입 · 정육본가</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:#111}.app-wrap{background:#111}
-
-.signup-header{background:var(--primary);padding:0 16px;height:56px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
-.back-btn{color:#fff;font-size:1.3rem;cursor:pointer;padding:8px 4px}
-.signup-header-title{font-size:1rem;font-weight:700;color:#fff}
-
-/* 진행 단계 */
-.step-bar{display:flex;align-items:center;padding:16px 20px 8px;gap:0}
-.step-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1}
-.step-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;transition:all .3s}
-.step-circle.done{background:var(--green);color:#fff}
-.step-circle.active{background:var(--primary);color:#fff}
-.step-circle.idle{background:var(--gray-200);color:var(--gray-500)}
-.step-label{font-size:.65rem;font-weight:600;color:var(--gray-500)}
-.step-line{flex:1;height:2px;background:var(--gray-200);margin-bottom:16px;transition:background .3s}
-.step-line.done{background:var(--green)}
-
-/* 섹션 */
-.section{padding:16px;display:none;flex-direction:column;gap:14px}
-.section.active{display:flex}
-
-/* 약관 */
-.agree-all{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--cream);border:1.5px solid var(--peach);border-radius:var(--radius-md);cursor:pointer}
-.agree-all-text{font-size:.92rem;font-weight:700;color:var(--dark)}
-.agree-box{border:1.5px solid var(--gray-200);border-radius:var(--radius-md);overflow:hidden}
-.agree-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--gray-100)}
-.agree-item:last-child{border-bottom:none}
-.agree-left{display:flex;align-items:center;gap:10px}
-.agree-text{font-size:.85rem;color:var(--gray-700)}
-.req{font-size:.7rem;font-weight:700;color:var(--red);margin-left:3px}
-.opt{font-size:.7rem;font-weight:600;color:var(--gray-400);margin-left:3px}
-.agree-view{font-size:.76rem;color:var(--gray-400);text-decoration:underline;cursor:pointer}
-
-/* 소셜 버튼 */
-.btn-social-su{height:48px;border-radius:var(--radius-md);font-size:.9rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:none;cursor:pointer;transition:all .15s}
-.btn-social-su:active{transform:scale(.97)}
-.su-kakao{background:#FEE500;color:#391B1B}
-.su-naver{background:#03C75A;color:#fff}
-
-/* 비밀번호 강도 */
-.pw-strength-bar{height:4px;border-radius:2px;margin-top:6px;transition:all .3s;width:0}
-.strength-weak{background:var(--red);width:25%}
-.strength-fair{background:var(--amber);width:50%}
-.strength-good{background:#22C55E;width:75%}
-.strength-strong{background:var(--green);width:100%}
-
-/* 완료 화면 */
-.done-wrap{padding:48px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px}
-.done-icon{font-size:4rem;animation:bounce .7s}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-.done-title{font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--dark)}
-.benefit-box{background:var(--cream);border:1px solid var(--peach);border-radius:var(--radius-md);padding:16px;width:100%;text-align:left;font-size:.84rem;line-height:1.9;color:var(--gray-700)}
+.step-bar{display:flex;padding:16px 20px;gap:6px;align-items:center}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;border:1.5px solid rgba(255,255,255,.1);color:var(--txt-lo);transition:all .3s}
+.step-dot.active{background:var(--gold);color:#111;border-color:var(--gold)}
+.step-dot.done{background:rgba(201,168,76,.2);color:var(--gold);border-color:var(--gold-bdr)}
+.step-line{flex:1;height:1px;background:rgba(255,255,255,.08)}
+.step-line.done{background:var(--gold-bdr)}
+.form-wrap{padding:0 16px;display:flex;flex-direction:column;gap:12px}
+.terms-box{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:.8rem;color:var(--txt-lo);line-height:1.7;height:120px;overflow-y:auto}
+.agree-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.88rem;color:var(--txt-md)}
+.agree-row:last-child{border-bottom:none}
+.agree-row input{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0}
+.form-err{color:#F87171;font-size:.78rem;margin-top:4px}
 </style>
-<script>
-// 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
-window.addEventListener('pageshow', function(e){
-  if(e.persisted){ window.location.reload(); }
-});
-</script>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted){step=1;renderStep()}})</script>
 </head>
 <body>
 <div class="app-wrap">
+  <header class="dark-header">
+    <button class="dh-btn" onclick="stepBack()">←</button>
+    <div class="dh-title">회원가입</div>
+    <div style="width:38px"></div>
+  </header>
 
-  <div class="signup-header">
-    <div class="back-btn" onclick="handleBack()">←</div>
-    <div class="signup-header-title">회원가입</div>
-  </div>
-
-  <!-- 진행바 -->
-  <div class="step-bar" id="step-bar">
-    <div class="step-wrap">
-      <div class="step-circle active" id="sc1">1</div>
-      <div class="step-label">약관동의</div>
-    </div>
+  <div class="step-bar">
+    <div class="step-dot active" id="sd1">1</div>
     <div class="step-line" id="sl1"></div>
-    <div class="step-wrap">
-      <div class="step-circle idle" id="sc2">2</div>
-      <div class="step-label">정보입력</div>
-    </div>
+    <div class="step-dot" id="sd2">2</div>
     <div class="step-line" id="sl2"></div>
-    <div class="step-wrap">
-      <div class="step-circle idle" id="sc3">3</div>
-      <div class="step-label">완료</div>
-    </div>
+    <div class="step-dot" id="sd3">3</div>
   </div>
 
-  <!-- STEP 1: 약관 동의 -->
-  <div class="section active" id="step1">
-
-    <!-- 소셜 간편가입 -->
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="font-size:.82rem;font-weight:600;color:var(--gray-500);text-align:center;margin-bottom:2px">소셜 간편가입 (약관 동의 포함)</div>
-      <button class="btn-social-su su-kakao" onclick="socialSignup('kakao')">
-        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#391B1B" d="M12 3C6.477 3 2 6.477 2 10.8c0 2.8 1.8 5.26 4.5 6.7l-.9 3.3 3.8-2.5c.85.12 1.72.2 2.6.2 5.523 0 10-3.477 10-7.7S17.523 3 12 3z"/></svg>
-        카카오로 간편가입
-      </button>
-      <button class="btn-social-su su-naver" onclick="socialSignup('naver')">
-        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#fff" d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
-        네이버로 간편가입
-      </button>
-    </div>
-
-    <div style="display:flex;align-items:center;gap:10px;color:var(--gray-400);font-size:.8rem">
-      <div style="flex:1;height:1px;background:var(--gray-200)"></div>
-      이메일로 가입
-      <div style="flex:1;height:1px;background:var(--gray-200)"></div>
-    </div>
-
-    <!-- 전체 동의 -->
-    <div class="agree-all" onclick="toggleAll()">
-      <input type="checkbox" id="agree-all" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer" onchange="checkAll()">
-      <div class="agree-all-text">전체 동의 (필수+선택 포함)</div>
-    </div>
-
-    <!-- 개별 약관 -->
-    <div class="agree-box">
-      <div class="agree-item">
-        <div class="agree-left">
-          <input type="checkbox" id="ag-terms" style="width:18px;height:18px;accent-color:var(--primary)" onchange="syncAll()">
-          <span class="agree-text">이용약관<span class="req">(필수)</span></span>
-        </div>
-        <span class="agree-view" onclick="viewTerms('terms')">보기</span>
-      </div>
-      <div class="agree-item">
-        <div class="agree-left">
-          <input type="checkbox" id="ag-privacy" style="width:18px;height:18px;accent-color:var(--primary)" onchange="syncAll()">
-          <span class="agree-text">개인정보 수집·이용<span class="req">(필수)</span></span>
-        </div>
-        <span class="agree-view" onclick="viewTerms('privacy')">보기</span>
-      </div>
-      <div class="agree-item">
-        <div class="agree-left">
-          <input type="checkbox" id="ag-age" style="width:18px;height:18px;accent-color:var(--primary)" onchange="syncAll()">
-          <span class="agree-text">만 14세 이상 확인<span class="req">(필수)</span></span>
-        </div>
-        <span class="agree-view"></span>
-      </div>
-      <div class="agree-item">
-        <div class="agree-left">
-          <input type="checkbox" id="ag-mkt" style="width:18px;height:18px;accent-color:var(--primary)" onchange="syncAll()">
-          <span class="agree-text">마케팅 정보 수신<span class="opt">(선택)</span></span>
-        </div>
-        <span class="agree-view" onclick="viewTerms('mkt')">보기</span>
-      </div>
-      <div class="agree-item">
-        <div class="agree-left">
-          <input type="checkbox" id="ag-push" style="width:18px;height:18px;accent-color:var(--primary)" onchange="syncAll()">
-          <span class="agree-text">앱 푸시 알림 수신<span class="opt">(선택)</span></span>
-        </div>
-        <span class="agree-view"></span>
-      </div>
-    </div>
-
-    <button class="btn btn-primary btn-full btn-lg" onclick="nextStep1()">다음</button>
-  </div>
-
-  <!-- STEP 2: 정보 입력 -->
-  <div class="section" id="step2">
-    <div class="form-group">
-      <label class="form-label">이름 <span style="color:var(--red)">*</span></label>
-      <input class="form-input" id="su-name" type="text" placeholder="실명 입력" autocomplete="name">
-      <span class="form-error" id="err-name">이름을 입력해주세요</span>
-    </div>
-    <div class="form-group">
-      <label class="form-label">이메일 <span style="color:var(--red)">*</span></label>
-      <input class="form-input" id="su-email" type="email" placeholder="email@example.com" autocomplete="email">
-      <span class="form-error" id="err-email">올바른 이메일 형식을 입력해주세요</span>
-    </div>
-    <div class="form-group">
-      <label class="form-label">휴대폰 번호</label>
-      <div style="display:flex;gap:8px">
-        <input class="form-input" id="su-phone" type="tel" placeholder="010-0000-0000" style="flex:1" oninput="fmtPhone(this)">
-        <button class="btn btn-outline btn-sm" onclick="sendSMS()" style="white-space:nowrap;height:50px;padding:0 14px">인증번호</button>
-      </div>
-    </div>
-    <div class="form-group" id="sms-group" style="display:none">
-      <label class="form-label">인증번호</label>
-      <div style="display:flex;gap:8px">
-        <input class="form-input" id="su-sms" type="number" placeholder="6자리 입력" style="flex:1">
-        <button class="btn btn-primary btn-sm" onclick="verifySMS()" style="height:50px;padding:0 14px">확인</button>
-      </div>
-      <span class="form-hint" id="sms-timer" style="color:var(--secondary)"></span>
-    </div>
-    <div class="form-group">
-      <label class="form-label">비밀번호 <span style="color:var(--red)">*</span></label>
-      <div class="input-wrap">
-        <input class="form-input" id="su-pw" type="password" placeholder="8자 이상, 영문+숫자 조합" oninput="checkPwStr()">
-        <span class="input-action" onclick="togglePw('su-pw')">👁</span>
-      </div>
-      <div class="pw-strength-bar" id="pw-bar"></div>
-      <span class="form-hint" id="pw-hint" style="margin-top:3px"></span>
-      <span class="form-error" id="err-pw">비밀번호는 8자 이상 영문+숫자 조합이어야 합니다</span>
-    </div>
-    <div class="form-group">
-      <label class="form-label">비밀번호 확인 <span style="color:var(--red)">*</span></label>
-      <div class="input-wrap">
-        <input class="form-input" id="su-pw2" type="password" placeholder="비밀번호 재입력">
-        <span class="input-action" onclick="togglePw('su-pw2')">👁</span>
-      </div>
-      <span class="form-error" id="err-pw2">비밀번호가 일치하지 않습니다</span>
-    </div>
-    <div class="form-group">
-      <label class="form-label" style="display:flex;justify-content:space-between">
-        추천인 코드 <span style="font-size:.75rem;color:var(--secondary);font-weight:600">+1,000P 적립</span>
-      </label>
-      <input class="form-input" id="su-ref" type="text" placeholder="추천인 코드 (선택)">
-    </div>
-
-    <span class="form-error" id="err-server" style="font-size:.85rem"></span>
-    <button class="btn btn-primary btn-full btn-lg" id="btn-signup" onclick="doSignup()">가입 완료</button>
-  </div>
-
-  <!-- STEP 3: 완료 -->
-  <div class="section" id="step3">
-    <div class="done-wrap">
-      <div class="done-icon">🎉</div>
-      <div class="done-title" id="done-name">환영합니다!</div>
-      <p style="font-size:.88rem;color:var(--gray-500);line-height:1.7">
-        정육본가 회원이 되셨습니다.<br>
-        가입 축하 포인트 <strong style="color:var(--primary)">1,000P</strong>가 지급됐습니다.
-      </p>
-      <div class="benefit-box">
-        🎁 <strong>가입 혜택</strong><br>
-        · 웰컴 쿠폰 10% (1만원 이상 사용)<br>
-        · 첫 구매 무료배송<br>
-        · 축하 포인트 1,000P
-      </div>
-      <button class="btn btn-primary btn-full btn-lg" onclick="goHome()">쇼핑 시작하기 →</button>
-      <button class="btn btn-outline btn-full" onclick="goSubscribe()">정기배송 알아보기</button>
-    </div>
-  </div>
-
+  <div id="step-content" style="padding-bottom:32px"></div>
 </div>
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
-const API = 'https://meatmall.vercel.app/api';
-let step = 1;
-let smsVerified = false;
-let smsTimer = null;
+const API='https://meatmall.vercel.app/api';
+function go(u){window.location.href=u}
+function toast(msg){const el=document.getElementById('toast-global');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400)}
+let step=1;
+const DATA={};
 
-function goHome()      { window.location.href = '../index.html'; }
-function goSubscribe() { window.location.href = '../pages/subscribe.html'; }
+document.addEventListener('DOMContentLoaded',()=>{step=1;renderStep()});
 
-function handleBack() {
-  if (step === 1) history.back();
-  else { step--; renderStep(); }
-}
-
-function renderStep() {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('step' + step).classList.add('active');
-  // 진행바 업데이트
-  [1,2,3].forEach(n => {
-    const sc = document.getElementById('sc'+n);
-    sc.className = 'step-circle ' + (n < step ? 'done' : n === step ? 'active' : 'idle');
-    sc.textContent = n < step ? '✓' : n;
+function renderStep(){
+  const dots=['sd1','sd2','sd3'];
+  const lines=['sl1','sl2'];
+  dots.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.className='step-dot'+(i+1<step?' done':i+1===step?' active':'');
   });
-  [1,2].forEach(n => {
-    const sl = document.getElementById('sl'+n);
-    sl.className = 'step-line ' + (n < step ? 'done' : '');
+  lines.forEach((id,i)=>{
+    document.getElementById(id).className='step-line'+(i+1<step?' done':'');
   });
+  const c=document.getElementById('step-content');
+  if(step===1) c.innerHTML=`
+  <div class="form-wrap">
+    <div style="font-family:'Noto Serif KR',serif;font-size:1rem;color:var(--txt-hi);padding:4px 0 8px">이용약관 동의</div>
+    <div class="terms-box">정육본가 이용약관
+
+제1조 목적
+본 약관은 정육본가(이하 "회사")가 운영하는 쇼핑몰에서 제공하는 서비스 이용에 관한 조건 및 절차를 규정합니다.
+
+제2조 서비스 내용
+회사는 국내산 돈육(삼겹살, 오겹살, 목살, 앞다리살, 미박앞다리살, 등심) 판매 서비스를 제공합니다.</div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:12px">
+      <div class="agree-row"><input type="checkbox" id="ag-all" onchange="toggleAll(this)"> <strong>전체 동의</strong></div>
+      <div class="agree-row"><input type="checkbox" id="ag1"> 이용약관 동의 (필수)</div>
+      <div class="agree-row"><input type="checkbox" id="ag2"> 개인정보 처리방침 동의 (필수)</div>
+      <div class="agree-row"><input type="checkbox" id="ag3"> 마케팅 정보 수신 동의 (선택)</div>
+    </div>
+    <button class="btn-gold" onclick="step1Next()">다음</button>
+  </div>`;
+  else if(step===2) c.innerHTML=`
+  <div class="form-wrap">
+    <div style="font-family:'Noto Serif KR',serif;font-size:1rem;color:var(--txt-hi);padding:4px 0 8px">기본 정보 입력</div>
+    <div><label class="dk-label">이름</label><input class="dk-input" id="s-name" placeholder="실명 입력"></div>
+    <div><label class="dk-label">이메일</label><input class="dk-input" id="s-email" type="email" placeholder="이메일 입력"></div>
+    <div><label class="dk-label">비밀번호</label><input class="dk-input" id="s-pw" type="password" placeholder="8자 이상"></div>
+    <div><label class="dk-label">비밀번호 확인</label><input class="dk-input" id="s-pw2" type="password" placeholder="비밀번호 재입력"></div>
+    <div id="s-err" class="form-err"></div>
+    <button class="btn-gold" onclick="step2Next()">다음</button>
+  </div>`;
+  else c.innerHTML=`
+  <div class="form-wrap" style="padding-top:12px">
+    <div style="text-align:center;padding:24px 0">
+      <div style="font-size:3rem;margin-bottom:14px">👑</div>
+      <div style="font-family:'Noto Serif KR',serif;font-size:1.15rem;color:var(--txt-hi);margin-bottom:6px">가입 완료!</div>
+      <div style="font-size:.84rem;color:var(--txt-lo)">정육본가 VVIP 회원이 됐습니다</div>
+    </div>
+    <button class="btn-gold" id="final-btn" onclick="doSignup()">시작하기</button>
+  </div>`;
 }
 
-// ── STEP 1: 약관 ────────────────────────────────────────
-function toggleAll() {
-  const all = document.getElementById('agree-all').checked;
-  ['ag-terms','ag-privacy','ag-age','ag-mkt','ag-push'].forEach(id => {
-    document.getElementById(id).checked = all;
-  });
+function stepBack(){
+  if(step===1){ go('../login.html'); return; }
+  step--; renderStep();
 }
-function syncAll() {
-  const ids = ['ag-terms','ag-privacy','ag-age','ag-mkt','ag-push'];
-  document.getElementById('agree-all').checked = ids.every(id => document.getElementById(id).checked);
+function toggleAll(cb){['ag1','ag2','ag3'].forEach(id=>document.getElementById(id).checked=cb.checked)}
+function step1Next(){
+  if(!document.getElementById('ag1').checked||!document.getElementById('ag2').checked){toast('필수 약관에 동의해주세요');return;}
+  step=2; renderStep();
 }
-function checkAll() { toggleAll(); }
-function viewTerms(type) { toast('약관 내용 확인 페이지로 이동합니다'); }
-
-function nextStep1() {
-  if (!['ag-terms','ag-privacy','ag-age'].every(id => document.getElementById(id).checked)) {
-    toast('필수 약관에 모두 동의해주세요'); return;
-  }
-  step = 2; renderStep();
+function step2Next(){
+  const name=document.getElementById('s-name').value.trim();
+  const email=document.getElementById('s-email').value.trim();
+  const pw=document.getElementById('s-pw').value;
+  const pw2=document.getElementById('s-pw2').value;
+  const err=document.getElementById('s-err');
+  if(!name||!email||!pw){err.textContent='모든 항목을 입력해주세요';return;}
+  if(pw.length<8){err.textContent='비밀번호는 8자 이상이어야 합니다';return;}
+  if(pw!==pw2){err.textContent='비밀번호가 일치하지 않습니다';return;}
+  DATA.name=name;DATA.email=email;DATA.password=pw;
+  step=3; renderStep();
 }
-
-function socialSignup(provider) {
-  window.location.href = API + '/auth/' + provider;
-}
-
-// ── STEP 2: 정보입력 ─────────────────────────────────────
-function fmtPhone(el) {
-  let v = el.value.replace(/\D/g,'');
-  if (v.length > 3 && v.length <= 7) v = v.slice(0,3)+'-'+v.slice(3);
-  else if (v.length > 7) v = v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);
-  el.value = v;
-}
-
-function sendSMS() {
-  const phone = document.getElementById('su-phone').value;
-  if (!phone || phone.length < 11) { toast('휴대폰 번호를 입력해주세요'); return; }
-  document.getElementById('sms-group').style.display = 'block';
-  toast('인증번호가 발송됐습니다 (데모: 123456)');
-  let t = 180;
-  clearInterval(smsTimer);
-  smsTimer = setInterval(() => {
-    t--;
-    const m = String(Math.floor(t/60)).padStart(2,'0');
-    const s = String(t%60).padStart(2,'0');
-    const el = document.getElementById('sms-timer');
-    if (el) el.textContent = `${m}:${s} 남음`;
-    if (t <= 0) { clearInterval(smsTimer); if(el) el.textContent = '시간 초과. 재발송 해주세요.'; }
-  }, 1000);
-}
-
-function verifySMS() {
-  const code = document.getElementById('su-sms').value;
-  if (code === '123456') {
-    smsVerified = true;
-    document.getElementById('sms-timer').textContent = '✅ 인증 완료';
-    clearInterval(smsTimer);
-    toast('인증됐습니다 ✅');
-  } else {
-    toast('인증번호가 올바르지 않습니다');
-  }
-}
-
-function checkPwStr() {
-  const pw = document.getElementById('su-pw').value;
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (/[A-Za-z]/.test(pw) && /[0-9]/.test(pw)) score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  if (pw.length >= 12) score++;
-  const cls = ['','strength-weak','strength-fair','strength-good','strength-strong'];
-  const lbl = ['','약함','보통','강함','매우 강함'];
-  const bar = document.getElementById('pw-bar');
-  const hint = document.getElementById('pw-hint');
-  bar.className = 'pw-strength-bar ' + (cls[score] || '');
-  hint.textContent = pw.length ? `비밀번호 강도: ${lbl[score]}` : '';
-}
-
-function togglePw(id) {
-  const el = document.getElementById(id);
-  el.type = el.type === 'password' ? 'text' : 'password';
-}
-
-function clearErrors() {
-  ['name','email','pw','pw2','server'].forEach(f => {
-    const el = document.getElementById('err-'+f);
-    if (el) el.classList.remove('show');
-  });
-}
-
-async function doSignup() {
-  clearErrors();
-  const name  = document.getElementById('su-name').value.trim();
-  const email = document.getElementById('su-email').value.trim();
-  const pw    = document.getElementById('su-pw').value;
-  const pw2   = document.getElementById('su-pw2').value;
-  const phone = document.getElementById('su-phone').value;
-  const mkt   = document.getElementById('ag-mkt').checked;
-  const push  = document.getElementById('ag-push').checked;
-  let ok = true;
-
-  if (!name) { document.getElementById('err-name').classList.add('show'); ok = false; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('err-email').classList.add('show'); ok = false; }
-  if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/[0-9]/.test(pw)) { document.getElementById('err-pw').classList.add('show'); ok = false; }
-  if (pw !== pw2) { document.getElementById('err-pw2').classList.add('show'); ok = false; }
-  if (!ok) return;
-
-  const btn = document.getElementById('btn-signup');
-  btn.innerHTML = '<div class="spinner"></div>'; btn.disabled = true;
-
-  try {
-    const res = await fetch(API + '/auth/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ name, email, password: pw, phone: phone || null, marketing_agree: mkt, push_agree: push })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || '회원가입 실패');
-
-    // 토큰 저장
-    localStorage.setItem('mm_access_token', data.accessToken);
-    localStorage.setItem('mm_user_cache', JSON.stringify(data.user));
-
-    // 완료 화면
-    document.getElementById('done-name').textContent = `환영합니다, ${data.user?.name || name}님! 🎉`;
-    step = 3; renderStep();
-
-  } catch(err) {
-    btn.innerHTML = '가입 완료'; btn.disabled = false;
-    const el = document.getElementById('err-server');
-    el.textContent = err.message; el.classList.add('show');
-  }
-}
-
-function toast(msg) {
-  const el = document.getElementById('toast-global');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+async function doSignup(){
+  const btn=document.getElementById('final-btn');
+  btn.textContent='...'; btn.disabled=true;
+  try{
+    const r=await fetch(API+'/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DATA)});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'가입 실패');
+    localStorage.setItem('mm_access_token',d.accessToken);
+    localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
+    go('../index.html');
+  }catch(e){toast('❌ '+e.message);btn.textContent='시작하기';btn.disabled=false;}
 }
 </script>
 </body>

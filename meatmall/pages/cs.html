@@ -2,387 +2,81 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>고객센터 · 정육본가</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:#111}.app-wrap{background:#111}
-
-/* ── CS 히어로 ── */
-.cs-hero {
-  background: linear-gradient(135deg, var(--secondary), var(--accent));
-  padding: 28px 20px 24px;
-  text-align: center;
-  color: var(--white);
-}
-.cs-hero h1 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
-.cs-hero p  { font-size: 0.85rem; opacity: .85; line-height: 1.55; }
-.cs-time {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,.18);
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  font-size: 0.8rem;
-  margin-top: 12px;
-}
-
-/* ── 연락 채널 카드 ── */
-.channel-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  padding: 16px;
-}
-.channel-card {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 18px 14px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  border: 1.5px solid transparent;
-  transition: all .15s;
-}
-.channel-card:active { transform: scale(.97); }
-.channel-card.kakao  { border-color: #FEE500; }
-.channel-card.phone  { border-color: var(--green-light); }
-.channel-card.email  { border-color: var(--peach); }
-.channel-card.chat   { border-color: var(--primary); }
-.channel-icon { font-size: 2rem; margin-bottom: 8px; }
-.channel-name { font-size: 0.9rem; font-weight: 700; color: var(--dark); margin-bottom: 3px; }
-.channel-desc { font-size: 0.72rem; color: var(--gray-500); }
-
-/* ── FAQ ── */
-.faq-list { padding: 0 16px; }
-.faq-item {
-  border-bottom: 1px solid var(--gray-100);
-  overflow: hidden;
-}
-.faq-q {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 2px;
-  cursor: pointer;
-  gap: 10px;
-}
-.faq-q-text { font-size: 0.9rem; font-weight: 600; color: var(--dark); flex: 1; line-height: 1.4; }
-.faq-arrow {
-  font-size: 1rem;
-  color: var(--gray-400);
-  transition: transform .25s;
-  flex-shrink: 0;
-}
-.faq-item.open .faq-arrow { transform: rotate(180deg); }
-.faq-a {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height .3s ease;
-}
-.faq-item.open .faq-a { max-height: 400px; }
-.faq-a-inner {
-  background: var(--gray-100);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  margin-bottom: 12px;
-  font-size: 0.84rem;
-  color: var(--gray-700);
-  line-height: 1.7;
-}
-
-/* ── 1:1 문의 폼 ── */
-.inquiry-form {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.type-select {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 4px;
-}
-.type-chip {
-  padding: 9px 6px;
-  border: 1.5px solid var(--gray-300);
-  border-radius: var(--radius-md);
-  text-align: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--gray-700);
-  cursor: pointer;
-  transition: all .15s;
-}
-.type-chip.selected {
-  border-color: var(--primary);
-  background: var(--cream);
-  color: var(--primary);
-}
-.inquiry-textarea {
-  width: 100%;
-  min-height: 120px;
-  border: 1.5px solid var(--gray-300);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  font-size: 0.9rem;
-  resize: vertical;
-  line-height: 1.6;
-}
-.inquiry-textarea:focus { border-color: var(--primary); outline: none; }
-.file-attach {
-  border: 1.5px dashed var(--gray-300);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  text-align: center;
-  font-size: 0.82rem;
-  color: var(--gray-500);
-  cursor: pointer;
-}
-
-/* ── 탭 ── */
-.cs-tabs {
-  display: flex;
-  background: var(--white);
-  border-bottom: 1px solid var(--gray-200);
-}
-.cs-tab {
-  flex: 1; padding: 12px 4px;
-  text-align: center;
-  font-size: 0.84rem; font-weight: 600;
-  color: var(--gray-500); cursor: pointer;
-  border-bottom: 2.5px solid transparent;
-  transition: all .2s;
-}
-.cs-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-
-/* ── 이전 문의 내역 ── */
-.my-inquiry {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--gray-100);
-  cursor: pointer;
-}
-.inquiry-title { font-size: 0.9rem; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
-.inquiry-meta {
-  display: flex; justify-content: space-between;
-  font-size: 0.76rem; color: var(--gray-500);
-}
+.faq-item{background:var(--charcoal);border:1px solid var(--line);border-radius:12px;margin:0 14px 8px;overflow:hidden;cursor:pointer}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font-size:.88rem;font-weight:600;color:var(--txt-hi)}
+.faq-a{display:none;padding:12px 16px 14px;font-size:.84rem;color:var(--txt-md);line-height:1.75;border-top:1px solid var(--line)}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-arr{transform:rotate(180deg)}
+.faq-arr{transition:transform .2s;color:var(--txt-lo)}
+.cs-banner{background:linear-gradient(135deg,#1A1208,#111);border:1px solid var(--gold-bdr);border-radius:14px;margin:14px;padding:18px 16px}
 </style>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
 </head>
 <body>
 <div class="app-wrap">
-
-  <header class="header">
-    <div class="header__logo"><span>🥩</span>고객센터</div>
-    <div class="header__actions">
-      <button class="header__icon-btn" onclick="go('../pages/cart.html')">🛒</button>
-    </div>
+  <header class="dark-header">
+    <button class="dh-btn" onclick="history.back()">←</button>
+    <div class="dh-title">고객센터</div>
+    <div style="width:38px"></div>
   </header>
 
-  <div class="main-content">
+  <div class="cs-banner">
+    <div style="font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.1em;margin-bottom:8px">✦ 1:1 문의</div>
+    <div style="font-family:'Noto Serif KR',serif;font-size:.95rem;color:var(--txt-hi);margin-bottom:4px">무엇이든 물어보세요</div>
+    <div style="font-size:.78rem;color:var(--txt-lo)">주인장이 직접 답변합니다 · 평균 2시간 이내</div>
+  </div>
 
-    <!-- CS 히어로 -->
-    <div class="cs-hero">
-      <h1>💬 무엇을 도와드릴까요?</h1>
-      <p>신선한 고기처럼 빠르고 정직하게<br>답변드리겠습니다</p>
-      <div class="cs-time">⏰ 운영시간: 평일 09:00 ~ 18:00</div>
+  <div style="padding:4px 14px 10px">
+    <div class="dk-label" style="padding:10px 2px 8px">FAQ</div>
+    ${[
+      ['배송은 얼마나 걸리나요?','오전 11시 이전 주문 시 당일 출고 후 1~2일 이내 도착합니다. 냉장·냉동 전용 포장으로 신선도를 유지합니다.'],
+      ['품절 상품은 언제 재입고 되나요?','주인장 기준에 맞는 정육이 입고될 때만 판매합니다. 기준 미달 시 재입고 없이 품절 상태 유지됩니다.'],
+      ['무통장 입금 후 확인은 얼마나 걸리나요?','평일 기준 2시간 이내 확인됩니다. 주문번호와 입금자명을 정확히 기재해 주세요.'],
+      ['환불/교환은 어떻게 하나요?','상품 불량·오배송의 경우 100% 교환·환불 처리합니다. 단, 신선식품 특성상 단순 변심 반품은 어렵습니다.'],
+      ['정기배송 해지는 어떻게 하나요?','마이페이지 → 정기배송 구독 → 해지하기에서 언제든 해지 가능합니다.'],
+    ].map(([q,a],i)=>`
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q"><span>${q}</span><span class="faq-arr">▾</span></div>
+      <div class="faq-a">${a}</div>
+    </div>`).join('')}
+  </div>
+
+  <div style="padding:0 14px 16px">
+    <div class="dk-label" style="padding:10px 2px 10px">1:1 문의 작성</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <select class="dk-input" style="height:50px">
+        <option style="background:#222">문의 유형 선택</option>
+        <option style="background:#222">주문·배송</option>
+        <option style="background:#222">상품 문의</option>
+        <option style="background:#222">교환·환불</option>
+        <option style="background:#222">정기배송</option>
+        <option style="background:#222">기타</option>
+      </select>
+      <textarea class="dk-input" style="height:120px;padding:12px 14px;resize:none" placeholder="문의 내용을 입력해주세요"></textarea>
+      <button class="btn-gold" onclick="alert('문의가 접수됐습니다')">문의 접수</button>
     </div>
+  </div>
 
-    <!-- 연락 채널 -->
-    <div style="padding: 16px 16px 4px">
-      <div style="font-size:.88rem; font-weight:700; color:var(--dark); margin-bottom:4px">빠른 연결</div>
-    </div>
-    <div class="channel-grid">
-      <div class="channel-card kakao" onclick="openKakao()">
-        <div class="channel-icon">💬</div>
-        <div class="channel-name">카카오 채널</div>
-        <div class="channel-desc">실시간 1:1 채팅<br>평균 응답 15분</div>
-      </div>
-      <div class="channel-card phone" onclick="callCS()">
-        <div class="channel-icon">📞</div>
-        <div class="channel-name">전화 문의</div>
-        <div class="channel-desc">1588-0000<br>평일 09~18시</div>
-      </div>
-      <div class="channel-card email" onclick="showTab('inquiry', document.querySelectorAll('.cs-tab')[1])">
-        <div class="channel-icon">📧</div>
-        <div class="channel-name">1:1 문의</div>
-        <div class="channel-desc">24시간 접수<br>1영업일 내 답변</div>
-      </div>
-      <div class="channel-card chat" onclick="showTab('myinquiry', document.querySelectorAll('.cs-tab')[2])">
-        <div class="channel-icon">📋</div>
-        <div class="channel-name">문의 내역</div>
-        <div class="channel-desc">내 문의 확인<br>답변 알림 수신</div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- 탭 -->
-    <div class="cs-tabs">
-      <div class="cs-tab active" onclick="showTab('faq',this)">자주 묻는 질문</div>
-      <div class="cs-tab" onclick="showTab('inquiry',this)">1:1 문의</div>
-      <div class="cs-tab" onclick="showTab('myinquiry',this)">문의 내역</div>
-    </div>
-
-    <!-- FAQ 탭 -->
-    <div id="tab-faq">
-      <div style="padding:12px 16px 0; display:flex; gap:8px; overflow-x:auto; scrollbar-width:none">
-        <div class="event-chip chip-amber active-chip" onclick="filterFaq('all',this)" style="flex-shrink:0">전체</div>
-        <div class="event-chip chip-amber" onclick="filterFaq('order',this)" style="flex-shrink:0">주문/배송</div>
-        <div class="event-chip chip-amber" onclick="filterFaq('product',this)" style="flex-shrink:0">상품</div>
-        <div class="event-chip chip-amber" onclick="filterFaq('refund',this)" style="flex-shrink:0">환불/반품</div>
-        <div class="event-chip chip-amber" onclick="filterFaq('subscribe',this)" style="flex-shrink:0">정기배송</div>
-      </div>
-      <div class="faq-list" id="faq-list"></div>
-    </div>
-
-    <!-- 1:1 문의 탭 -->
-    <div id="tab-inquiry" style="display:none">
-      <div class="inquiry-form">
-        <div class="form-group">
-          <div class="form-label">문의 유형</div>
-          <div class="type-select" id="type-select">
-            <div class="type-chip selected" onclick="selectType(this)">📦 주문/배송</div>
-            <div class="type-chip" onclick="selectType(this)">💳 결제/환불</div>
-            <div class="type-chip" onclick="selectType(this)">🥩 상품 문의</div>
-            <div class="type-chip" onclick="selectType(this)">🔄 정기배송</div>
-            <div class="type-chip" onclick="selectType(this)">👤 회원정보</div>
-            <div class="type-chip" onclick="selectType(this)">💬 기타</div>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-label">제목</div>
-          <input class="form-input" id="inquiry-title" placeholder="문의 제목을 입력해주세요">
-        </div>
-        <div class="form-group">
-          <div class="form-label">내용</div>
-          <textarea class="inquiry-textarea" id="inquiry-content" placeholder="문의 내용을 자세히 입력해주세요.&#10;&#10;예) 주문번호, 상품명, 문제 상황 등을 함께 적어주시면 더 빠른 처리가 가능합니다."></textarea>
-        </div>
-        <div class="form-group">
-          <div class="form-label">사진 첨부 (선택)</div>
-          <div class="file-attach" onclick="attachFile()">
-            📎 사진을 첨부하면 더 빠른 처리가 가능합니다<br>
-            <span style="color:var(--gray-400); font-size:.75rem">최대 3장, JPG/PNG, 각 10MB 이하</span>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-full btn-lg" onclick="submitInquiry()">문의 접수하기</button>
-        <p style="text-align:center; font-size:.78rem; color:var(--gray-500)">
-          접수 후 1영업일 내 카카오 알림톡으로 답변드립니다
-        </p>
-      </div>
-    </div>
-
-    <!-- 내 문의 내역 -->
-    <div id="tab-myinquiry" style="display:none">
-      <div id="my-inquiries"></div>
-    </div>
-
-  </div><!-- /main-content -->
-
-  <nav class="bottom-nav">
-    <div class="nav-item" onclick="go('../index.html')"><span class="nav-icon">🏠</span><span>홈</span></div>
-    <div class="nav-item" onclick="go('../pages/category.html')"><span class="nav-icon">📦</span><span>카테고리</span></div>
-    <div class="nav-item" onclick="go('../pages/subscribe.html')"><span class="nav-icon">🔄</span><span>정기배송</span></div>
-    <div class="nav-item" onclick="go('../pages/mypage.html')"><span class="nav-icon">👤</span><span>마이</span></div>
-    <div class="nav-item active"><span class="nav-icon">💬</span><span>CS</span></div>
+  <div style="height:76px"></div>
+  <nav class="dark-nav">
+    <div class="dnav-item" onclick="go('../index.html')"><div class="dnav-ico">🏠</div><div class="dnav-lbl">홈</div></div>
+    <div class="dnav-item" onclick="go('../pages/category.html')"><div class="dnav-ico">🥩</div><div class="dnav-lbl">정육</div></div>
+    <div class="dnav-item" onclick="go('../pages/cart.html')"><div class="dnav-ico">🛒</div><div class="dnav-lbl">장바구니</div></div>
+    <div class="dnav-item" onclick="go('../pages/orders.html')"><div class="dnav-ico">📦</div><div class="dnav-lbl">주문</div></div>
+    <div class="dnav-item on" onclick="go('../pages/mypage.html')"><div class="dnav-ico">👤</div><div class="dnav-lbl">마이</div></div>
   </nav>
-
 </div>
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
-function go(url) { window.location.href = url; }
-Store.load(); updateCartBadge();
-
-// ── FAQ 데이터 ────────────────────────────────────────────
-const FAQS = [
-  { cat:'order', q:'주문은 언제 배송되나요?', a:'오후 2시 이전 주문은 당일 출고되며, 다음날까지 도착합니다. 오후 2시 이후 주문은 다음날 출고됩니다. 냉동 상품의 경우 CJ대한통운 냉동택배로 배송되며 추적이 가능합니다.' },
-  { cat:'order', q:'배송비는 얼마인가요?', a:'5만원 이상 구매 시 무료배송입니다. 5만원 미만의 경우 냉동배송비 3,500원이 적용됩니다. 제주 및 도서산간 지역은 추가 배송비 5,000원이 발생합니다.' },
-  { cat:'product', q:'원산지는 어디인가요?', a:'정육본가는 100% 국내산 원육만 사용합니다. 상품 상세페이지에서 원산지를 확인하실 수 있으며, HACCP 인증 공장에서 직접 가공하여 신선도를 보장합니다.' },
-  { cat:'refund', q:'환불/반품은 어떻게 신청하나요?', a:'상품 수령 후 24시간 이내에 고객센터로 문의해주세요. 신선 식품 특성상 단순 변심에 의한 반품은 어렵습니다만, 상품 불량·오배송의 경우 100% 교환 또는 환불해드립니다. 반품 시 상품 사진을 함께 첨부해주시면 처리가 빠릅니다.' },
-  { cat:'refund', q:'카드 환불은 얼마나 걸리나요?', a:'환불 요청 확인 후 3영업일 이내 카드사에 취소 요청을 합니다. 실제 환불은 카드사 정책에 따라 3~7 영업일이 소요될 수 있습니다. 네이버페이·카카오페이는 즉시 환불됩니다.' },
-  { cat:'subscribe', q:'정기배송은 어떻게 신청하나요?', a:'홈 화면 또는 카테고리에서 정기배송을 선택하세요. 원하는 상품과 배송 주기(1주/2주/1개월)를 설정하면 자동으로 결제 및 배송됩니다. 언제든지 변경·일시정지·해지가 가능합니다.' },
-  { cat:'subscribe', q:'정기배송 결제가 실패하면 어떻게 되나요?', a:'결제 실패 시 카카오 알림톡으로 즉시 안내드립니다. D+1일에 자동 재결제를 시도하며, D+7일까지 결제가 되지 않으면 해당 회차 배송이 건너뜁니다. 결제 수단을 마이페이지에서 업데이트하시면 됩니다.' },
-  { cat:'product', q:'PB 상품과 일반 상품의 차이는 무엇인가요?', a:'PB(자체브랜드) 상품은 정육본가가 직접 기획하고 OEM 제조한 제품입니다. 수제 소시지, 베이컨, 훈제오리 등이 해당됩니다. 일반 상품 대비 품질 관리가 더 엄격하며, 유통마진을 줄여 더 합리적인 가격으로 제공합니다.' },
-];
-
-let faqFilter = 'all';
-function filterFaq(cat, el) {
-  faqFilter = cat;
-  renderFaq();
-}
-function renderFaq() {
-  const filtered = faqFilter === 'all' ? FAQS : FAQS.filter(f => f.cat === faqFilter);
-  document.getElementById('faq-list').innerHTML = filtered.map((f, i) => `
-  <div class="faq-item" id="faq-${i}">
-    <div class="faq-q" onclick="toggleFaq('faq-${i}')">
-      <div class="faq-q-text">Q. ${f.q}</div>
-      <span class="faq-arrow">▼</span>
-    </div>
-    <div class="faq-a">
-      <div class="faq-a-inner">A. ${f.a}</div>
-    </div>
-  </div>`).join('');
-}
-function toggleFaq(id) {
-  document.getElementById(id).classList.toggle('open');
-}
-renderFaq();
-
-// ── 탭 전환 ──────────────────────────────────────────────
-function showTab(name, el) {
-  ['faq','inquiry','myinquiry'].forEach(t => {
-    document.getElementById(`tab-${t}`).style.display = t === name ? 'block' : 'none';
-  });
-  document.querySelectorAll('.cs-tab').forEach(t => t.classList.remove('active'));
-  if (el) el.classList.add('active');
-  if (name === 'myinquiry') renderMyInquiries();
-}
-
-// ── 문의 유형 선택 ────────────────────────────────────────
-function selectType(el) {
-  document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-// ── 문의 접수 ─────────────────────────────────────────────
-function submitInquiry() {
-  const t = document.getElementById('inquiry-title').value.trim();
-  const c = document.getElementById('inquiry-content').value.trim();
-  if (!t || !c) { toast('제목과 내용을 모두 입력해주세요'); return; }
-  // 저장
-  const inquiries = JSON.parse(localStorage.getItem('mm_inquiries') || '[]');
-  inquiries.unshift({ id: `INQ-${Date.now()}`, title:t, content:c, date: new Date().toLocaleDateString('ko'), status:'답변대기' });
-  localStorage.setItem('mm_inquiries', JSON.stringify(inquiries));
-  toast('문의가 접수되었습니다. 1영업일 내 답변드립니다 💬');
-  document.getElementById('inquiry-title').value = '';
-  document.getElementById('inquiry-content').value = '';
-  showTab('myinquiry', document.querySelectorAll('.cs-tab')[2]);
-}
-
-// ── 내 문의 내역 ──────────────────────────────────────────
-function renderMyInquiries() {
-  const inquiries = JSON.parse(localStorage.getItem('mm_inquiries') || '[]');
-  const el = document.getElementById('my-inquiries');
-  if (inquiries.length === 0) {
-    el.innerHTML = `<div style="padding:48px; text-align:center; color:var(--gray-400)">아직 문의 내역이 없습니다</div>`;
-    return;
-  }
-  el.innerHTML = inquiries.map(q => `
-  <div class="my-inquiry">
-    <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px">
-      <span class="tag ${q.status==='답변완료'?'tag-green':'tag-amber'}">${q.status}</span>
-    </div>
-    <div class="inquiry-title">${q.title}</div>
-    <div class="inquiry-meta">
-      <span>${q.date}</span>
-      <span>${q.id}</span>
-    </div>
-  </div>`).join('');
-}
-
-function openKakao() { toast('카카오 채널로 연결합니다'); }
-function callCS()    { window.location.href = 'tel:15880000'; }
-function attachFile() { toast('파일 첨부 기능은 준비 중입니다'); }
+function go(u){window.location.href=u}
+Store.load(); showAdminBtn();
 </script>
 </body>
 </html>

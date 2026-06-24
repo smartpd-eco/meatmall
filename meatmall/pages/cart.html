@@ -10,46 +10,46 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:#111}.app-wrap{background:#111}
+body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
 
-.cart-item{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.05);background:#1E1E1E}
+.cart-item{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--charcoal)}
 .cart-check input{width:20px;height:20px;accent-color:var(--primary);cursor:pointer;margin-top:26px}
 .cart-thumb{width:72px;height:72px;border-radius:var(--radius-md);background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0}
 .cart-info{flex:1;min-width:0}
-.cart-name{font-size:.9rem;font-weight:600;color:#fff;margin-bottom:2px}
+.cart-name{font-size:.9rem;font-weight:600;color:var(--txt-hi);margin-bottom:2px}
 .cart-option{font-size:.76rem;color:var(--gray-500);margin-bottom:8px}
 .cart-price-row{display:flex;align-items:center;justify-content:space-between}
-.cart-price{font-size:1rem;font-weight:800;color:var(--gold,#C9A84C)}
+.cart-price{font-size:1rem;font-weight:800;color:var(--gold)}
 .qty-control{display:flex;align-items:center}
 .qty-btn{width:28px;height:28px;border:1.5px solid var(--gray-300);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;font-weight:700}
 .qty-btn:first-child{border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
 .qty-btn:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0}
 .qty-val{width:36px;height:28px;border-top:1.5px solid var(--gray-300);border-bottom:1.5px solid var(--gray-300);display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:700}
 .cart-del{color:var(--gray-400);font-size:1.1rem;cursor:pointer;padding:4px;align-self:flex-start}
-.order-summary{background:#1E1E1E;padding:16px;border-top:8px solid var(--gray-100)}
+.order-summary{background:var(--charcoal);padding:16px;border-top:8px solid var(--gray-100)}
 .sum-row{display:flex;justify-content:space-between;font-size:.88rem;color:var(--gray-700);margin-bottom:8px}
 .sum-total{display:flex;justify-content:space-between;font-size:1.05rem;font-weight:800;color:var(--dark);padding-top:10px;border-top:1px solid var(--gray-200);margin-top:4px}
 .checkout-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--gray-200);padding:12px 16px;z-index:200;padding-bottom:env(safe-area-inset-bottom,12px)}
 
 /* 결제 시트 */
 .pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
-.pay-chip{padding:10px 4px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);text-align:center;font-size:.8rem;font-weight:700;color:var(--gray-700);cursor:pointer;transition:all .15s}
-.pay-chip.on{border-color:var(--primary);background:var(--cream);color:var(--primary)}
+.pay-chip{padding:10px 4px;border:1.5px solid var(--line);border-radius:var(--radius-md);text-align:center;font-size:.8rem;font-weight:700;color:var(--txt-lo);cursor:pointer;transition:all .15s;background:var(--charcoal)}
+.pay-chip.on{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
 .point-row{display:flex;gap:8px;align-items:center}
 .point-inp{flex:1;height:40px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);padding:0 12px;font-size:.9rem;outline:none}
 .point-inp:focus{border-color:var(--primary)}
 
 /* 배송지 선택 */
-.addr-select-box{background:var(--gray-100);border-radius:var(--radius-md);padding:14px;cursor:pointer;border:1.5px solid var(--gray-200);transition:all .15s}
+.addr-select-box{background:rgba(0,0,0,.3);border-radius:var(--radius-md);padding:14px;cursor:pointer;border:1.5px solid var(--gray-200);transition:all .15s}
 .addr-select-box:hover{border-color:var(--primary);background:var(--cream)}
-.addr-select-box.selected{border-color:var(--primary);background:var(--cream)}
+.addr-select-box.selected{border-color:var(--gold)!important;background:rgba(201,168,76,.06)}
 .addr-name-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
 
 /* 무통장 안내 */
-.vbank-box{background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:var(--radius-md);padding:14px;margin-top:8px}
-.vbank-title{font-size:.88rem;font-weight:700;color:#92400E;margin-bottom:10px}
-.vbank-info{font-size:.84rem;color:var(--gray-700);line-height:1.9;margin-bottom:12px}
-.vbank-account{background:#fff;border-radius:var(--radius-sm);padding:10px 12px;font-size:.9rem;font-weight:700;color:var(--primary);margin-bottom:12px;border:1px solid #FED7AA;letter-spacing:.02em}
+.vbank-box{background:rgba(201,168,76,.06);border:1.5px solid var(--gold-bdr);border-radius:var(--radius-md);padding:14px;margin-top:8px}
+.vbank-title{font-size:.88rem;font-weight:700;color:var(--gold);margin-bottom:10px}
+.vbank-info{font-size:.84rem;color:var(--txt-md);line-height:1.9;margin-bottom:12px}
+.vbank-account{background:rgba(0,0,0,.3);border-radius:var(--radius-sm);padding:10px 12px;font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:12px;border:1px solid #FED7AA;letter-spacing:.02em}
 </style>
 <script>
 // 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
@@ -85,7 +85,7 @@ window.addEventListener('pageshow', function(e){
   <div style="padding:16px;overflow-y:auto;max-height:72vh;display:flex;flex-direction:column;gap:16px">
 
     <!-- 테스트 모드 배너 -->
-    <div id="test-mode-banner" style="display:none;background:#FEF3C7;border:1px solid #FCD34D;border-radius:var(--radius-md);padding:9px 12px;font-size:.8rem;color:#92400E;font-weight:600">
+    <div id="test-mode-banner" style="display:none;background:var(--gold-dim);border:1px solid var(--gold-bdr);border-radius:var(--radius-md);padding:9px 12px;font-size:.8rem;color:var(--gold);font-weight:600">
       🧪 테스트 모드 — 실제 결제가 발생하지 않습니다
     </div>
 
@@ -153,7 +153,7 @@ window.addEventListener('pageshow', function(e){
     </div>
 
     <!-- 금액 요약 -->
-    <div style="background:var(--gray-100);border-radius:var(--radius-md);padding:14px">
+    <div style="background:rgba(0,0,0,.3);border-radius:var(--radius-md);padding:14px">
       <div class="sum-row"><span>상품금액</span><span id="sh-product">0원</span></div>
       <div class="sum-row"><span>배송비</span><span id="sh-delivery">0원</span></div>
       <div class="sum-row"><span>포인트 사용</span><span id="sh-point" style="color:var(--blue)">-0원</span></div>

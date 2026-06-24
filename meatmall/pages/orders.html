@@ -10,34 +10,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:#111}.app-wrap{background:#111}
-.order-filter{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;background:#1E1E1E;border-bottom:1px solid rgba(255,255,255,.06)}
+body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
+.order-filter{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;background:#1E1E1E;border-bottom:1px solid var(--line)}
 .order-filter::-webkit-scrollbar{display:none}
 .filter-pill{flex-shrink:0;padding:6px 14px;border:1.5px solid rgba(255,255,255,.1);border-radius:999px;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;background:rgba(255,255,255,.04);transition:all .15s}
 .filter-pill.on{border-color:var(--gold,#C9A84C);background:rgba(201,168,76,.1);color:var(--gold,#C9A84C)}
 
-.order-card{background:#1E1E1E;border:1px solid rgba(255,255,255,.07)!important;margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
-.order-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.order-card{background:var(--charcoal);border:1px solid var(--line)!important;margin:8px 16px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
+.order-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
 
 /* 상태 + 입금대기 뱃지 행 */
 .status-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.deposit-badge{display:inline-flex;align-items:center;gap:3px;background:#FEF3C7;color:#92400E;font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid #FCD34D;line-height:1}
+.deposit-badge{display:inline-flex;align-items:center;gap:3px;background:var(--gold-dim);color:var(--gold);font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid var(--gold-bdr);line-height:1}
 
-.order-date-no{font-size:.76rem;color:rgba(255,255,255,.35);line-height:1.6}
-.order-item-row{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
-.order-item-thumb{width:56px;height:56px;border-radius:var(--radius-md);background:#2A2A2A;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
+.order-date-no{font-size:.76rem;color:var(--txt-lo);line-height:1.6}
+.order-item-row{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.order-item-thumb{width:56px;height:56px;border-radius:var(--radius-md);background:var(--smoke);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
 .order-item-info{flex:1;min-width:0}
-.order-item-name{font-size:.88rem;font-weight:600;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.order-item-name{font-size:.88rem;font-weight:600;color:var(--txt-hi);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .order-item-meta{font-size:.76rem;color:var(--gray-500)}
-.order-item-price{font-size:.9rem;font-weight:800;color:var(--gold,#C9A84C);flex-shrink:0}
-.vbank-notice{background:#FFFBEB;border-left:3px solid #F59E0B;padding:10px 14px;font-size:.8rem;color:#78350F;line-height:1.75}
-.order-card-foot{background:#1E1E1E;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.order-item-price{font-size:.9rem;font-weight:800;color:var(--gold);flex-shrink:0}
+.vbank-notice{background:rgba(201,168,76,.07);border-left:3px solid var(--gold);padding:10px 14px;font-size:.8rem;color:var(--txt-md);line-height:1.75}
+.order-card-foot{background:var(--charcoal);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .order-actions{display:flex;gap:6px;flex-wrap:wrap}
 .oabtn{font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:var(--radius-sm);cursor:pointer;border:none;transition:all .15s}
-.oabtn-primary{background:var(--primary);color:#fff}
-.oabtn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)!important}
-.oabtn-gray{background:#fff;color:var(--gray-600);border:1.5px solid var(--gray-300)!important}
-.empty-orders{text-align:center;padding:80px 24px;color:var(--gray-400)}
+.oabtn-primary{background:var(--gold);color:#111}
+.oabtn-outline{background:transparent;color:var(--gold);border:1.5px solid var(--gold-bdr)!important}
+.oabtn-gray{background:transparent;color:var(--txt-lo);border:1.5px solid var(--line)!important}
+.empty-orders{text-align:center;padding:80px 24px;color:var(--txt-lo)}
 </style>
 <script>
 window.addEventListener('pageshow', function(e){
@@ -63,7 +63,14 @@ window.addEventListener('pageshow', function(e){
 
   <div id="order-list" style="padding-bottom:32px">
     <div style="text-align:center;padding:40px;color:var(--gray-400)">🔄 불러오는 중...</div>
-  </div>
+    <nav class="dark-nav">
+    <div class="dnav-item" onclick="go('../index.html')"><div class="dnav-ico">🏠</div><div class="dnav-lbl">홈</div></div>
+    <div class="dnav-item" onclick="go('../pages/category.html')"><div class="dnav-ico">🥩</div><div class="dnav-lbl">정육</div></div>
+    <div class="dnav-item" onclick="go('../pages/cart.html')"><div class="dnav-ico">🛒</div><div class="dnav-lbl">장바구니</div></div>
+    <div class="dnav-item" onclick="go('../pages/orders.html')" ><div class="dnav-ico">📦</div><div class="dnav-lbl">주문</div></div>
+    <div class="dnav-item" onclick="go('../pages/mypage.html')"><div class="dnav-ico">👤</div><div class="dnav-lbl">마이</div></div>
+  </nav>
+</div>
 </div>
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
@@ -247,7 +254,7 @@ function renderOrders(orders){
       <div class="order-card-foot">
         <div>
           <span style="font-size:.88rem;font-weight:700;color:var(--dark)">
-            총 <strong style="color:var(--primary)">${fmt(o.final_amount)}원</strong>
+            총 <strong style="color:var(--gold)">${fmt(o.final_amount)}원</strong>
           </span>
           <span style="font-size:.74rem;color:var(--gray-400);margin-left:6px">
             ${PAY_LABEL[o.payment_method]||''}
