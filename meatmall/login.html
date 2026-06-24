@@ -46,6 +46,12 @@ body{background:#111}
 .google-btn{background:#fff;color:#333;border:1px solid rgba(0,0,0,.1)!important}
 .signup-link{text-align:center;margin-top:16px;font-size:.8rem;color:rgba(255,255,255,.3)}
 .signup-link a{color:rgba(201,168,76,.8);font-weight:600}
+
+  .dark-nav{position:sticky;bottom:0;z-index:100;width:100%;height:62px;background:linear-gradient(0deg,#1C1A12,#0F0F0F);border-top:2px solid #C9A84C;display:flex;box-sizing:border-box}
+  .dnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+  .dnav-ico{font-size:1.15rem;line-height:1}
+  .dnav-lbl{font-size:.58rem;font-weight:600;color:rgba(255,255,255,.3)}
+
 </style>
 <script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
 </head>
@@ -82,6 +88,13 @@ body{background:#111}
     </div>
   </div>
 </div>
+
+  <nav class="dark-nav">
+    <div class="dnav-item" onclick="go('index.html')"><div class="dnav-ico">🏠</div><div class="dnav-lbl">홈으로</div></div>
+    <div class="dnav-item" onclick="go('pages/signup.html')"><div class="dnav-ico">✍️</div><div class="dnav-lbl">회원가입</div></div>
+    <div class="dnav-item" onclick="go('pages/category.html')"><div class="dnav-ico">🥩</div><div class="dnav-lbl">정육보기</div></div>
+    <div class="dnav-item" onclick="go('pages/cs.html')"><div class="dnav-ico">💬</div><div class="dnav-lbl">고객센터</div></div>
+  </nav>
 </div>
 <div id="toast-global" class="toast"></div>
 <script src="js/app.js"></script>

@@ -50,6 +50,15 @@ body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important
 .vbank-title{font-size:.88rem;font-weight:700;color:var(--gold);margin-bottom:10px}
 .vbank-info{font-size:.84rem;color:var(--txt-md);line-height:1.9;margin-bottom:12px}
 .vbank-account{background:rgba(0,0,0,.3);border-radius:var(--radius-sm);padding:10px 12px;font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:12px;border:1px solid #FED7AA;letter-spacing:.02em}
+
+  /* dark-nav */
+  .dark-nav{position:sticky;bottom:0;z-index:100;width:100%;height:62px;background:linear-gradient(0deg,#1C1A12,#0F0F0F);border-top:2px solid #C9A84C;display:flex;box-sizing:border-box;margin-top:auto}
+  .dnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+  .dnav-ico{font-size:1.15rem;line-height:1}
+  .dnav-lbl{font-size:.58rem;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.04em}
+  .dnav-item.on .dnav-lbl{color:#C9A84C;font-weight:800}
+  .dnav-item.on .dnav-ico{filter:drop-shadow(0 0 6px rgba(201,168,76,.7))}
+
 </style>
 <script>
 // 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
