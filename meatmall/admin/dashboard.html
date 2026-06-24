@@ -122,7 +122,7 @@ window.addEventListener('pageshow', function(e){
 </script>
 </head>
 <body>
-<div class="app-wrap" id="app;display:flex;flex-direction:column;min-height:100vh">
+<div class="app-wrap" id="app" style="display:flex;flex-direction:column;min-height:100vh">
   <div style="text-align:center;padding:60px 24px;color:rgba(255,255,255,.3)">🔄 로딩 중...</div>
 </div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
@@ -281,11 +281,16 @@ async function switchTab(name, el){
 async function renderTabDashboard(){
   let kpi={}, alerts={};
   try {
+    // 3초 타임아웃 설정
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 3000);
     const r = await fetch(API+'/admin/dashboard',{
-      headers:{Authorization:'Bearer '+adminToken}
+      headers:{Authorization:'Bearer '+adminToken},
+      signal: controller.signal
     });
+    clearTimeout(tid);
     if(r.ok){ const d=await r.json(); kpi=d.kpi||{}; alerts=d.alerts||{}; }
-  } catch(e){}
+  } catch(e){ console.log('대시보드 API 없음, 기본값 사용'); }
 
   const content = document.getElementById('tab-content');
   content.innerHTML=`
@@ -344,9 +349,12 @@ async function renderTabDashboard(){
 async function renderTabOrders(){
   let orders=[], total=0;
   try {
+    const ctrl2 = new AbortController();
+    const t2 = setTimeout(()=>ctrl2.abort(), 5000);
     const r = await fetch(API+'/admin/orders?limit=30',{
-      headers:{Authorization:'Bearer '+adminToken}
+      headers:{Authorization:'Bearer '+adminToken}, signal:ctrl2.signal
     });
+    clearTimeout(t2);
     if(r.ok){ const d=await r.json(); orders=d.orders||[]; total=d.total||0; }
   } catch(e){}
 
@@ -455,7 +463,10 @@ async function updateOrderStatus(id){
 async function renderTabInventory(){
   let inventory=[];
   try {
-    const r = await fetch(API+'/admin/inventory',{headers:{Authorization:'Bearer '+adminToken}});
+    const ctrl3 = new AbortController();
+    const t3 = setTimeout(()=>ctrl3.abort(), 5000);
+    const r = await fetch(API+'/admin/inventory',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl3.signal});
+    clearTimeout(t3);
     if(r.ok){ const d=await r.json(); inventory=d.inventory||[]; }
   } catch(e){}
 
@@ -524,7 +535,10 @@ async function updateStock(id){
 async function renderTabRevenue(){
   let data={totalRevenue:0,totalFee:0,netRevenue:0,daily:{},byMethod:{},orderCount:0};
   try {
-    const r = await fetch(API+'/admin/revenue?period=7d',{headers:{Authorization:'Bearer '+adminToken}});
+    const ctrl4 = new AbortController();
+    const t4 = setTimeout(()=>ctrl4.abort(), 5000);
+    const r = await fetch(API+'/admin/revenue?period=7d',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl4.signal});
+    clearTimeout(t4);
     if(r.ok){ const d=await r.json(); data={...data,...d}; }
   } catch(e){}
 
@@ -592,7 +606,10 @@ async function renderTabRevenue(){
 async function renderTabCS(){
   let tickets=[], total=0;
   try {
-    const r = await fetch(API+'/admin/cs?limit=30',{headers:{Authorization:'Bearer '+adminToken}});
+    const ctrl5 = new AbortController();
+    const t5 = setTimeout(()=>ctrl5.abort(), 5000);
+    const r = await fetch(API+'/admin/cs?limit=30',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl5.signal});
+    clearTimeout(t5);
     if(r.ok){ const d=await r.json(); tickets=d.tickets||[]; total=d.total||0; }
   } catch(e){}
 
