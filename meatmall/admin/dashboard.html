@@ -10,18 +10,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
+body{background:#0F0F0F}.app-wrap{background:var(--onyx)!important}
 
 :root{--max-w:480px}
-body{background:#F1F0EF}
-.admin-header{background:linear-gradient(180deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold);box-shadow:0 2px 12px rgba(201,168,76,.15);width:100%!important;max-width:430px!important;box-sizing:border-box;max-width:var(--max-w,430px)}
+body{background:#0F0F0F}
+.admin-header{background:linear-gradient(180deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;width:100%;box-sizing:border-box;border-bottom:2px solid #C9A84C;box-shadow:0 2px 12px rgba(201,168,76,.15)}
 .admin-logo{font-family:var(--font-display);font-size:1rem;font-weight:700;color:#fff}
 .admin-logo small{font-size:.68rem;font-weight:400;opacity:.7;margin-left:6px}
 .admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
-.admin-tabs{display:flex;background:linear-gradient(180deg,#1C1A12,#111);overflow-x:auto;scrollbar-width:none;width:100%;box-sizing:border-box;border-bottom:1px solid rgba(201,168,76,.3)}
+.admin-tabs{display:flex;background:linear-gradient(180deg,#1C1A12,#111);overflow-x:auto;scrollbar-width:none;width:100%;box-sizing:border-box;border-bottom:2px solid #C9A84C}
 .admin-tabs::-webkit-scrollbar{display:none}
 .admin-tab{flex-shrink:0;padding:10px 14px;font-size:.8rem;font-weight:600;color:rgba(201,168,76,.45);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s}
-.admin-tab.active{color:var(--gold,#C9A84C);border-bottom-color:var(--gold,#C9A84C);font-weight:800}
+.admin-tab.active{color:#C9A84C;border-bottom-color:#C9A84C;font-weight:800}
 
 /* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
@@ -122,7 +122,7 @@ window.addEventListener('pageshow', function(e){
 </script>
 </head>
 <body>
-<div class="app-wrap" id="app" style="display:flex;flex-direction:column;min-height:100vh">
+<div id="app" style="display:flex;flex-direction:column;min-height:100vh;background:#0F0F0F">
   <div style="text-align:center;padding:60px 24px;color:rgba(255,255,255,.3)">🔄 로딩 중...</div>
 </div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
@@ -235,7 +235,7 @@ async function adminLogin(){
 function renderDashboard(){
   document.getElementById('app').innerHTML=`
   <div class="admin-header">
-    <div class="admin-logo" style="padding:0"><img src="../images/logo.png" alt="정육본가" style="height:30px;width:auto;object-fit:contain;display:block"></div>
+    <div class="admin-logo" style="font-family:'Noto Serif KR',serif;font-size:1rem;font-weight:700;color:#C9A84C;letter-spacing:.06em;cursor:pointer" onclick="window.open('../index.html','_blank')">정육본가<small style="font-size:.58rem;color:rgba(201,168,76,.55);letter-spacing:.14em;display:block;font-family:sans-serif;font-weight:400">관리자</small></div>
     <div style="display:flex;gap:6px">
       <div class="admin-hbtn" onclick="window.open('../index.html','_blank')" title="쇼핑몰 보기" style="font-size:.8rem;width:auto;padding:0 8px;border-radius:var(--radius-sm)">🛍️ 쇼핑몰</div>
       <div class="admin-hbtn" onclick="go('products.html')" title="상품관리">📦</div>

@@ -1,87 +1,81 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
+<html lang="ko"><head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>고객센터 · 정육본가</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
-
-.faq-item{background:var(--charcoal);border:1px solid var(--line);border-radius:12px;margin:0 14px 8px;overflow:hidden;cursor:pointer}
-.faq-q{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font-size:.88rem;font-weight:600;color:var(--txt-hi)}
-.faq-a{display:none;padding:12px 16px 14px;font-size:.84rem;color:var(--txt-md);line-height:1.75;border-top:1px solid var(--line)}
+.app-wrap{background:var(--offwhite)}
+.cs-banner{background:linear-gradient(135deg,#0f0f0f,#1a1208);border:1px solid var(--gold);border-radius:var(--r-md);margin:14px;padding:18px 16px}
+.faq-item{background:var(--white);border:1.5px solid rgba(201,168,76,.3);border-radius:var(--r-md);margin:0 14px 8px;overflow:hidden;cursor:pointer}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:14px;font-size:.88rem;font-weight:600;color:var(--dark-txt)}
+.faq-a{display:none;padding:12px 14px 14px;font-size:.84rem;color:var(--mid-txt);line-height:1.75;border-top:1px solid rgba(201,168,76,.15);background:#FFFBF2}
 .faq-item.open .faq-a{display:block}
+.faq-arr{transition:transform .2s;color:var(--gold)}
 .faq-item.open .faq-arr{transform:rotate(180deg)}
-.faq-arr{transition:transform .2s;color:var(--txt-lo)}
-.cs-banner{background:linear-gradient(135deg,#1A1208,#111);border:1px solid var(--gold-bdr);border-radius:14px;margin:14px;padding:18px 16px}
 </style>
-<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
+<script>window.addEventListener("pageshow",function(e){if(e.persisted)window.location.reload()})</script>
 </head>
 <body>
-<div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
-    <div style="background:linear-gradient(135deg,#0F0F0F,#1C1A12);border-bottom:1px solid rgba(201,168,76,.2);padding:6px 16px;display:flex;align-items:center;justify-content:center">
-    <img src="../images/logo.png" alt="정육본가" style="height:34px;width:auto;object-fit:contain;display:block">
-  </div>
-<header class="dark-header">
-    <button class="dh-btn" onclick="history.back()">←</button>
-    <div class="dh-title">고객센터</div>
+<div class="app-wrap">
+  <header class="hdr">
+    <button class="hdr-btn" onclick="history.back()">←</button>
+    <div class="hdr-logo" style="font-size:.82rem;position:absolute;left:52px;font-family:\'Noto Serif KR\',serif;color:var(--gold);letter-spacing:.04em" onclick="go(\'../index.html\')">정육본가</div>
+    <div class="hdr-title">고객센터</div>
     <div style="width:38px"></div>
   </header>
 
   <div class="cs-banner">
-    <div style="font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.1em;margin-bottom:8px">✦ 1:1 문의</div>
-    <div style="font-family:'Noto Serif KR',serif;font-size:.95rem;color:var(--txt-hi);margin-bottom:4px">무엇이든 물어보세요</div>
-    <div style="font-size:.78rem;color:var(--txt-lo)">주인장이 직접 답변합니다 · 평균 2시간 이내</div>
+    <div style="font-size:.7rem;font-weight:700;color:var(--gold);letter-spacing:.1em;margin-bottom:8px">✦ 1:1 문의</div>
+    <div style="font-family:var(--serif);font-size:.95rem;color:#fff;margin-bottom:4px">무엇이든 물어보세요</div>
+    <div style="font-size:.78rem;color:rgba(255,255,255,.4)">주인장이 직접 답변 · 평균 2시간 이내</div>
   </div>
 
-  <div style="padding:4px 14px 10px">
-    <div class="dk-label" style="padding:10px 2px 8px">FAQ</div>
-    ${[
-      ['배송은 얼마나 걸리나요?','오전 11시 이전 주문 시 당일 출고 후 1~2일 이내 도착합니다. 냉장·냉동 전용 포장으로 신선도를 유지합니다.'],
-      ['품절 상품은 언제 재입고 되나요?','주인장 기준에 맞는 정육이 입고될 때만 판매합니다. 기준 미달 시 재입고 없이 품절 상태 유지됩니다.'],
-      ['무통장 입금 후 확인은 얼마나 걸리나요?','평일 기준 2시간 이내 확인됩니다. 주문번호와 입금자명을 정확히 기재해 주세요.'],
-      ['환불/교환은 어떻게 하나요?','상품 불량·오배송의 경우 100% 교환·환불 처리합니다. 단, 신선식품 특성상 단순 변심 반품은 어렵습니다.'],
-      ['정기배송 해지는 어떻게 하나요?','마이페이지 → 정기배송 구독 → 해지하기에서 언제든 해지 가능합니다.'],
-    ].map(([q,a],i)=>`
-    <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q"><span>${q}</span><span class="faq-arr">▾</span></div>
-      <div class="faq-a">${a}</div>
-    </div>`).join('')}
+  <div style="padding:10px 14px 6px"><div style="font-size:.8rem;font-weight:700;color:var(--gold);letter-spacing:.08em">자주 묻는 질문</div></div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span>배송은 얼마나 걸리나요?</span><span class="faq-arr">▾</span></div>
+    <div class="faq-a">오전 11시 이전 주문 시 당일 출고 후 1~2일 이내 도착합니다. 냉장·냉동 전용 포장으로 신선도를 유지합니다.</div>
+  </div>
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span>품절 상품은 언제 재입고되나요?</span><span class="faq-arr">▾</span></div>
+    <div class="faq-a">주인장 기준에 맞는 정육이 입고될 때만 판매합니다. 기준 미달 시 재입고 없이 품절 유지됩니다.</div>
+  </div>
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span>무통장 입금 확인은 얼마나 걸리나요?</span><span class="faq-arr">▾</span></div>
+    <div class="faq-a">평일 기준 2시간 이내 확인됩니다. 주문번호와 입금자명을 정확히 기재해 주세요.</div>
+  </div>
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span>환불·교환은 어떻게 하나요?</span><span class="faq-arr">▾</span></div>
+    <div class="faq-a">상품 불량·오배송의 경우 100% 교환·환불 처리합니다. 신선식품 특성상 단순 변심 반품은 어렵습니다.</div>
   </div>
 
-  <div style="padding:0 14px 16px">
-    <div class="dk-label" style="padding:10px 2px 10px">1:1 문의 작성</div>
+  <div style="padding:14px">
+    <div style="font-size:.8rem;font-weight:700;color:var(--gold);letter-spacing:.08em;margin-bottom:12px">1:1 문의 작성</div>
     <div style="display:flex;flex-direction:column;gap:10px">
-      <select class="dk-input" style="height:50px">
-        <option style="background:#222">문의 유형 선택</option>
-        <option style="background:#222">주문·배송</option>
-        <option style="background:#222">상품 문의</option>
-        <option style="background:#222">교환·환불</option>
-        <option style="background:#222">정기배송</option>
-        <option style="background:#222">기타</option>
+      <select class="lt-select" style="height:50px">
+        <option>문의 유형 선택</option><option>주문·배송</option><option>상품 문의</option><option>교환·환불</option><option>기타</option>
       </select>
-      <textarea class="dk-input" style="height:120px;padding:12px 14px;resize:none" placeholder="문의 내용을 입력해주세요"></textarea>
+      <textarea class="lt-textarea" style="height:120px" placeholder="문의 내용을 입력해주세요"></textarea>
       <button class="btn-gold" onclick="alert('문의가 접수됐습니다')">문의 접수</button>
     </div>
   </div>
+  <div style="height:8px"></div>
 
-  <div style="height:76px"></div>
-  <nav class="dark-nav">
-    <div class="dnav-item" onclick="go('../index.html')"><div class="dnav-ico">🏠</div><div class="dnav-lbl">홈</div></div>
-    <div class="dnav-item" onclick="go('../pages/category.html')"><div class="dnav-ico">🥩</div><div class="dnav-lbl">정육</div></div>
-    <div class="dnav-item" onclick="go('../pages/cart.html')"><div class="dnav-ico">🛒</div><div class="dnav-lbl">장바구니</div></div>
-    <div class="dnav-item" onclick="go('../pages/orders.html')"><div class="dnav-ico">📦</div><div class="dnav-lbl">주문</div></div>
-    <div class="dnav-item on" onclick="go('../pages/mypage.html')"><div class="dnav-ico">👤</div><div class="dnav-lbl">마이</div></div>
+  <nav class="nav-lt">
+    <div class="nav-i" onclick="go('../index.html')"><div class="nav-ico">🏠</div><div class="nav-lbl">홈</div></div>
+    <div class="nav-i" onclick="go('../pages/category.html')"><div class="nav-ico">🥩</div><div class="nav-lbl">정육</div></div>
+    <div class="nav-i" onclick="go('../pages/cart.html')"><div class="nav-ico">🛒</div><div class="nav-lbl">장바구니</div></div>
+    <div class="nav-i" onclick="go('../pages/orders.html')"><div class="nav-ico">📦</div><div class="nav-lbl">주문</div></div>
+    <div class="nav-i on" onclick="go('../pages/mypage.html')"><div class="nav-ico">👤</div><div class="nav-lbl">마이</div></div>
   </nav>
 </div>
-<div id="toast-global" class="toast"></div>
+<div id="toast-wrap" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
 function go(u){window.location.href=u}
-Store.load(); showAdminBtn();
+Store.load();showAdminBtn();
 </script>
-</body>
-</html>
+</body></html>

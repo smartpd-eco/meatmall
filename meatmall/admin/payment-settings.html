@@ -13,7 +13,7 @@
 body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
 
 body{background:#F1F0EF}
-.admin-header{background:linear-gradient(135deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.admin-header{background:linear-gradient(180deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;width:100%;box-sizing:border-box;border-bottom:2px solid #C9A84C;box-shadow:0 2px 12px rgba(201,168,76,.15)}
 .admin-logo{font-size:1rem;font-weight:700;color:#fff}
 .admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
 .setting-card{background:#1C1C1C;margin:12px 14px;border:1.5px solid rgba(201,168,76,.25);border-radius:var(--radius-lg);overflow:hidden}
@@ -63,7 +63,7 @@ window.addEventListener('pageshow', function(e){
 <body>
 <div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
   <div class="admin-header">
-    <div class="admin-logo" style="padding:0"><img src="../images/logo.png" alt="정육본가" style="height:32px;width:auto;object-fit:contain;display:block"></div>
+    <div class="admin-logo" style="font-family:'Noto Serif KR',serif;font-size:1rem;font-weight:700;color:#C9A84C;letter-spacing:.06em" onclick="go('dashboard.html')">정육본가<small style="font-size:.58rem;color:rgba(201,168,76,.55);display:block;font-family:sans-serif;font-weight:400">결제설정</small></div>
     <div style="display:flex;gap:6px">
       <button class="admin-hbtn" onclick="window.open('../index.html','_blank')" title="쇼핑몰">🛍️</button>
       <button class="admin-hbtn" onclick="go('dashboard.html')" title="대시보드">🏠</button>

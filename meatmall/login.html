@@ -1,137 +1,95 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
+<html lang="ko"><head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>로그인 · 정육본가</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/main.css">
 <style>
-body{background:#111}
-.app-wrap{background:#111}
-.login-wrap{
-  min-height:100vh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:40px 24px;
-  background:linear-gradient(160deg,#0D0D0D,#1A1208 50%,#0D0D0D);
-}
-.login-logo{text-align:center;margin-bottom:36px}
-.logo-emblem{
-  width:72px;height:72px;border-radius:50%;
-  background:linear-gradient(135deg,#1A1208,#2A1A0A);
-  border:1px solid rgba(201,168,76,.3);
-  display:flex;align-items:center;justify-content:center;
-  font-size:2rem;margin:0 auto 14px;
-}
-.logo-name{font-family:'Noto Serif KR',serif;font-size:1.4rem;font-weight:700;color:#fff;letter-spacing:.08em}
-.logo-sub{font-size:.7rem;color:rgba(201,168,76,.7);letter-spacing:.2em;text-transform:uppercase;margin-top:4px}
-.login-box{
-  width:100%;max-width:360px;
-  background:#1E1E1E;border:1px solid rgba(201,168,76,.15);
-  border-radius:18px;padding:28px 24px;
-}
-.login-title{font-family:'Noto Serif KR',serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:22px;letter-spacing:.04em}
-.form-grp{margin-bottom:14px}
-.social-divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:rgba(255,255,255,.2);font-size:.75rem}
-.social-divider::before,.social-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
-.social-btn{
-  width:100%;height:48px;border-radius:var(--radius-md);
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  font-size:.88rem;font-weight:700;cursor:pointer;border:none;
-  margin-bottom:8px;transition:opacity .15s;
-}
-.social-btn:active{opacity:.8}
-.kakao-btn{background:#FEE500;color:#3A1D1D}
-.naver-btn{background:#03C75A;color:#fff}
-.google-btn{background:#fff;color:#333;border:1px solid rgba(0,0,0,.1)!important}
-.signup-link{text-align:center;margin-top:16px;font-size:.8rem;color:rgba(255,255,255,.3)}
-.signup-link a{color:rgba(201,168,76,.8);font-weight:600}
-
-  .dark-nav{position:sticky;bottom:0;z-index:100;width:100%;height:62px;background:linear-gradient(0deg,#1C1A12,#0F0F0F);border-top:2px solid #C9A84C;display:flex;box-sizing:border-box}
-  .dnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
-  .dnav-ico{font-size:1.15rem;line-height:1}
-  .dnav-lbl{font-size:.58rem;font-weight:600;color:rgba(255,255,255,.3)}
-
+.app-wrap{background:var(--black)}
+.login-hero{background:linear-gradient(160deg,#0a0a0a,#1a1208);border-bottom:2px solid var(--gold);padding:36px 20px 28px;text-align:center}
+.login-emblem{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a1208,#2a1a08);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 14px;box-shadow:0 0 0 4px rgba(201,168,76,.12)}
+.login-name{font-family:var(--serif);font-size:1.3rem;font-weight:700;color:var(--gold);letter-spacing:.06em;margin-bottom:4px}
+.login-sub{font-size:.72rem;color:rgba(255,255,255,.35);letter-spacing:.12em}
+.login-box{background:var(--white);border-radius:0 0 var(--r-lg) var(--r-lg);padding:24px 20px 28px;flex:1}
+.social-btn{width:100%;height:48px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;gap:10px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;margin-bottom:8px;transition:opacity .15s}
+.social-btn:active{opacity:.85}
+.s-kakao{background:#FEE500;color:#3A1D1D}
+.s-naver{background:#03C75A;color:#fff}
+.s-google{background:#fff;color:#333;border:1px solid #ddd!important}
+.divider-txt{display:flex;align-items:center;gap:10px;margin:14px 0;color:#ccc;font-size:.78rem}
+.divider-txt::before,.divider-txt::after{content:'';flex:1;height:1px;background:rgba(201,168,76,.2)}
 </style>
-<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
+<script>window.addEventListener("pageshow",function(e){if(e.persisted)window.location.reload()})</script>
 </head>
 <body>
-<div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
-<div class="login-wrap">
-  <div class="login-logo">
-    <div style="margin:0 auto 12px;text-align:center"><img src="../images/logo.png" alt="정육본가" style="height:60px;width:auto;object-fit:contain"></div>
-  </div>
-  <div class="login-box">
-    <div class="login-title">🔐 로그인</div>
-    <div class="form-grp">
-      <label class="dark-label">이메일</label>
-      <input class="dark-input" id="email" type="email" placeholder="이메일 입력">
-    </div>
-    <div class="form-grp">
-      <label class="dark-label">비밀번호</label>
-      <input class="dark-input" id="password" type="password" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div id="login-err" style="color:#F87171;font-size:.8rem;margin:6px 0 10px;display:none"></div>
-    <button class="btn-gold" style="width:100%;margin-top:4px" id="login-btn" onclick="doLogin()">로그인</button>
-    <div class="social-divider">소셜 로그인</div>
-    <button class="social-btn kakao-btn" onclick="doSocial('kakao')">
-      <span style="font-size:1.2rem">💬</span> 카카오로 로그인
-    </button>
-    <button class="social-btn naver-btn" onclick="doSocial('naver')">
-      <span style="font-weight:900;font-size:1rem">N</span> 네이버로 로그인
-    </button>
-    <button class="social-btn google-btn" onclick="doSocial('google')">
-      <span style="font-size:1rem">🔵</span> 구글로 로그인
-    </button>
-    <div class="signup-link">
-      아직 회원이 아니신가요? <a href="pages/signup.html">회원가입</a>
-    </div>
-  </div>
-</div>
+<div class="app-wrap" style="background:var(--black)">
+  <header class="hdr">
+    <div class="hdr-logo" onclick="go('index.html')">정육본가<small>PREMIUM PORK</small></div>
+    <div style="width:38px"></div>
+  </header>
 
-  <nav class="dark-nav">
-    <div class="dnav-item" onclick="go('index.html')"><div class="dnav-ico">🏠</div><div class="dnav-lbl">홈으로</div></div>
-    <div class="dnav-item" onclick="go('pages/signup.html')"><div class="dnav-ico">✍️</div><div class="dnav-lbl">회원가입</div></div>
-    <div class="dnav-item" onclick="go('pages/category.html')"><div class="dnav-ico">🥩</div><div class="dnav-lbl">정육보기</div></div>
-    <div class="dnav-item" onclick="go('pages/cs.html')"><div class="dnav-ico">💬</div><div class="dnav-lbl">고객센터</div></div>
+  <div class="login-hero">
+    <div class="login-emblem">🐷</div>
+    <div class="login-name">정육본가</div>
+    <div class="login-sub">JEONG YUK BONGA · VVIP</div>
+  </div>
+
+  <div class="login-box">
+    <div style="font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--dark-txt);margin-bottom:18px">🔐 로그인</div>
+    <div class="lf-group">
+      <label class="lf-label">이메일</label>
+      <input class="lt-input" id="email" type="email" placeholder="이메일 입력">
+    </div>
+    <div class="lf-group">
+      <label class="lf-label">비밀번호</label>
+      <input class="lt-input" id="pw" type="password" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="login-err" style="color:#DC2626;font-size:.8rem;margin-bottom:10px;display:none"></div>
+    <button class="btn-gold" id="login-btn" onclick="doLogin()">로그인</button>
+
+    <div class="divider-txt">소셜 로그인</div>
+    <button class="social-btn s-kakao" onclick="doSocial('kakao')">💬 카카오로 로그인</button>
+    <button class="social-btn s-naver" onclick="doSocial('naver')"><strong>N</strong> 네이버로 로그인</button>
+    <button class="social-btn s-google" onclick="doSocial('google')">🔵 구글로 로그인</button>
+
+    <div style="text-align:center;margin-top:16px;font-size:.82rem;color:var(--gray-txt)">
+      아직 회원이 아니신가요? <a href="pages/signup.html" style="color:var(--gold);font-weight:700">회원가입</a>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-i" onclick="go('index.html')"><div class="nav-ico">🏠</div><div class="nav-lbl">홈으로</div></div>
+    <div class="nav-i" onclick="go('pages/category.html')"><div class="nav-ico">🥩</div><div class="nav-lbl">정육보기</div></div>
+    <div class="nav-i" onclick="go('pages/signup.html')"><div class="nav-ico">✍️</div><div class="nav-lbl">회원가입</div></div>
+    <div class="nav-i" onclick="go('pages/cs.html')"><div class="nav-ico">💬</div><div class="nav-lbl">고객센터</div></div>
   </nav>
 </div>
-<div id="toast-global" class="toast"></div>
+<div id="toast-wrap" class="toast"></div>
 <script src="js/app.js"></script>
 <script>
 const API='https://meatmall.vercel.app/api';
 function go(u){window.location.href=u}
-// 비밀번호 초기화
-document.addEventListener('DOMContentLoaded',function(){
-  const pw=document.getElementById('password'); if(pw) pw.value='';
-});
-// 이미 로그인된 경우 홈으로
-const cached=JSON.parse(localStorage.getItem('mm_user_cache')||'{}');
-if(localStorage.getItem('mm_access_token')&&cached.name) go('index.html');
-
+document.addEventListener('DOMContentLoaded',()=>{const p=document.getElementById('pw');if(p)p.value=''});
+const cached=JSON.parse(localStorage.getItem('mm_user_cache')||'{}')||{};
+if(localStorage.getItem('mm_access_token')&&cached.name)go('index.html');
 async function doLogin(){
   const email=document.getElementById('email').value.trim();
-  const pw=document.getElementById('password').value;
+  const pw=document.getElementById('pw').value;
   const err=document.getElementById('login-err');
-  if(!email||!pw){err.textContent='이메일과 비밀번호를 입력해주세요';err.style.display='block';return;}
-  const btn=document.getElementById('login-btn');
-  btn.textContent='...'; btn.disabled=true;
+  if(!email||!pw){err.textContent='이메일과 비밀번호를 입력해주세요';err.style.display='block';return}
+  const btn=document.getElementById('login-btn');btn.textContent='...';btn.disabled=true;
   try{
     const r=await fetch(API+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
     const d=await r.json();
-    if(!r.ok) throw new Error(d.error||'로그인 실패');
+    if(!r.ok)throw new Error(d.error||'로그인 실패');
     localStorage.setItem('mm_access_token',d.accessToken);
     localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
-    if(d.user?.is_admin) sessionStorage.setItem('mm_admin','true');
+    if(d.user?.is_admin)sessionStorage.setItem('mm_admin','true');
     go(d.user?.is_admin?'admin/dashboard.html':'index.html');
-  }catch(e){
-    err.textContent='❌ '+e.message; err.style.display='block';
-    btn.textContent='로그인'; btn.disabled=false;
-  }
+  }catch(e){err.textContent='❌ '+e.message;err.style.display='block';btn.textContent='로그인';btn.disabled=false}
 }
-function doSocial(p){
-  window.location.href=API+'/auth/'+p;
-}
+function doSocial(p){window.location.href=API+'/auth/'+p}
 </script>
-</body>
-</html>
+</body></html>

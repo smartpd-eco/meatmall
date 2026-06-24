@@ -1,154 +1,111 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
+<html lang="ko"><head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>회원가입 · 정육본가</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
-
+.app-wrap{background:var(--offwhite)}
 .step-bar{display:flex;padding:16px 20px;gap:6px;align-items:center}
-.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;border:1.5px solid rgba(255,255,255,.1);color:var(--txt-lo);transition:all .3s}
-.step-dot.active{background:var(--gold);color:#111;border-color:var(--gold)}
-.step-dot.done{background:rgba(201,168,76,.2);color:var(--gold);border-color:var(--gold-bdr)}
-.step-line{flex:1;height:1px;background:rgba(255,255,255,.08)}
-.step-line.done{background:var(--gold-bdr)}
-.form-wrap{padding:0 16px;display:flex;flex-direction:column;gap:12px}
-.terms-box{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:.8rem;color:var(--txt-lo);line-height:1.7;height:120px;overflow-y:auto}
-.agree-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.88rem;color:var(--txt-md)}
-.agree-row:last-child{border-bottom:none}
-.agree-row input{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0}
-.form-err{color:#F87171;font-size:.78rem;margin-top:4px}
-
-  /* dark-nav */
-  .dark-nav{position:sticky;bottom:0;z-index:100;width:100%;height:62px;background:linear-gradient(0deg,#1C1A12,#0F0F0F);border-top:2px solid #C9A84C;display:flex;box-sizing:border-box;margin-top:auto}
-  .dnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
-  .dnav-ico{font-size:1.15rem;line-height:1}
-  .dnav-lbl{font-size:.58rem;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.04em}
-  .dnav-item.on .dnav-lbl{color:#C9A84C;font-weight:800}
-  .dnav-item.on .dnav-ico{filter:drop-shadow(0 0 6px rgba(201,168,76,.7))}
-
+.sd{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;border:1.5px solid #ddd;color:var(--gray-txt);transition:all .3s}
+.sd.active{background:var(--gold);color:var(--black);border-color:var(--gold)}
+.sd.done{background:rgba(201,168,76,.15);color:var(--gold);border-color:var(--gold)}
+.sl{flex:1;height:1px;background:#ddd}
+.sl.done{background:var(--gold)}
+.form-wrap{padding:0 16px;display:flex;flex-direction:column;gap:12px;background:var(--white);margin:0 14px;border-radius:var(--r-lg);border:1.5px solid var(--gold);padding:20px}
+.terms-box{background:var(--offwhite);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:14px;font-size:.8rem;color:var(--gray-txt);line-height:1.7;height:120px;overflow-y:auto}
+.ag-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(201,168,76,.12);font-size:.88rem;color:var(--dark-txt)}
+.ag-row:last-child{border-bottom:none}
+.ag-row input{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0}
 </style>
-<script>window.addEventListener('pageshow',function(e){if(e.persisted){step=1;renderStep()}})</script>
+<script>window.addEventListener("pageshow",function(e){if(e.persisted){step=1;renderStep()}})</script>
 </head>
 <body>
-<div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
-    <div style="background:linear-gradient(135deg,#0F0F0F,#1C1A12);border-bottom:1px solid rgba(201,168,76,.2);padding:6px 16px;display:flex;align-items:center;justify-content:center">
-    <img src="../images/logo.png" alt="정육본가" style="height:34px;width:auto;object-fit:contain;display:block">
-  </div>
-<header class="dark-header">
-    <button class="dh-btn" onclick="stepBack()">←</button>
-    <div class="dh-title">회원가입</div>
+<div class="app-wrap">
+  <header class="hdr">
+    <button class="hdr-btn" onclick="stepBack()">←</button>
+    <div class="hdr-title">회원가입</div>
     <div style="width:38px"></div>
   </header>
 
   <div class="step-bar">
-    <div class="step-dot active" id="sd1">1</div>
-    <div class="step-line" id="sl1"></div>
-    <div class="step-dot" id="sd2">2</div>
-    <div class="step-line" id="sl2"></div>
-    <div class="step-dot" id="sd3">3</div>
+    <div class="sd active" id="sd1">1</div>
+    <div class="sl" id="sl1"></div>
+    <div class="sd" id="sd2">2</div>
+    <div class="sl" id="sl2"></div>
+    <div class="sd" id="sd3">3</div>
   </div>
 
-  <div id="step-content" style="padding-bottom:32px"></div>
+  <div id="step-content" style="padding:0 0 20px"></div>
+
+  <nav class="nav-lt">
+    <div class="nav-i" onclick="go('../index.html')"><div class="nav-ico">🏠</div><div class="nav-lbl">홈</div></div>
+    <div class="nav-i" onclick="go('../pages/category.html')"><div class="nav-ico">🥩</div><div class="nav-lbl">정육</div></div>
+    <div class="nav-i" onclick="go('../pages/cart.html')"><div class="nav-ico">🛒</div><div class="nav-lbl">장바구니</div></div>
+    <div class="nav-i" onclick="go('../login.html')"><div class="nav-ico">🔐</div><div class="nav-lbl">로그인</div></div>
+    <div class="nav-i" onclick="go('../pages/mypage.html')"><div class="nav-ico">👤</div><div class="nav-lbl">마이</div></div>
+  </nav>
 </div>
-<div id="toast-global" class="toast"></div>
+<div id="toast-wrap" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
 const API='https://meatmall.vercel.app/api';
 function go(u){window.location.href=u}
-function toast(msg){const el=document.getElementById('toast-global');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400)}
-let step=1;
-const DATA={};
-
-document.addEventListener('DOMContentLoaded',()=>{step=1;renderStep()});
-
+function toast(m){const t=document.getElementById('toast-wrap');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
+let step=1;const DATA={};
+document.addEventListener('DOMContentLoaded',()=>{renderStep()});
 function renderStep(){
-  const dots=['sd1','sd2','sd3'];
-  const lines=['sl1','sl2'];
-  dots.forEach((id,i)=>{
-    const el=document.getElementById(id);
-    el.className='step-dot'+(i+1<step?' done':i+1===step?' active':'');
-  });
-  lines.forEach((id,i)=>{
-    document.getElementById(id).className='step-line'+(i+1<step?' done':'');
-  });
+  ['sd1','sd2','sd3'].forEach((id,i)=>{const el=document.getElementById(id);el.className='sd'+(i+1<step?' done':i+1===step?' active':'')});
+  ['sl1','sl2'].forEach((id,i)=>{document.getElementById(id).className='sl'+(i+1<step?' done':'')});
   const c=document.getElementById('step-content');
-  if(step===1) c.innerHTML=`
-  <div class="form-wrap">
-    <div style="font-family:'Noto Serif KR',serif;font-size:1rem;color:var(--txt-hi);padding:4px 0 8px">이용약관 동의</div>
-    <div class="terms-box">정육본가 이용약관
-
-제1조 목적
-본 약관은 정육본가(이하 "회사")가 운영하는 쇼핑몰에서 제공하는 서비스 이용에 관한 조건 및 절차를 규정합니다.
-
-제2조 서비스 내용
-회사는 국내산 돈육(삼겹살, 오겹살, 목살, 앞다리살, 미박앞다리살, 등심) 판매 서비스를 제공합니다.</div>
-    <div style="background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:12px">
-      <div class="agree-row"><input type="checkbox" id="ag-all" onchange="toggleAll(this)"> <strong>전체 동의</strong></div>
-      <div class="agree-row"><input type="checkbox" id="ag1"> 이용약관 동의 (필수)</div>
-      <div class="agree-row"><input type="checkbox" id="ag2"> 개인정보 처리방침 동의 (필수)</div>
-      <div class="agree-row"><input type="checkbox" id="ag3"> 마케팅 정보 수신 동의 (선택)</div>
+  if(step===1)c.innerHTML=`<div style="padding:0 14px"><div class="form-wrap">
+    <div style="font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--dark-txt);margin-bottom:12px">이용약관 동의</div>
+    <div class="terms-box">정육본가 이용약관\n\n제1조 목적\n본 약관은 정육본가가 운영하는 쇼핑몰의 서비스 이용 조건을 규정합니다.\n\n제2조 서비스\n국내산 돈육 판매 서비스를 제공합니다.</div>
+    <div style="background:var(--offwhite);border:1.5px solid rgba(201,168,76,.25);border-radius:10px;padding:12px;margin-top:8px">
+      <div class="ag-row"><input type="checkbox" id="ag-all" onchange="toggleAll(this)"><strong>전체 동의</strong></div>
+      <div class="ag-row"><input type="checkbox" id="ag1">이용약관 동의 (필수)</div>
+      <div class="ag-row"><input type="checkbox" id="ag2">개인정보 처리방침 동의 (필수)</div>
+      <div class="ag-row"><input type="checkbox" id="ag3">마케팅 정보 수신 동의 (선택)</div>
     </div>
     <button class="btn-gold" onclick="step1Next()">다음</button>
-  </div>`;
-  else if(step===2) c.innerHTML=`
-  <div class="form-wrap">
-    <div style="font-family:'Noto Serif KR',serif;font-size:1rem;color:var(--txt-hi);padding:4px 0 8px">기본 정보 입력</div>
-    <div><label class="dk-label">이름</label><input class="dk-input" id="s-name" placeholder="실명 입력"></div>
-    <div><label class="dk-label">이메일</label><input class="dk-input" id="s-email" type="email" placeholder="이메일 입력"></div>
-    <div><label class="dk-label">비밀번호</label><input class="dk-input" id="s-pw" type="password" placeholder="8자 이상"></div>
-    <div><label class="dk-label">비밀번호 확인</label><input class="dk-input" id="s-pw2" type="password" placeholder="비밀번호 재입력"></div>
-    <div id="s-err" class="form-err"></div>
+  </div></div>`;
+  else if(step===2)c.innerHTML=`<div style="padding:0 14px"><div class="form-wrap">
+    <div style="font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--dark-txt);margin-bottom:12px">기본 정보</div>
+    <div class="lf-group"><label class="lt-label">이름</label><input class="lt-input" id="s-name" placeholder="실명 입력"></div>
+    <div class="lf-group"><label class="lt-label">이메일</label><input class="lt-input" id="s-email" type="email" placeholder="이메일 입력"></div>
+    <div class="lf-group"><label class="lt-label">비밀번호</label><input class="lt-input" id="s-pw" type="password" placeholder="8자 이상"></div>
+    <div class="lf-group"><label class="lt-label">비밀번호 확인</label><input class="lt-input" id="s-pw2" type="password" placeholder="비밀번호 재입력"></div>
+    <div id="s-err" style="color:#DC2626;font-size:.8rem;margin-top:-6px"></div>
     <button class="btn-gold" onclick="step2Next()">다음</button>
-  </div>`;
-  else c.innerHTML=`
-  <div class="form-wrap" style="padding-top:12px">
-    <div style="text-align:center;padding:24px 0">
-      <div style="font-size:3rem;margin-bottom:14px">👑</div>
-      <div style="font-family:'Noto Serif KR',serif;font-size:1.15rem;color:var(--txt-hi);margin-bottom:6px">가입 완료!</div>
-      <div style="font-size:.84rem;color:var(--txt-lo)">정육본가 VVIP 회원이 됐습니다</div>
-    </div>
+  </div></div>`;
+  else c.innerHTML=`<div style="padding:0 14px"><div class="form-wrap" style="text-align:center">
+    <div style="font-size:3rem;margin-bottom:14px">👑</div>
+    <div style="font-family:var(--serif);font-size:1.15rem;font-weight:700;color:var(--dark-txt);margin-bottom:6px">가입 완료!</div>
+    <div style="font-size:.84rem;color:var(--gray-txt);margin-bottom:20px">정육본가 VVIP 회원이 됐습니다</div>
     <button class="btn-gold" id="final-btn" onclick="doSignup()">시작하기</button>
-  </div>`;
+  </div></div>`;
 }
-
-function stepBack(){
-  if(step===1){ go('../login.html'); return; }
-  step--; renderStep();
-}
+function stepBack(){if(step===1){go('../login.html');return}step--;renderStep()}
 function toggleAll(cb){['ag1','ag2','ag3'].forEach(id=>document.getElementById(id).checked=cb.checked)}
-function step1Next(){
-  if(!document.getElementById('ag1').checked||!document.getElementById('ag2').checked){toast('필수 약관에 동의해주세요');return;}
-  step=2; renderStep();
-}
+function step1Next(){if(!document.getElementById('ag1').checked||!document.getElementById('ag2').checked){toast('필수 약관에 동의해주세요');return}step=2;renderStep()}
 function step2Next(){
-  const name=document.getElementById('s-name').value.trim();
-  const email=document.getElementById('s-email').value.trim();
-  const pw=document.getElementById('s-pw').value;
-  const pw2=document.getElementById('s-pw2').value;
+  const name=document.getElementById('s-name').value.trim(),email=document.getElementById('s-email').value.trim();
+  const pw=document.getElementById('s-pw').value,pw2=document.getElementById('s-pw2').value;
   const err=document.getElementById('s-err');
-  if(!name||!email||!pw){err.textContent='모든 항목을 입력해주세요';return;}
-  if(pw.length<8){err.textContent='비밀번호는 8자 이상이어야 합니다';return;}
-  if(pw!==pw2){err.textContent='비밀번호가 일치하지 않습니다';return;}
-  DATA.name=name;DATA.email=email;DATA.password=pw;
-  step=3; renderStep();
+  if(!name||!email||!pw){err.textContent='모든 항목을 입력해주세요';return}
+  if(pw.length<8){err.textContent='비밀번호는 8자 이상';return}
+  if(pw!==pw2){err.textContent='비밀번호가 일치하지 않습니다';return}
+  DATA.name=name;DATA.email=email;DATA.password=pw;step=3;renderStep();
 }
 async function doSignup(){
-  const btn=document.getElementById('final-btn');
-  btn.textContent='...'; btn.disabled=true;
-  try{
-    const r=await fetch(API+'/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DATA)});
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.error||'가입 실패');
-    localStorage.setItem('mm_access_token',d.accessToken);
-    localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
+  const btn=document.getElementById('final-btn');btn.textContent='...';btn.disabled=true;
+  try{const r=await fetch(API+'/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DATA)});
+    const d=await r.json();if(!r.ok)throw new Error(d.error||'가입 실패');
+    localStorage.setItem('mm_access_token',d.accessToken);localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
     go('../index.html');
-  }catch(e){toast('❌ '+e.message);btn.textContent='시작하기';btn.disabled=false;}
+  }catch(e){toast('❌ '+e.message);btn.textContent='시작하기';btn.disabled=false}
 }
 </script>
-</body>
-</html>
+</body></html>
