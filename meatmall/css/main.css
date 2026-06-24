@@ -465,58 +465,78 @@ ul, ol { list-style: none; }
 .mt-3 { margin-top: 12px; }
 .p-4 { padding: 16px; }
 
-/* ── 데스크탑 어댑테이션 ────────────────────────────────── */
-@media (min-width: 768px) {
+/* ── 데스크탑: 모바일 앱처럼 중앙 고정 ─────────────────── */
+@media (min-width: 431px) {
+  html, body {
+    background: #1A1208 !important;
+    min-height: 100vh;
+  }
   body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    background: #E8E4E0;
   }
   .app-wrap {
-    margin: 24px auto;
-    border-radius: var(--radius-lg);
-    min-height: calc(100vh - 48px);
-    overflow: hidden;
-  }
-  .bottom-nav {
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  /* 토스트도 max-width 안에 */
-  .toast {
-    max-width: calc(var(--max-w) - 40px);
+    width: 430px !important;
+    max-width: 430px !important;
+    min-height: 100vh;
+    margin: 0 auto;
+    overflow-x: hidden;
+    flex-shrink: 0;
   }
 }
 
-/* ── 모바일 프레임 내 sticky 요소 너비 고정 ─────────────── */
+/* ── sticky 헤더 너비 강제 고정 ────────────────────────── */
 .app-wrap .header,
-.app-wrap .bottom-nav,
+.app-wrap .dark-header,
 .app-wrap .admin-header,
 .app-wrap .admin-tabs,
 .app-wrap .cat-scroll,
 .app-wrap .cat-tabs,
-.app-wrap .event-strip,
 .app-wrap .detail-tabs,
 .app-wrap .order-filter,
-.app-wrap .save-bar,
-.app-wrap .checkout-bar,
-.app-wrap .buy-bar {
-  max-width: var(--max-w);
-  box-sizing: border-box;
+.app-wrap .site-header {
+  width: 100% !important;
+  max-width: 430px !important;
+  box-sizing: border-box !important;
 }
 
-/* position fixed 요소들 — app-wrap 기준으로 너비 제한 */
+/* ── Fixed 요소 전체 — 화면 중앙 430px 고정 ────────────── */
 .bottom-nav,
+.dark-nav,
 .buy-bar,
 .checkout-bar,
 .save-bar,
 .toast {
+  position: fixed !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
-  width: 100% !important;
-  max-width: var(--max-w) !important;
+  width: 100vw !important;
+  max-width: 430px !important;
+  box-sizing: border-box !important;
+}
+
+/* dark-nav 하단 고정 보장 */
+.dark-nav {
+  bottom: 0 !important;
+  z-index: 200 !important;
+  height: 62px !important;
+}
+
+/* buy-bar / checkout-bar 하단 고정 */
+.buy-bar,
+.checkout-bar {
+  bottom: 0 !important;
+  z-index: 200 !important;
+}
+
+/* 토스트 위치 */
+.toast {
+  bottom: 76px !important;
+  width: auto !important;
+  max-width: 360px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 
 /* ════════════════════════════════════════════════════════
