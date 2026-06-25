@@ -238,9 +238,11 @@ let selectedAddr = null;
 })();
 
 let cartAddrs=[];
+let _addrLoadSeq=0; // async race 방지용 시퀀스 번호
 
 // 배송지 목록 로드 — API 우선, 실패 시 localStorage 폴백
 async function loadAddrSheet(){
+  const seq=++_addrLoadSeq;
   const token=localStorage.getItem('mm_access_token');
   if(token){
     try{
@@ -248,6 +250,7 @@ async function loadAddrSheet(){
       if(r.ok){
         const d=await r.json();
         const raw=d.addresses||d||[];
+        if(seq!==_addrLoadSeq)return; // 더 최신 요청이 있으면 버림
         cartAddrs=raw.map(a=>({
           id:a.id,recipient:a.recipient,phone:a.phone,
           zipCode:a.zip_code||a.zipCode||'',address1:a.address1||'',address2:a.address2||'',
@@ -257,6 +260,7 @@ async function loadAddrSheet(){
       }
     }catch(e){}
   }
+  if(seq!==_addrLoadSeq)return;
   if(!cartAddrs.length){
     cartAddrs=JSON.parse(localStorage.getItem('mm_addresses')||'[]');
   }
@@ -366,14 +370,23 @@ function deleteSel(){ Store.cart=Store.cart.filter(c=>!selected.has(c.productId)
 
 // 결제 시트
 function openCheckout(){
-  selectedAddr=null; cartAddrs=[];
+  // 이미 열려있으면 중복 실행 방지
+  if(document.getElementById('pay-sheet').classList.contains('open'))return;
   if(!localStorage.getItem('mm_access_token')){ toast('로그인이 필요합니다');go('../login.html');return; }
+  selectedAddr=null; cartAddrs=[];
   document.getElementById('avail-pt').textContent=`보유: ${fmt(userPoint)}P`;
   document.getElementById('addr-list-sheet').innerHTML='<div style="text-align:center;padding:16px;color:var(--gray-400);font-size:.85rem">🔄 배송지 불러오는 중...</div>';
-  loadAddrSheet();
+  // 결제수단 초기화
+  document.querySelectorAll('.pay-chip').forEach(c=>c.classList.remove('on'));
+  document.querySelector('.pay-chip[onclick*="CARD"]').classList.add('on');
+  payMethod='CARD';
+  document.getElementById('vbank-section').style.display='none';
+  document.getElementById('point-use').value='';
+  calcFinal();
   document.getElementById('pay-overlay').classList.add('open');
   document.getElementById('pay-sheet').classList.add('open');
   document.body.style.overflow='hidden';
+  loadAddrSheet();
 }
 function closePaySheet(){
   document.getElementById('pay-overlay').classList.remove('open');
