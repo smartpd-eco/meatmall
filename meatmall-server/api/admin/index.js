@@ -106,6 +106,23 @@ router.get('/orders', async (req, res) => {
 });
 
 // ════════════════════════════════════════════════════
+// GET /api/admin/orders/:id — 주문 상세
+// ════════════════════════════════════════════════════
+router.get('/orders/:id', async (req, res) => {
+  try {
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('*, users(name, email, phone), order_items(*)')
+      .eq('id', req.params.id)
+      .single();
+    if (error || !order) return res.status(404).json({ error: '주문을 찾을 수 없습니다' });
+    res.json({ ok: true, order });
+  } catch (err) {
+    res.status(500).json({ error: '주문 상세 조회 오류' });
+  }
+});
+
+// ════════════════════════════════════════════════════
 // PATCH /api/admin/orders/:id — 주문 상태 변경
 // ════════════════════════════════════════════════════
 router.patch('/orders/:id', async (req, res) => {

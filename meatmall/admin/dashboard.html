@@ -138,8 +138,12 @@ window.addEventListener('pageshow', function(e){
 <script src="../js/app.js"></script>
 <script>
 const API = 'https://meatmall.vercel.app/api';
-let adminToken = null;
-let activeTab  = 'dashboard';
+let adminToken  = null;
+let activeTab   = 'dashboard';
+let allOrders   = [];   // 주문 목록 캐시 (showOrderDetail 재사용)
+let allTickets  = [];   // CS 목록 캐시 (showCSDetail 재사용)
+
+function tabEl(name){ return document.querySelector(`.admin-tab[data-tab="${name}"]`); }
 
 function go(url){ window.location.href=url; }
 function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
@@ -244,19 +248,19 @@ function renderDashboard(){
   </div>
   <div class="admin-tabs" id="admin-tabs">
     <div class="admin-tab" onclick="go('products.html')" style="color:#F59E0B;font-weight:800">➕ 상품등록</div>
-    <div class="admin-tab active" onclick="switchTab('dashboard',this)">📊 대시보드</div>
-    <div class="admin-tab" onclick="switchTab('orders',this)">📦 주문관리</div>
-    <div class="admin-tab" onclick="switchTab('inventory',this)">🗄️ 재고관리</div>
-    <div class="admin-tab" onclick="switchTab('categories',this)">🏷️ 카테고리</div>
-    <div class="admin-tab" onclick="switchTab('revenue',this)">💰 매출정산</div>
-    <div class="admin-tab" onclick="switchTab('cs',this)">💬 CS관리</div>
+    <div class="admin-tab active" data-tab="dashboard" onclick="switchTab('dashboard',this)">📊 대시보드</div>
+    <div class="admin-tab" data-tab="orders" onclick="switchTab('orders',this)">📦 주문관리</div>
+    <div class="admin-tab" data-tab="inventory" onclick="switchTab('inventory',this)">🗄️ 재고관리</div>
+    <div class="admin-tab" data-tab="categories" onclick="switchTab('categories',this)">🏷️ 카테고리</div>
+    <div class="admin-tab" data-tab="revenue" onclick="switchTab('revenue',this)">💰 매출정산</div>
+    <div class="admin-tab" data-tab="cs" onclick="switchTab('cs',this)">💬 CS관리</div>
     <div class="admin-tab" onclick="go('payment-settings.html')">💳 결제설정</div>
     <div class="admin-tab" onclick="window.open('../index.html','_blank')">🛍️ 쇼핑몰</div>
   </div>
   <div id="tab-content" style="min-height:80vh;padding-bottom:32px">
     <div style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">🔄 로딩 중...</div>
   </div>`;
-  switchTab('dashboard', document.querySelector('.admin-tab'));
+  switchTab('dashboard', document.querySelector('.admin-tab[data-tab="dashboard"]'));
 }
 
 async function switchTab(name, el){
@@ -298,13 +302,13 @@ async function renderTabDashboard(){
   <div class="alert-bar alert-urgent" style="margin-top:14px">
     <span style="font-size:1.2rem">🚨</span>
     <div class="alert-text"><strong>미답변 CS ${alerts.pendingCS}건</strong> 처리가 필요합니다</div>
-    <button class="alert-btn" onclick="switchTab('cs',document.querySelectorAll('.admin-tab')[4])">처리</button>
+    <button class="alert-btn" onclick="switchTab('cs',tabEl('cs'))">처리</button>
   </div>` : ''}
   ${(alerts.lowStock||[]).length > 0 ? `
   <div class="alert-bar alert-warn">
     <span style="font-size:1.2rem">⚠️</span>
     <div class="alert-text"><strong>재고 부족 ${alerts.lowStock.length}개 상품</strong></div>
-    <button class="alert-btn" onclick="switchTab('inventory',document.querySelectorAll('.admin-tab')[2])">확인</button>
+    <button class="alert-btn" onclick="switchTab('inventory',tabEl('inventory'))">확인</button>
   </div>` : ''}
 
   <div class="kpi-grid">
@@ -336,10 +340,10 @@ async function renderTabDashboard(){
     <div class="qa-btn" onclick="go('products.html')">
       <div class="qa-ico">📦</div><div class="qa-lbl">상품관리</div>
     </div>
-    <div class="qa-btn" onclick="switchTab('categories',document.querySelectorAll('.admin-tab')[4])">
+    <div class="qa-btn" onclick="switchTab('categories',tabEl('categories'))">
       <div class="qa-ico">🏷️</div><div class="qa-lbl">카테고리</div>
     </div>
-    <div class="qa-btn" onclick="switchTab('orders',document.querySelectorAll('.admin-tab')[2])">
+    <div class="qa-btn" onclick="switchTab('orders',tabEl('orders'))">
       <div class="qa-ico">🧾</div><div class="qa-lbl">주문처리</div>
     </div>
   </div>`;
@@ -355,11 +359,11 @@ async function renderTabOrders(){
       headers:{Authorization:'Bearer '+adminToken}, signal:ctrl2.signal
     });
     clearTimeout(t2);
-    if(r.ok){ const d=await r.json(); orders=d.orders||[]; total=d.total||0; }
+    if(r.ok){ const d=await r.json(); orders=d.orders||[]; total=d.total||0; allOrders=orders; }
   } catch(e){}
 
   const statusLabel = {pending:'결제대기',pending_deposit:'입금대기🏦',preparing:'준비중',shipping:'배송중',delivered:'완료',cancelled:'취소',refund_req:'환불요청',refunded:'환불완료'};
-  const statusClass = {pending:'status-pending',pending_deposit:'status-pending',preparing:'status-preparing',shipping:'status-shipping',delivered:'status-done',cancelled:'status-cancel'};
+  const statusClass = {pending:'status-pending',pending_deposit:'status-pending',preparing:'status-preparing',shipping:'status-shipping',delivered:'status-done',cancelled:'status-cancel',refund_req:'status-cancel',refunded:'status-cancel'};
 
   document.getElementById('tab-content').innerHTML=`
   <div style="padding:12px 14px 6px;display:flex;gap:8px;align-items:center">
@@ -388,16 +392,18 @@ async function renderTabOrders(){
 }
 
 async function showOrderDetail(id){
+  openSheet('주문 상세', '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">🔄 불러오는 중...</div>');
   try {
-    const r = await fetch(API+'/admin/orders?limit=100',{headers:{Authorization:'Bearer '+adminToken}});
+    const r = await fetch(API+'/admin/orders/'+id,{headers:{Authorization:'Bearer '+adminToken}});
+    if(!r.ok) throw new Error();
     const d = await r.json();
-    const o = (d.orders||[]).find(x=>x.id===id);
-    if(!o) return;
+    const o = d.order;
+    if(!o) throw new Error('주문 데이터 없음');
 
-    const statusOptions = ['pending','preparing','shipping','delivered','cancelled']
-      .map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('');
+    const STATUS_MAP=[['pending','결제대기'],['pending_deposit','입금대기'],['preparing','준비중'],['shipping','배송중'],['delivered','완료'],['cancelled','취소'],['refund_req','환불요청'],['refunded','환불완료']];
+    const statusOptions = STATUS_MAP.map(([v,l])=>`<option value="${v}" ${o.status===v?'selected':''}>${l}</option>`).join('');
 
-    openSheet('주문 상세', `
+    document.getElementById('sheet-body').innerHTML = `
     <div class="order-detail-content">
       <div class="detail-row"><span class="detail-key">주문번호</span><span class="detail-val">${o.order_number}</span></div>
       <div class="detail-row"><span class="detail-key">수령인</span><span class="detail-val">${o.recipient} · ${o.phone}</span></div>
@@ -438,14 +444,15 @@ async function showOrderDetail(id){
         <button class="btn btn-primary btn-full" style="margin-top:8px;height:44px" onclick="confirmVbank('${o.order_number}')">✅ 입금 확인 처리</button>
       </div>` : ''}
       <button class="btn btn-primary btn-full" style="margin-top:12px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F" onclick="updateOrderStatus('${o.id}')">상태 변경 저장</button>
-    </div>`);
-  } catch(e){ toast('상세 정보 로드 실패'); }
+    </div>`;
+  } catch(e){ toast('상세 정보 로드 실패'); closeSheet(); }
 }
 
 async function updateOrderStatus(id){
-  const status  = document.getElementById('new-status').value;
-  const tracking= document.getElementById('tracking-no').value;
-  const carrier = document.getElementById('carrier-sel').value;
+  const status  = document.getElementById('new-status')?.value;
+  const tracking= document.getElementById('tracking-no')?.value;
+  const carrier = document.getElementById('carrier-sel')?.value;
+  if(!status){ toast('상태 값을 선택해주세요'); return; }
   try {
     const r = await fetch(API+'/admin/orders/'+id,{
       method:'PATCH', credentials:'include',
@@ -455,7 +462,7 @@ async function updateOrderStatus(id){
     if(!r.ok) throw new Error();
     toast('✅ 주문 상태가 변경됐습니다');
     closeSheet();
-    switchTab('orders', document.querySelectorAll('.admin-tab')[1]);
+    switchTab('orders', tabEl('orders'));
   } catch(e){ toast('❌ 상태 변경 실패'); }
 }
 
@@ -527,7 +534,7 @@ async function updateStock(id){
     if(!r.ok) throw new Error();
     toast('✅ 재고가 수정됐습니다');
     closeSheet();
-    switchTab('inventory',document.querySelectorAll('.admin-tab')[2]);
+    switchTab('inventory', tabEl('inventory'));
   } catch(e){ toast('❌ 재고 수정 실패'); }
 }
 
@@ -610,7 +617,7 @@ async function renderTabCS(){
     const t5 = setTimeout(()=>ctrl5.abort(), 5000);
     const r = await fetch(API+'/admin/cs?limit=30',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl5.signal});
     clearTimeout(t5);
-    if(r.ok){ const d=await r.json(); tickets=d.tickets||[]; total=d.total||0; }
+    if(r.ok){ const d=await r.json(); tickets=d.tickets||[]; total=d.total||0; allTickets=tickets; }
   } catch(e){}
 
   const statusCls={pending:'tag-primary',in_progress:'tag-amber',answered:'tag-green',closed:'tag-gray'};
@@ -643,10 +650,8 @@ async function renderTabCS(){
 
 async function showCSDetail(id){
   try {
-    const r  = await fetch(API+'/admin/cs?limit=100',{headers:{Authorization:'Bearer '+adminToken}});
-    const d  = await r.json();
-    const t  = (d.tickets||[]).find(x=>x.id===id);
-    if(!t) return;
+    const t = allTickets.find(x=>x.id===id);
+    if(!t){ toast('문의 정보를 찾을 수 없습니다'); return; }
 
     openSheet('CS 문의 처리', `
     <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
@@ -687,7 +692,7 @@ async function submitCSAnswer(id){
     if(!r.ok) throw new Error();
     toast('✅ 답변이 전송됐습니다');
     closeSheet();
-    switchTab('cs',document.querySelectorAll('.admin-tab')[4]);
+    switchTab('cs', tabEl('cs'));
   } catch(e){ toast('❌ 답변 전송 실패'); }
 }
 
@@ -785,7 +790,7 @@ async function confirmVbank(orderId){
     if(!r.ok) throw new Error(d.error);
     toast('✅ 입금 확인 완료! 주문이 준비중으로 변경됐습니다.');
     closeSheet();
-    switchTab('orders', document.querySelectorAll('.admin-tab')[1]);
+    switchTab('orders', tabEl('orders'));
   } catch(e){ toast('❌ '+e.message); }
 }
 
