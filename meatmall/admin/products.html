@@ -473,8 +473,8 @@ function selectEmoji(e) {
 function previewImage(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 500 * 1024) {
-  toast('이미지 크기는 500KB 이하여야 합니다. 이미지 압축 후 다시 올려주세요.');
+  if (file.size > 1000 * 1024) {
+  toast('이미지 크기는 1MB 이하여야 합니다. 이미지 압축 후 다시 올려주세요.');
   input.value = '';
   return;
 }
