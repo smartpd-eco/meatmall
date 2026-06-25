@@ -202,6 +202,10 @@ window.addEventListener('pageshow', function(e) {
   }
 });
 
-// 페이지 언로드 시 캐시 방지 헤더 설정 (meta tag로 처리)
-// 각 페이지에 <meta http-equiv="Cache-Control"> 추가 불필요하게
-// pageshow persisted 이벤트로 충분히 처리됨
+// ── 이미지 메모리 캐시 ───────────────────────────────────
+const _imgCache = new Map();
+window.getCachedImage = (url) => {
+  if (!url) return null;
+  if (!_imgCache.has(url)) _imgCache.set(url, url);
+  return _imgCache.get(url);
+};
