@@ -85,9 +85,9 @@ window.addEventListener('pageshow', function(e){
 
 <!-- 결제 바텀시트 -->
 <div class="overlay" id="pay-overlay" onclick="closePaySheet()"></div>
-<div class="bottom-sheet" id="pay-sheet">
+<div class="sheet" id="pay-sheet">
   <div class="sheet-handle"></div>
-  <div class="sheet-header">
+  <div class="sheet-head">
     <div class="sheet-title">결제하기</div>
     <span class="sheet-close" onclick="closePaySheet()">✕</span>
   </div>
@@ -371,7 +371,8 @@ function deleteSel(){ Store.cart=Store.cart.filter(c=>!selected.has(c.productId)
 // 결제 시트 — 단일 진입점
 function openCheckout(){
   // 이미 열려있으면 중복 실행 방지
-  if(document.getElementById('pay-sheet').classList.contains('open'))return;
+  const paySheet=document.getElementById('pay-sheet');
+  if(paySheet.classList.contains('open'))return;
   if(!localStorage.getItem('mm_access_token')){ toast('로그인이 필요합니다');go('../login.html');return; }
   selectedAddr=null; cartAddrs=[];
   // checkout-bar 숨김 (pay-sheet와 시각적 중복 방지)
@@ -386,7 +387,7 @@ function openCheckout(){
   document.getElementById('point-use').value='';
   calcFinal();
   document.getElementById('pay-overlay').classList.add('open');
-  document.getElementById('pay-sheet').classList.add('open');
+  paySheet.classList.add('open');
   document.body.style.overflow='hidden';
   loadAddrSheet();
 }
