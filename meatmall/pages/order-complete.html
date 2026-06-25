@@ -58,6 +58,7 @@
 function go(u){window.location.href=u}
 function fmt(n){return Number(n).toLocaleString('ko-KR')}
 Store.load();showAdminBtn();
+Store.cart=[]; Store.save(); updateCartBadge();
 const p=new URLSearchParams(window.location.search);
 const orderId=p.get('orderId')||'',amount=p.get('amount')||0,point=p.get('point')||0,isVbank=p.get('vbank')==='true';
 document.getElementById('oi-id').textContent=orderId;

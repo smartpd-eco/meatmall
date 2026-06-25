@@ -222,14 +222,6 @@ let payConfig = {
   } catch(e){}
 })();
 
-// 데모 장바구니
-if(Store.cart.length===0){
-  Store.cart=[
-    {productId:'p1',emoji:'🥩',name:'국내산 한우 1++ 등심 (냉장)',option:'300g',price:28900,qty:1},
-    {productId:'p2',emoji:'🐷',name:'제주 흑돼지 삼겹살 (냉장)',option:'500g',price:15900,qty:2},
-    {productId:'p3',emoji:'🌭',name:'수제 프랑크소시지 PB',option:'200g×3',price:8900,qty:1},
-  ];
-}
 
 let selected = new Set(Store.cart.map(c=>c.productId));
 let payMethod = 'CARD';
@@ -487,8 +479,7 @@ async function doPay(){
 
     // 무통장: 결제창 없이 바로 완료
     if(order.isVbank){
-      selItems.forEach(i=>{Store.cart=Store.cart.filter(c=>c.productId!==i.productId);});
-      Store.save(); updateCartBadge();
+      Store.cart=[]; Store.save(); updateCartBadge();
       const bi=order.bankInfo||{};
       window.location.href=`../pages/order-complete.html?orderId=${order.orderId}&amount=${order.amount}&point=0&vbank=true&bank=${encodeURIComponent(bi.bank||'기업은행')}&account=${encodeURIComponent(bi.account||'123-456789-01-001')}&holder=${encodeURIComponent(bi.holder||'(주)정육본가')}&deadline=${encodeURIComponent(bi.deadline||'')}`;
       return;
@@ -516,8 +507,7 @@ async function doPay(){
           });
           const cd=await cr.json();
           if(!cr.ok) throw new Error(cd.error);
-          selItems.forEach(i=>{Store.cart=Store.cart.filter(c=>c.productId!==i.productId);});
-          Store.save(); updateCartBadge();
+          Store.cart=[]; Store.save(); updateCartBadge();
           window.location.href=`../pages/order-complete.html?orderId=${order.orderId}&amount=${order.amount}&point=${cd.pointEarned||0}`;
         }catch(e){ toast('결제 검증 실패: '+e.message); btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>'; }
       }
