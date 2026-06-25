@@ -73,15 +73,17 @@ img{max-width:100%;display:block}
 
 /* ── 공통 하단 네비 ── */
 .nav{
-  position:sticky;bottom:0;z-index:200;width:100%;height:var(--nh);
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  z-index:200;width:100%;max-width:var(--max-w);height:var(--nh);
   background:var(--black);border-top:2px solid var(--gold);
-  display:flex;box-sizing:border-box;margin-top:auto;
+  display:flex;box-sizing:border-box;
   box-shadow:0 -4px 16px rgba(201,168,76,.12);
 }
 .nav-lt{
-  position:sticky;bottom:0;z-index:200;width:100%;height:var(--nh);
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  z-index:200;width:100%;max-width:var(--max-w);height:var(--nh);
   background:var(--white);border-top:2px solid var(--gold);
-  display:flex;box-sizing:border-box;margin-top:auto;
+  display:flex;box-sizing:border-box;
   box-shadow:0 -4px 16px rgba(201,168,76,.1);
 }
 .nav-i{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}

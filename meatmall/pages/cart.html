@@ -79,7 +79,7 @@ window.addEventListener('pageshow', function(e){
 
   <div class="checkout-bar" id="checkout-bar" style="display:none">
     <div style="font-size:.82rem;color:var(--gray-500);text-align:center;margin-bottom:8px">선택 상품 합계 <strong id="checkout-price" style="font-size:1rem;color:var(--primary)">0원</strong></div>
-    <button class="btn btn-primary btn-full btn-lg" onclick="openCheckout()">결제하기</button>
+    <button class="btn btn-primary btn-full btn-lg" id="checkout-btn">결제하기</button>
   </div>
 </div>
 
@@ -368,15 +368,17 @@ function changeQty(pid,d){ const i=Store.cart.findIndex(c=>c.productId===pid); i
 function removeItem(pid){ Store.cart=Store.cart.filter(c=>c.productId!==pid);selected.delete(pid);Store.save();renderCart();updateCartBadge(); }
 function deleteSel(){ Store.cart=Store.cart.filter(c=>!selected.has(c.productId));selected.clear();Store.save();renderCart();updateCartBadge(); }
 
-// 결제 시트
+// 결제 시트 — 단일 진입점
 function openCheckout(){
   // 이미 열려있으면 중복 실행 방지
   if(document.getElementById('pay-sheet').classList.contains('open'))return;
   if(!localStorage.getItem('mm_access_token')){ toast('로그인이 필요합니다');go('../login.html');return; }
   selectedAddr=null; cartAddrs=[];
+  // checkout-bar 숨김 (pay-sheet와 시각적 중복 방지)
+  document.getElementById('checkout-bar').style.display='none';
   document.getElementById('avail-pt').textContent=`보유: ${fmt(userPoint)}P`;
   document.getElementById('addr-list-sheet').innerHTML='<div style="text-align:center;padding:16px;color:var(--gray-400);font-size:.85rem">🔄 배송지 불러오는 중...</div>';
-  // 결제수단 초기화
+  // 결제수단/포인트 초기화
   document.querySelectorAll('.pay-chip').forEach(c=>c.classList.remove('on'));
   document.querySelector('.pay-chip[onclick*="CARD"]').classList.add('on');
   payMethod='CARD';
@@ -392,6 +394,9 @@ function closePaySheet(){
   document.getElementById('pay-overlay').classList.remove('open');
   document.getElementById('pay-sheet').classList.remove('open');
   document.body.style.overflow='';
+  // checkout-bar 복원 (선택 상품이 있을 때만)
+  const selItems=Store.cart.filter(c=>selected.has(c.productId));
+  document.getElementById('checkout-bar').style.display=selItems.length>0?'block':'none';
 }
 
 function selPay(el,method){
@@ -514,6 +519,8 @@ async function doPay(){
 }
 
 renderCart();
+// 결제 버튼 이벤트 — 한 번만 등록
+document.getElementById('checkout-btn').addEventListener('click', openCheckout);
 </script>
 </body>
 </html>
