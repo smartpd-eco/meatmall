@@ -4,9 +4,9 @@ const supabase      = require('../../lib/supabase');          // module.exports 
 const { requireAdmin } = require('../../middleware/auth');    // named export
 
 // ════════════════════════════════════════════════════
-// GET /api/admin/categories — 목록 + 카테고리별 상품수
+// GET /api/admin/categories — 목록 + 카테고리별 상품수 (공개)
 // ════════════════════════════════════════════════════
-router.get('/', requireAdmin, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const [{ data: cats, error }, { data: products }] = await Promise.all([
       supabase.from('categories').select('*').order('sort_order', { ascending: true }),

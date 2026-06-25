@@ -156,15 +156,9 @@ body{background:var(--onyx)}
     </div>
   </header>
 
-  <!-- 카테고리 탭 -->
+  <!-- 카테고리 탭 (JS로 동적 렌더링) -->
   <div class="cat-tabs" id="cat-tabs">
-    <div class="cat-tab on" onclick="selectCat('',this)">전체</div>
-    <div class="cat-tab" onclick="selectCat('samgyeop',this)">삼겹살</div>
-    <div class="cat-tab" onclick="selectCat('ogyeop',this)">오겹살</div>
-    <div class="cat-tab" onclick="selectCat('moksal',this)">목살</div>
-    <div class="cat-tab" onclick="selectCat('apdaree',this)">앞다리살</div>
-    <div class="cat-tab" onclick="selectCat('mibakapdaree',this)">미박앞다리</div>
-    <div class="cat-tab" onclick="selectCat('deungshim',this)">등심</div>
+    <div style="padding:12px 16px;font-size:.79rem;color:rgba(255,255,255,.2)">불러오는 중…</div>
   </div>
 
   <!-- 필터 바 -->
@@ -182,17 +176,7 @@ body{background:var(--onyx)}
   </div>
 
   <div id="prd-wrap" style="padding-bottom:76px">
-    <div class="prd-grid">
-      ${[1,2,3,4].map(()=>`
-      <div class="pcard">
-        <div class="pcard-thumb skel"></div>
-        <div class="pcard-info">
-          <div class="skel" style="height:8px;width:35%;margin-bottom:6px"></div>
-          <div class="skel" style="height:13px;margin-bottom:8px"></div>
-          <div class="skel" style="height:16px;width:50%"></div>
-        </div>
-      </div>`).join('')}
-    </div>
+    <div style="text-align:center;padding:60px 24px;color:rgba(255,255,255,.3);font-size:.88rem">상품을 불러오는 중...</div>
   </div>
 
   <nav class="dark-nav">
@@ -213,17 +197,34 @@ function toast(msg){const el=document.getElementById('toast-global');el.textCont
 
 Store.load(); showAdminBtn();
 
-// URL 파라미터로 카테고리 초기화
 const urlCat = new URLSearchParams(window.location.search).get('cat')||'';
-if(urlCat){
-  document.querySelectorAll('.cat-tab').forEach(t=>{
-    t.classList.remove('on');
-    if(t.getAttribute('onclick')?.includes(`'${urlCat}'`)) t.classList.add('on');
-  });
-}
 
+// slug→한글 fallback (기존 상품 호환)
 const CAT_KO = {samgyeop:'삼겹살',ogyeop:'오겹살',moksal:'목살',apdaree:'앞다리살',mibakapdaree:'미박앞다리살',deungshim:'등심'};
 let currentCat=urlCat, viewMode='grid', allProducts=[];
+
+async function initPage(){
+  try{
+    const r=await fetch(`${API}/admin/categories`);
+    if(!r.ok) throw new Error();
+    const d=await r.json();
+    const cats=d.categories||[];
+    cats.forEach(c=>{ CAT_KO[c.name]=c.name; });
+    document.getElementById('cat-tabs').innerHTML=
+      `<div class="cat-tab${!currentCat?' on':''}" onclick="selectCat('',this)">전체</div>`+
+      cats.map(c=>{
+        const esc=c.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return `<div class="cat-tab${currentCat===c.name?' on':''}" onclick="selectCat('${esc}',this)">${c.name}</div>`;
+      }).join('');
+  }catch(e){
+    // 폴백: 기본 6개 탭 하드코딩
+    const defaults=[{v:'',l:'전체'},{v:'삼겹살',l:'삼겹살'},{v:'오겹살',l:'오겹살'},{v:'목살',l:'목살'},{v:'앞다리살',l:'앞다리살'},{v:'미박앞다리살',l:'미박앞다리'},{v:'등심',l:'등심'}];
+    document.getElementById('cat-tabs').innerHTML=defaults.filter(Boolean).map(t=>
+      `<div class="cat-tab${currentCat===t.v?' on':''}" onclick="selectCat('${t.v}',this)">${t.l}</div>`
+    ).join('');
+  }
+  loadProducts();
+}
 
 function selectCat(cat,el){
   currentCat=cat;
@@ -324,7 +325,7 @@ function doWish(id,btn){
 }
 function soldAlert(){ toast('현재 품절입니다. 재입고 시 알림드립니다.'); }
 
-loadProducts();
+initPage();
 </script>
 </body>
 </html>
