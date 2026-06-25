@@ -183,6 +183,16 @@ if (document.readyState === 'loading') {
   showAdminBtn();
 }
 
+// ── 상품 이미지 프리로드 ──────────────────────────────────
+function preloadProductImages(products) {
+  (products || []).forEach(p => {
+    if (p.thumbnail_url) {
+      const img = new Image();
+      img.src = p.thumbnail_url;
+    }
+  });
+}
+
 // ── BFCache(뒤로가기 캐시) 방지 ────────────────────────────
 // 뒤로가기 시 페이지가 캐시에서 복원되면 강제 새로고침
 window.addEventListener('pageshow', function(e) {

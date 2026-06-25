@@ -156,7 +156,7 @@ function render(list){
   grid.innerHTML=avail.map(p=>{
     const disc=p.origin_price?Math.round((1-p.price/p.origin_price)*100):0;
     return `<div class="pcard" onclick="go('pages/product.html?id=${p.id}')">
-    <div class="pcard-thumb">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}">`:`<div style="position:absolute;inset:0;background:#2a2a2a"></div>`}
+    <div class="pcard-thumb">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" loading="lazy">`:`<div style="position:absolute;inset:0;background:#2a2a2a"></div>`}
       ${disc>0?`<div class="disc-badge">${disc}%</div>`:''}
       ${p.haccp?`<div style="position:absolute;top:7px;right:7px;background:rgba(0,0,0,.7);border:1px solid var(--gold-bdr);color:var(--gold);font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px">HACCP</div>`:''}
     </div>
@@ -175,7 +175,7 @@ function render(list){
   else sw.innerHTML='';
 }
 async function loadPrds(){
-  try{const r=await fetch(API+'/products?limit=30');if(!r.ok)throw new Error();const d=await r.json();allPrds=d.products||[];render(allPrds)}
+  try{const r=await fetch(API+'/products?limit=30');if(!r.ok)throw new Error();const d=await r.json();allPrds=d.products||[];render(allPrds);preloadProductImages(allPrds)}
   catch(e){document.getElementById('prd-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:rgba(255,255,255,.25)">상품을 불러오지 못했습니다</div>'}
 }
 loadPrds();
