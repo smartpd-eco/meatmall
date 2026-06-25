@@ -751,7 +751,7 @@ async function addCategory(){
       body:JSON.stringify({name})
     });
     const d=await r.json();
-    if(!r.ok)throw new Error(d.error||'추가 실패');
+    if(!r.ok)throw new Error(d.message||d.error||'추가 실패');
     toast('✅ 카테고리가 추가됐습니다');
     await renderTabCategories();
   }catch(e){toast('❌ '+e.message);}
@@ -765,7 +765,7 @@ async function deleteCategory(id,name){
       headers:{Authorization:'Bearer '+adminToken}
     });
     const d=await r.json();
-    if(!r.ok)throw new Error(d.error||'삭제 실패');
+    if(!r.ok)throw new Error(d.message||d.error||'삭제 실패');
     toast('✅ 삭제됐습니다');
     await renderTabCategories();
   }catch(e){toast('❌ '+e.message);}
