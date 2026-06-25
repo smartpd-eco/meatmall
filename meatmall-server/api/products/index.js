@@ -52,8 +52,12 @@ router.get('/', optionalAuth, async (req, res) => {
     let query = supabase
       .from('products')
       .select('*', { count: 'exact' })
-      .eq('is_active', true)
       .range((pageNum - 1) * limitNum, pageNum * limitNum - 1);
+
+    // 일반 사용자는 활성 상품만 조회
+    if (!req.user?.is_admin) {
+      query = query.eq('is_active', true);
+    }
 
     if (category) query = query.eq('category', category);
     if (is_subscribe === 'true' || is_subscribe === true) query = query.eq('is_subscribe', true);

@@ -637,7 +637,7 @@ async function toggleActive(id, currentActive) {
 
 // ── 상품 삭제 ─────────────────────────────────────────────
 async function deleteProduct(id, name) {
-  if (!confirm(`"${name}"\n이 상품을 삭제하시겠습니까?\n(비활성화 처리됩니다)`)) return;
+  if (!confirm(`"${name}"\n정말 삭제하시겠습니까?`)) return;
   try {
     const r = await fetch(`${API}/products/${id}`, {
       method: 'DELETE',
