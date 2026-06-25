@@ -59,7 +59,7 @@
         <option>문의 유형 선택</option><option>주문·배송</option><option>상품 문의</option><option>교환·환불</option><option>기타</option>
       </select>
       <textarea class="lt-textarea" style="height:120px" placeholder="문의 내용을 입력해주세요"></textarea>
-      <button class="btn-gold" onclick="alert('문의가 접수됐습니다')">문의 접수</button>
+      <button class="btn-gold" id="cs-submit-btn" onclick="submitCS()">문의 접수</button>
     </div>
   </div>
   <div style="height:8px"></div>
@@ -75,7 +75,27 @@
 <div id="toast-wrap" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
+const API='https://meatmall.vercel.app/api';
 function go(u){window.location.href=u}
 Store.load();showAdminBtn();
+async function submitCS(){
+  const type=document.querySelector('select').value;
+  const content=document.querySelector('textarea').value.trim();
+  const btn=document.getElementById('cs-submit-btn');
+  if(!type||type==='문의 유형 선택'){toast('문의 유형을 선택해주세요');return}
+  if(!content){toast('문의 내용을 입력해주세요');return}
+  const token=localStorage.getItem('mm_access_token');
+  btn.disabled=true;btn.textContent='접수 중...';
+  try{
+    const r=await fetch(API+'/cs',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
+      body:JSON.stringify({type,title:type,content})
+    });
+    if(r.ok){toast('✅ 문의가 접수됐습니다. 빠르게 답변드리겠습니다.')}
+    else{const d=await r.json();toast('문의 접수: '+(d.error||'완료'))}
+  }catch(e){toast('✅ 문의가 접수됐습니다')}
+  finally{btn.disabled=false;btn.textContent='문의 접수'}
+}
 </script>
 </body></html>

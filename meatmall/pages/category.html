@@ -16,11 +16,12 @@ body{background:var(--onyx)}
 
 .dark-header{
   position:sticky;top:0;z-index:200;
-  background:rgba(17,17,17,.97);backdrop-filter:blur(12px);
-  border-bottom:1px solid rgba(201,168,76,.2);
+  background:#0F0F0F;
+  border-bottom:2px solid #C9A84C;
   height:56px;display:flex;align-items:center;
   justify-content:space-between;padding:0 16px;
   width:100%!important;max-width:430px!important;box-sizing:border-box;
+  box-shadow:0 2px 12px rgba(201,168,76,.15);
 }
 .dh-title{
   font-family:'Noto Serif KR',serif;
@@ -130,11 +131,12 @@ body{background:var(--onyx)}
 
 /* 하단 네비 */
 .dark-nav{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  position:sticky;bottom:0;
   width:100%;max-width:430px;height:62px;
-  background:rgba(17,17,17,.97);backdrop-filter:blur(12px);
-  border-top:1px solid rgba(201,168,76,.15);display:flex;z-index:200;
-  box-sizing:border-box;
+  background:#0F0F0F;
+  border-top:2px solid #C9A84C;display:flex;z-index:200;
+  box-sizing:border-box;margin-top:auto;
+  box-shadow:0 -4px 16px rgba(201,168,76,.12);
 }
 .dnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
 .dnav-ico{font-size:1.1rem}
@@ -145,9 +147,6 @@ body{background:var(--onyx)}
 </head>
 <body>
 <div class="app-wrap" style="display:flex;flex-direction:column;min-height:100vh">
-    <div style="background:linear-gradient(135deg,#0F0F0F,#1C1A12);border-bottom:1px solid rgba(201,168,76,.2);padding:6px 16px;display:flex;align-items:center;justify-content:center">
-    <img src="../images/logo.png" alt="정육본가" style="height:34px;width:auto;object-fit:contain;display:block">
-  </div>
 <header class="dark-header">
     <button class="dh-btn" onclick="history.back()">←</button>
     <div class="dh-title">정육 선택</div>

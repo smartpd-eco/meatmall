@@ -29,7 +29,7 @@ body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important
 .order-summary{background:var(--charcoal);padding:16px;border-top:8px solid var(--gray-100)}
 .sum-row{display:flex;justify-content:space-between;font-size:.88rem;color:var(--gray-700);margin-bottom:8px}
 .sum-total{display:flex;justify-content:space-between;font-size:1.05rem;font-weight:800;color:var(--dark);padding-top:10px;border-top:1px solid var(--gray-200);margin-top:4px}
-.checkout-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--gray-200);padding:12px 16px;z-index:200;padding-bottom:env(safe-area-inset-bottom,12px)}
+.checkout-bar{position:sticky;bottom:0;width:100%;max-width:430px;background:#fff;border-top:1px solid var(--gray-200);padding:12px 16px;z-index:200;padding-bottom:env(safe-area-inset-bottom,12px);box-sizing:border-box}
 
 /* 결제 시트 */
 .pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
@@ -68,14 +68,11 @@ window.addEventListener('pageshow', function(e){
 </script>
 </head>
 <body>
-<div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
-    <div style="background:linear-gradient(135deg,#0F0F0F,#1C1A12);border-bottom:1px solid rgba(201,168,76,.2);padding:6px 16px;display:flex;align-items:center;justify-content:center">
-    <img src="../images/logo.png" alt="정육본가" style="height:34px;width:auto;object-fit:contain;display:block">
-  </div>
-<header class="dark-header">
-    <button class="header__icon-btn" onclick="history.back()">←</button>
-    <div style="font-size:1rem;font-weight:700">장바구니 <span id="cart-cnt" style="color:var(--gray-400);font-weight:400;font-size:.88rem"></span></div>
-    <button style="font-size:.78rem;font-weight:700;color:var(--primary);background:none;border:none;cursor:pointer" onclick="toggleSelectAll()">전체선택</button>
+<div class="app-wrap" style="display:flex;flex-direction:column;min-height:100vh">
+<header class="hdr">
+    <button class="hdr-btn" onclick="history.back()">←</button>
+    <div class="hdr-title">장바구니 <span id="cart-cnt" style="color:rgba(255,255,255,.45);font-weight:400;font-size:.82rem"></span></div>
+    <button style="font-size:.78rem;font-weight:700;color:var(--gold);background:none;border:none;cursor:pointer" onclick="toggleSelectAll()">전체선택</button>
   </header>
 
   <div id="cart-main" style="padding-bottom:130px"></div>

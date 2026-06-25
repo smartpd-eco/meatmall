@@ -89,7 +89,7 @@ body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important
 .rec-price{font-size:.82rem;font-weight:800;color:var(--gold)}
 
 /* 하단 구매 바 */
-.buy-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(17,17,17,.97);backdrop-filter:blur(16px);border-top:1px solid var(--gold-bdr);padding:12px 16px;z-index:200;display:flex;gap:10px;padding-bottom:env(safe-area-inset-bottom,12px)}
+.buy-bar{position:sticky;bottom:0;width:100%;max-width:430px;background:#0F0F0F;border-top:1px solid var(--gold-bdr);padding:12px 16px;z-index:150;display:flex;gap:10px;padding-bottom:env(safe-area-inset-bottom,12px);box-sizing:border-box}
 .btn-wish-bar{width:52px;height:52px;border:1.5px solid var(--gray-300);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;cursor:pointer;background:#fff}
 .btn-cart-bar{flex:1;height:52px;border:1.5px solid var(--gold-bdr);border-radius:var(--radius-md);color:var(--gold);background:transparent;font-size:.95rem;font-weight:700;cursor:pointer;background:#fff}
 .btn-buy-bar{flex:1.5;height:52px;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#111;border:none;border-radius:var(--radius-md);font-size:.95rem;font-weight:700;cursor:pointer}
@@ -109,15 +109,14 @@ window.addEventListener('pageshow', function(e){
 </script>
 </head>
 <body>
-<div class="app-wrap";display:flex;flex-direction:column;min-height:100vh">
-    <div style="background:linear-gradient(135deg,#0F0F0F,#1C1A12);border-bottom:1px solid rgba(201,168,76,.2);padding:6px 16px;display:flex;align-items:center;justify-content:center">
-    <img src="../images/logo.png" alt="정육본가" style="height:34px;width:auto;object-fit:contain;display:block">
-  </div>
-<header class="dark-header">
-    <button class="header__icon-btn" onclick="history.back()">←</button>
-    <div style="font-size:1rem;font-weight:700" id="header-title">상품 상세</div>
-    <button class="header__icon-btn" <button class="header__icon-btn" id="admin-btn" onclick="go('../admin/dashboard.html')" style="display:none" title="관리자">⚙️</button>
-      <button class="header__icon-btn" onclick="go('../pages/cart.html')">🛒<span class="badge cart-badge" style="display:none">0</span></button>
+<div class="app-wrap" style="display:flex;flex-direction:column;min-height:100vh">
+<header class="hdr">
+    <button class="hdr-btn" onclick="history.back()">←</button>
+    <div class="hdr-title" id="header-title">상품 상세</div>
+    <div style="display:flex;gap:2px;align-items:center">
+      <button class="hdr-btn" id="admin-btn" onclick="go('../admin/dashboard.html')" style="display:none" title="관리자">⚙️</button>
+      <button class="hdr-btn" onclick="go('../pages/cart.html')">🛒<span class="hdr-badge cart-badge" style="display:none">0</span></button>
+    </div>
   </header>
 
   <div id="product-content" style="padding-bottom:80px">
@@ -128,14 +127,14 @@ window.addEventListener('pageshow', function(e){
     <button class="btn-wish-bar" id="wish-btn" onclick="toggleWish()">🤍</button>
     <button class="btn-cart-bar" onclick="addToCart()">장바구니</button>
     <button class="btn-buy-bar" onclick="buyNow()">바로구매</button>
-    <nav class="dark-nav">
+  </div>
+  <nav class="dark-nav">
     <div class="dnav-item" onclick="go('../index.html')"><div class="dnav-ico">🏠</div><div class="dnav-lbl">홈</div></div>
     <div class="dnav-item" onclick="go('../pages/category.html')"><div class="dnav-ico">🥩</div><div class="dnav-lbl">정육</div></div>
     <div class="dnav-item" onclick="go('../pages/cart.html')"><div class="dnav-ico">🛒</div><div class="dnav-lbl">장바구니</div></div>
     <div class="dnav-item" onclick="go('../pages/orders.html')"><div class="dnav-ico">📦</div><div class="dnav-lbl">주문</div></div>
     <div class="dnav-item" onclick="go('../pages/mypage.html')"><div class="dnav-ico">👤</div><div class="dnav-lbl">마이</div></div>
   </nav>
-</div>
 </div>
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
