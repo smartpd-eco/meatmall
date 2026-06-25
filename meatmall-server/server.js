@@ -110,6 +110,7 @@ app.use('/api/auth', require('./api/auth/email'));
 app.use('/api/auth', require('./api/auth/social'));
 app.use('/api/products', require('./api/products/index'));
 app.use('/api/payment', require('./api/payment/index'));
+app.use('/api/admin/categories', require('./api/admin/categories'));
 app.use('/api/admin', require('./api/admin/index'));
 app.use('/api/notify', require('./api/notify/index'));
 

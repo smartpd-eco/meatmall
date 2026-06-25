@@ -693,37 +693,115 @@ async function submitCSAnswer(id){
 
 // ── 카테고리 관리 탭 ──────────────────────────────────────
 async function renderTabCategories(){
-  const CATS = [
-    {id:'samgyeop',      emoji:'🥩', name:'삼겹살',       desc:'5층 삼겹살 전용'},
-    {id:'ogyeop',        emoji:'🥩', name:'오겹살',       desc:'껍데기 포함 오겹살'},
-    {id:'moksal',        emoji:'🥩', name:'목살',         desc:'구이·찌개용 목살'},
-    {id:'apdaree',       emoji:'🥩', name:'앞다리살',     desc:'제육볶음·보쌈용'},
-    {id:'mibakapdaree',  emoji:'🥩', name:'미박앞다리살', desc:'껍데기 제거 앞다리'},
-    {id:'deungshim',     emoji:'🥩', name:'등심',         desc:'돈까스·구이용'},
-  ];
+  let cats=[];
+  try{
+    const ctrl=new AbortController();
+    const tid=setTimeout(()=>ctrl.abort(),5000);
+    const r=await fetch(API+'/admin/categories',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl.signal});
+    clearTimeout(tid);
+    if(r.ok){const d=await r.json();cats=d.categories||[];}
+  }catch(e){console.log('categories API 오류:',e.message);}
 
-  const content = document.getElementById('tab-content');
-  content.innerHTML = `
+  const content=document.getElementById('tab-content');
+  content.innerHTML=`
   <div style="padding:14px">
-    <div style="background:#1A2744;border-radius:var(--radius-md);padding:14px;margin-bottom:14px;font-size:.82rem;color:#A8BDD4;line-height:1.7">
-      💡 카테고리 순서와 상태를 관리합니다.<br>상품 등록 시 이 카테고리가 사용됩니다.
+    <div id="cat-add-form" style="display:none;background:#1C1C1C;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:16px;margin-bottom:14px">
+      <div style="font-size:.9rem;font-weight:700;color:#C9A84C;margin-bottom:12px">카테고리 추가</div>
+      <div style="display:grid;grid-template-columns:56px 1fr;gap:8px;margin-bottom:8px">
+        <input id="cat-emoji" style="height:40px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 6px;font-size:1.2rem;text-align:center;background:#111;color:#fff;outline:none;box-sizing:border-box" placeholder="🥩" value="🥩">
+        <input id="cat-name" style="height:40px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 12px;font-size:.88rem;background:#111;color:#fff;outline:none;box-sizing:border-box" placeholder="카테고리 이름 (예: 삼겹살)">
+      </div>
+      <input id="cat-slug" style="width:100%;height:36px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 12px;font-size:.82rem;background:#111;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px" placeholder="영문 슬러그 (예: samgyeop)">
+      <input id="cat-desc" style="width:100%;height:36px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 12px;font-size:.82rem;background:#111;color:#fff;outline:none;box-sizing:border-box;margin-bottom:12px" placeholder="설명 (선택)">
+      <div style="display:flex;gap:8px">
+        <button onclick="saveNewCat()" style="flex:2;height:40px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.88rem;font-weight:700;cursor:pointer">저장</button>
+        <button onclick="document.getElementById('cat-add-form').style.display='none'" style="flex:1;height:40px;background:#333;color:rgba(255,255,255,.6);border:none;border-radius:var(--radius-md);font-size:.82rem;cursor:pointer">취소</button>
+      </div>
     </div>
-    ${CATS.map((c,i)=>`
-    <div style="background:#fff;border-radius:var(--radius-md);margin-bottom:8px;padding:13px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)">
-      <div style="width:42px;height:42px;background:var(--cream);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">${c.emoji}</div>
-      <div style="flex:1">
-        <div style="font-size:.9rem;font-weight:700;color:#fff">${c.name}</div>
-        <div style="font-size:.74rem;color:rgba(201,168,76,.55)">${c.desc} · ID: ${c.id}</div>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button style="font-size:.74rem;font-weight:600;padding:5px 10px;border-radius:var(--radius-sm);background:var(--cream);color:var(--primary);border:1px solid var(--primary);cursor:pointer" onclick="go('products.html')">상품보기</button>
-      </div>
-    </div>`).join('')}
-    <div style="margin-top:16px;padding:14px;background:var(--cream);border-radius:var(--radius-md);font-size:.8rem;color:var(--secondary);line-height:1.7">
-      📌 현재 취급 부위: 삼겹살·오겹살·목살·앞다리살·미박앞다리살·등심 (돈육 전문 6종)<br>
-      카테고리 추가/변경이 필요하면 개발자에게 문의하세요.
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:.82rem;color:rgba(201,168,76,.55)">총 ${cats.length}개 카테고리</span>
+      <button onclick="document.getElementById('cat-add-form').style.display='block';document.getElementById('cat-name').focus()" style="height:36px;padding:0 14px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.82rem;font-weight:700;cursor:pointer">+ 추가</button>
+    </div>
+
+    <div id="cat-list">
+      ${cats.length===0
+        ? '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">카테고리가 없습니다</div>'
+        : cats.map((c,i)=>`
+        <div style="background:#1C1C1C;border:1.5px solid rgba(201,168,76,${c.is_active?'.3':'.12'});border-radius:var(--radius-md);margin-bottom:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:${c.is_active?'1':'.55'}">
+          <div style="width:40px;height:40px;background:rgba(201,168,76,.1);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">${c.emoji||'🥩'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.9rem;font-weight:700;color:#fff">${c.name}</div>
+            <div style="font-size:.7rem;color:rgba(201,168,76,.5);margin-top:2px">${c.description||''} · <span style="font-family:monospace">${c.slug}</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+            ${i>0?`<button onclick="moveCat('${c.id}','up')" style="width:26px;height:20px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:3px;color:rgba(201,168,76,.7);font-size:.65rem;cursor:pointer;line-height:1;padding:0">▲</button>`:`<div style="height:20px"></div>`}
+            ${i<cats.length-1?`<button onclick="moveCat('${c.id}','down')" style="width:26px;height:20px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:3px;color:rgba(201,168,76,.7);font-size:.65rem;cursor:pointer;line-height:1;padding:0">▼</button>`:`<div style="height:20px"></div>`}
+          </div>
+          <button onclick="toggleCatActive('${c.id}',${!c.is_active})" style="height:26px;padding:0 9px;background:${c.is_active?'rgba(34,197,94,.12)':'rgba(201,168,76,.08)'};border:1px solid ${c.is_active?'rgba(34,197,94,.3)':'rgba(201,168,76,.2)'};border-radius:999px;font-size:.68rem;font-weight:700;color:${c.is_active?'#86EFAC':'rgba(201,168,76,.4)'};cursor:pointer;white-space:nowrap;flex-shrink:0">${c.is_active?'활성':'비활성'}</button>
+          <button onclick="delCat('${c.id}','${c.name.replace(/'/g,String.fromCharCode(39))}')" style="width:30px;height:30px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);color:#EF4444;font-size:.8rem;cursor:pointer;flex-shrink:0;line-height:1">✕</button>
+        </div>`).join('')}
     </div>
   </div>`;
+}
+
+async function saveNewCat(){
+  const emoji=document.getElementById('cat-emoji').value.trim();
+  const name =document.getElementById('cat-name').value.trim();
+  const slug =document.getElementById('cat-slug').value.trim();
+  const desc =document.getElementById('cat-desc').value.trim();
+  if(!name||!slug){toast('이름과 슬러그는 필수입니다');return;}
+  try{
+    const r=await fetch(API+'/admin/categories',{
+      method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
+      body:JSON.stringify({name,slug,emoji:emoji||'🥩',description:desc})
+    });
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'추가 실패');
+    toast('✅ 카테고리가 추가됐습니다');
+    await renderTabCategories();
+  }catch(e){toast('❌ '+e.message);}
+}
+
+async function delCat(id,name){
+  if(!confirm('"'+name+'" 카테고리를 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.'))return;
+  try{
+    const r=await fetch(API+'/admin/categories/'+id,{
+      method:'DELETE',credentials:'include',
+      headers:{Authorization:'Bearer '+adminToken}
+    });
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'삭제 실패');
+    toast('✅ 삭제됐습니다');
+    await renderTabCategories();
+  }catch(e){toast('❌ '+e.message);}
+}
+
+async function toggleCatActive(id,is_active){
+  try{
+    const r=await fetch(API+'/admin/categories/'+id,{
+      method:'PUT',credentials:'include',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
+      body:JSON.stringify({is_active})
+    });
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'변경 실패');
+    await renderTabCategories();
+  }catch(e){toast('❌ '+e.message);}
+}
+
+async function moveCat(id,direction){
+  try{
+    const r=await fetch(API+'/admin/categories/'+id,{
+      method:'PUT',credentials:'include',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
+      body:JSON.stringify({move:direction})
+    });
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'순서 변경 실패');
+    await renderTabCategories();
+  }catch(e){toast('❌ '+e.message);}
 }
 
 async function confirmVbank(orderId){
