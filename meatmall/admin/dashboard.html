@@ -109,6 +109,11 @@ body{background:#0F0F0F}
 .detail-row:last-child{border-bottom:none}
 .detail-key{color:rgba(255,255,255,.5)}
 .detail-val{font-weight:600;color:#fff}
+/* 시트 다크테마 오버라이드 */
+#detail-sheet{background:#1C1C1C}
+#detail-sheet .sheet-head{border-bottom:1px solid rgba(201,168,76,.2)}
+#detail-sheet .sheet-title{color:#fff}
+#detail-sheet .sheet-close{color:rgba(255,255,255,.5)}
 
 /* 로딩 스켈레톤 */
 .skel{background:linear-gradient(90deg,var(--gray-100) 25%,#ece9e6 50%,var(--gray-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
@@ -126,9 +131,9 @@ window.addEventListener('pageshow', function(e){
   <div style="text-align:center;padding:60px 24px;color:rgba(255,255,255,.3)">🔄 로딩 중...</div>
 </div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
-<div class="bottom-sheet" id="detail-sheet">
+<div class="sheet" id="detail-sheet">
   <div class="sheet-handle"></div>
-  <div class="sheet-header">
+  <div class="sheet-head">
     <div class="sheet-title" id="sheet-title">상세 정보</div>
     <span class="sheet-close" onclick="closeSheet()">✕</span>
   </div>
@@ -393,6 +398,7 @@ async function renderTabOrders(){
 
 async function showOrderDetail(id){
   openSheet('주문 상세', '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">🔄 불러오는 중...</div>');
+  let success = false;
   try {
     const r = await fetch(API+'/admin/orders/'+id,{headers:{Authorization:'Bearer '+adminToken}});
     if(!r.ok) throw new Error();
@@ -445,7 +451,9 @@ async function showOrderDetail(id){
       </div>` : ''}
       <button class="btn btn-primary btn-full" style="margin-top:12px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F" onclick="updateOrderStatus('${o.id}')">상태 변경 저장</button>
     </div>`;
-  } catch(e){ toast('상세 정보 로드 실패'); closeSheet(); }
+    success = true;
+  } catch(e){ toast('상세 정보 로드 실패'); }
+  finally { if(!success) closeSheet(); }
 }
 
 async function updateOrderStatus(id){
