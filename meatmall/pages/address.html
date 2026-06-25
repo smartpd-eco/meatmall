@@ -168,6 +168,16 @@ function openForm(id=null){
     document.getElementById('f-addr1').value=a.address1||'';
     document.getElementById('f-addr2').value=a.address2||'';
     document.getElementById('f-default').checked=a.is_default||a.isDefault||false;
+    const presets=['문 앞에 놓아주세요','경비실에 맡겨주세요','부재 시 연락주세요'];
+    const note=a.delivery_note||a.deliveryNote||'';
+    if(!note||presets.includes(note)){
+      document.getElementById('f-note').value=note;
+      document.getElementById('note-custom').style.display='none';
+    }else{
+      document.getElementById('f-note').value='직접 입력';
+      document.getElementById('f-note-c').value=note;
+      document.getElementById('note-custom').style.display='block';
+    }
     phoneOK=true;document.getElementById('phone-ok').style.display='block';
   }else{
     ['f-rec','f-phone','f-zip','f-addr1','f-addr2'].forEach(i=>document.getElementById(i).value='');
