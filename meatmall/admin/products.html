@@ -346,7 +346,9 @@ function toast(msg) {
       window.location.replace('dashboard.html');
       return;
     }
+    token = _tok;
     document.documentElement.style.visibility = '';
+    loadProducts();
   } catch(e) { window.location.replace('dashboard.html'); }
 })();
 
@@ -356,6 +358,7 @@ function adminLogout() {
 }
 
 // ── 폼 상태 ──────────────────────────────────────────────
+let token          = '';
 let selectedCat    = '';
 let selectedSource = 'direct';
 let selectedEmoji  = '🥩';
@@ -390,6 +393,7 @@ async function loadProducts() {
     allProducts = d.products || [];
     renderProductList(allProducts);
   } catch(e) {
+    console.error('[loadProducts]', e);
     wrap.innerHTML = '<div class="loading-box">❌ 불러오기 실패. 서버를 확인해주세요.</div>';
   }
 }
@@ -684,8 +688,7 @@ function resetForm() {
   document.querySelectorAll('.form-error').forEach(e => e.classList.remove('show'));
 }
 
-// ── 초기 로드 ─────────────────────────────────────────────
-loadProducts();
+// ── 초기 로드: 인증 IIFE 완료 후 loadProducts() 호출됨 ───
 </script>
 </body>
 </html>
