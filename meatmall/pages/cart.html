@@ -237,11 +237,35 @@ let selectedAddr = null;
   }catch(e){}
 })();
 
-// 배송지 목록 로드 (localStorage)
-function loadAddrSheet(){
-  const addrs = JSON.parse(localStorage.getItem('mm_addresses')||'[]');
-  const wrap = document.getElementById('addr-list-sheet');
-  if(addrs.length===0){
+let cartAddrs=[];
+
+// 배송지 목록 로드 — API 우선, 실패 시 localStorage 폴백
+async function loadAddrSheet(){
+  const token=localStorage.getItem('mm_access_token');
+  if(token){
+    try{
+      const r=await fetch('https://meatmall.vercel.app/api/addresses',{headers:{Authorization:'Bearer '+token},credentials:'include'});
+      if(r.ok){
+        const d=await r.json();
+        const raw=d.addresses||d||[];
+        cartAddrs=raw.map(a=>({
+          id:a.id,recipient:a.recipient,phone:a.phone,
+          zipCode:a.zip_code||a.zipCode||'',address1:a.address1||'',address2:a.address2||'',
+          deliveryNote:a.delivery_note||a.deliveryNote||'',isDefault:a.is_default||a.isDefault||false
+        }));
+        localStorage.setItem('mm_addresses',JSON.stringify(cartAddrs));
+      }
+    }catch(e){}
+  }
+  if(!cartAddrs.length){
+    cartAddrs=JSON.parse(localStorage.getItem('mm_addresses')||'[]');
+  }
+  renderAddrSheet();
+}
+
+function renderAddrSheet(){
+  const wrap=document.getElementById('addr-list-sheet');
+  if(!cartAddrs.length){
     wrap.innerHTML=`
     <div style="text-align:center;padding:16px;color:var(--gray-400);font-size:.85rem;border:1.5px dashed var(--gray-300);border-radius:var(--radius-md)">
       등록된 배송지가 없습니다.
@@ -249,35 +273,27 @@ function loadAddrSheet(){
     </div>`;
     selectedAddr=null; return;
   }
-  // 기본 배송지 자동 선택 (인덱스 기반)
-  let defaultIdx = addrs.findIndex(a=>a.isDefault);
-  if(defaultIdx < 0) defaultIdx = 0;
-  selectedAddr = addrs[defaultIdx];
+  let defaultIdx=cartAddrs.findIndex(a=>a.isDefault);
+  if(defaultIdx<0)defaultIdx=0;
+  if(!selectedAddr)selectedAddr=cartAddrs[defaultIdx];
+  const selIdx=cartAddrs.findIndex(a=>a===selectedAddr||a.id===selectedAddr?.id);
+  const activeIdx=selIdx>=0?selIdx:defaultIdx;
 
-  wrap.innerHTML = addrs.map((a,i)=>`
-  <div class="addr-select-box ${i===defaultIdx?'selected':''}" id="addr-item-${i}" onclick="selectAddr(${i})" style="margin-bottom:8px">
+  wrap.innerHTML=cartAddrs.map((a,i)=>`
+  <div class="addr-select-box ${i===activeIdx?'selected':''}" id="addr-item-${i}" onclick="selectAddr(${i})" style="margin-bottom:8px">
     <div class="addr-name-row">
       <span style="font-size:.9rem;font-weight:700;color:var(--dark)">${a.recipient}</span>
       <span style="font-size:.78rem;color:var(--gray-500)">${a.phone}</span>
     </div>
     <div style="font-size:.82rem;color:var(--gray-700)">[${a.zipCode}] ${a.address1} ${a.address2||''}</div>
     ${a.deliveryNote?`<div style="font-size:.76rem;color:var(--secondary);margin-top:3px">📝 ${a.deliveryNote}</div>`:''}
-    ${i===defaultIdx?'<div style="font-size:.72rem;color:var(--primary);font-weight:700;margin-top:4px">✓ 선택됨</div>':''}
+    ${i===activeIdx?'<div style="font-size:.72rem;color:var(--primary);font-weight:700;margin-top:4px">✓ 선택됨</div>':''}
   </div>`).join('');
 }
 
 function selectAddr(i){
-  const addrs=JSON.parse(localStorage.getItem('mm_addresses')||'[]');
-  selectedAddr=addrs[i];
-  // 시각적 선택 표시
-  document.querySelectorAll('.addr-select-box').forEach((el,j)=>{
-    el.classList.toggle('selected',j===i);
-    // 선택됨 표시 업데이트
-    const tick = el.querySelector('.addr-tick');
-    if(tick) tick.style.display = j===i ? 'block' : 'none';
-  });
-  // 재렌더링으로 선택됨 표시
-  loadAddrSheet();
+  selectedAddr=cartAddrs[i];
+  renderAddrSheet();
 }
 
 function renderCart(){
@@ -350,10 +366,10 @@ function deleteSel(){ Store.cart=Store.cart.filter(c=>!selected.has(c.productId)
 
 // 결제 시트
 function openCheckout(){
-  // 매번 최신 배송지 다시 로드
-  selectedAddr = null;
+  selectedAddr=null; cartAddrs=[];
   if(!localStorage.getItem('mm_access_token')){ toast('로그인이 필요합니다');go('../login.html');return; }
   document.getElementById('avail-pt').textContent=`보유: ${fmt(userPoint)}P`;
+  document.getElementById('addr-list-sheet').innerHTML='<div style="text-align:center;padding:16px;color:var(--gray-400);font-size:.85rem">🔄 배송지 불러오는 중...</div>';
   loadAddrSheet();
   document.getElementById('pay-overlay').classList.add('open');
   document.getElementById('pay-sheet').classList.add('open');
@@ -391,9 +407,7 @@ function calcFinal(){
 }
 
 async function doPay(){
-  // 배송지 재확인
-  const freshAddrs = JSON.parse(localStorage.getItem('mm_addresses')||'[]');
-  if(!selectedAddr || freshAddrs.length === 0){
+  if(!selectedAddr || cartAddrs.length === 0){
     toast('배송지를 먼저 추가해주세요');
     closePaySheet();
     setTimeout(()=>go('../pages/address.html'), 500);
