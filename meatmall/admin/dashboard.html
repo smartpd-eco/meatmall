@@ -705,57 +705,50 @@ async function renderTabCategories(){
   const content=document.getElementById('tab-content');
   content.innerHTML=`
   <div style="padding:14px">
-    <div id="cat-add-form" style="display:none;background:#1C1C1C;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:16px;margin-bottom:14px">
-      <div style="font-size:.9rem;font-weight:700;color:#C9A84C;margin-bottom:12px">카테고리 추가</div>
-      <div style="display:grid;grid-template-columns:56px 1fr;gap:8px;margin-bottom:8px">
-        <input id="cat-emoji" style="height:40px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 6px;font-size:1.2rem;text-align:center;background:#111;color:#fff;outline:none;box-sizing:border-box" placeholder="🥩" value="🥩">
-        <input id="cat-name" style="height:40px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 12px;font-size:.88rem;background:#111;color:#fff;outline:none;box-sizing:border-box" placeholder="카테고리 이름 (예: 삼겹살)">
+    <!-- 추가 폼 -->
+    <div class="admin-section" style="margin-bottom:14px">
+      <div class="section-head">
+        <div class="section-title">🏷️ 새 카테고리 추가</div>
       </div>
-      <input id="cat-slug" style="width:100%;height:36px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 12px;font-size:.82rem;background:#111;color:#fff;outline:none;box-sizing:border-box;margin-bottom:8px" placeholder="영문 슬러그 (예: samgyeop)">
-      <input id="cat-desc" style="width:100%;height:36px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 12px;font-size:.82rem;background:#111;color:#fff;outline:none;box-sizing:border-box;margin-bottom:12px" placeholder="설명 (선택)">
-      <div style="display:flex;gap:8px">
-        <button onclick="saveNewCat()" style="flex:2;height:40px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.88rem;font-weight:700;cursor:pointer">저장</button>
-        <button onclick="document.getElementById('cat-add-form').style.display='none'" style="flex:1;height:40px;background:#333;color:rgba(255,255,255,.6);border:none;border-radius:var(--radius-md);font-size:.82rem;cursor:pointer">취소</button>
+      <div style="padding:14px;display:flex;gap:8px">
+        <input id="new-cat-name" style="flex:1;height:40px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 12px;font-size:.88rem;background:#111;color:#fff;outline:none" placeholder="카테고리 이름 입력 (예: 항정살)" onkeydown="if(event.key==='Enter')addCategory()">
+        <button onclick="addCategory()" style="height:40px;padding:0 18px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">+ 추가</button>
       </div>
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-size:.82rem;color:rgba(201,168,76,.55)">총 ${cats.length}개 카테고리</span>
-      <button onclick="document.getElementById('cat-add-form').style.display='block';document.getElementById('cat-name').focus()" style="height:36px;padding:0 14px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.82rem;font-weight:700;cursor:pointer">+ 추가</button>
-    </div>
-
-    <div id="cat-list">
+    <!-- 목록 테이블 -->
+    <div class="admin-section">
+      <div class="section-head">
+        <div class="section-title">카테고리 목록</div>
+        <span style="font-size:.76rem;color:rgba(201,168,76,.55)">총 ${cats.length}개</span>
+      </div>
+      <div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)">
+        <div style="flex:1">카테고리명</div>
+        <div style="width:56px;text-align:center">상품수</div>
+        <div style="width:44px;text-align:center">삭제</div>
+      </div>
       ${cats.length===0
-        ? '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">카테고리가 없습니다</div>'
-        : cats.map((c,i)=>`
-        <div style="background:#1C1C1C;border:1.5px solid rgba(201,168,76,${c.is_active?'.3':'.12'});border-radius:var(--radius-md);margin-bottom:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:${c.is_active?'1':'.55'}">
-          <div style="width:40px;height:40px;background:rgba(201,168,76,.1);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">${c.emoji||'🥩'}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:.9rem;font-weight:700;color:#fff">${c.name}</div>
-            <div style="font-size:.7rem;color:rgba(201,168,76,.5);margin-top:2px">${c.description||''} · <span style="font-family:monospace">${c.slug}</span></div>
+        ? '<div style="padding:36px;text-align:center;color:rgba(255,255,255,.3)">카테고리가 없습니다</div>'
+        : cats.map(c=>`
+        <div style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1)">
+          <div style="flex:1;font-size:.9rem;font-weight:600;color:#fff">🥩 ${c.name}</div>
+          <div style="width:56px;text-align:center;font-size:.84rem;font-weight:700;color:${c.product_count>0?'#C9A84C':'rgba(255,255,255,.3)'}">${c.product_count}개</div>
+          <div style="width:44px;text-align:center">
+            <button onclick="deleteCategory(${c.id},'${c.name.replace(/'/g,'&#39;')}')" style="width:28px;height:28px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);color:#EF4444;font-size:.8rem;cursor:pointer;line-height:1">✕</button>
           </div>
-          <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
-            ${i>0?`<button onclick="moveCat('${c.id}','up')" style="width:26px;height:20px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:3px;color:rgba(201,168,76,.7);font-size:.65rem;cursor:pointer;line-height:1;padding:0">▲</button>`:`<div style="height:20px"></div>`}
-            ${i<cats.length-1?`<button onclick="moveCat('${c.id}','down')" style="width:26px;height:20px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:3px;color:rgba(201,168,76,.7);font-size:.65rem;cursor:pointer;line-height:1;padding:0">▼</button>`:`<div style="height:20px"></div>`}
-          </div>
-          <button onclick="toggleCatActive('${c.id}',${!c.is_active})" style="height:26px;padding:0 9px;background:${c.is_active?'rgba(34,197,94,.12)':'rgba(201,168,76,.08)'};border:1px solid ${c.is_active?'rgba(34,197,94,.3)':'rgba(201,168,76,.2)'};border-radius:999px;font-size:.68rem;font-weight:700;color:${c.is_active?'#86EFAC':'rgba(201,168,76,.4)'};cursor:pointer;white-space:nowrap;flex-shrink:0">${c.is_active?'활성':'비활성'}</button>
-          <button onclick="delCat('${c.id}','${c.name.replace(/'/g,String.fromCharCode(39))}')" style="width:30px;height:30px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);color:#EF4444;font-size:.8rem;cursor:pointer;flex-shrink:0;line-height:1">✕</button>
         </div>`).join('')}
     </div>
   </div>`;
 }
 
-async function saveNewCat(){
-  const emoji=document.getElementById('cat-emoji').value.trim();
-  const name =document.getElementById('cat-name').value.trim();
-  const slug =document.getElementById('cat-slug').value.trim();
-  const desc =document.getElementById('cat-desc').value.trim();
-  if(!name||!slug){toast('이름과 슬러그는 필수입니다');return;}
+async function addCategory(){
+  const name=document.getElementById('new-cat-name').value.trim();
+  if(!name){toast('카테고리 이름을 입력해주세요');return;}
   try{
     const r=await fetch(API+'/admin/categories',{
       method:'POST',credentials:'include',
       headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
-      body:JSON.stringify({name,slug,emoji:emoji||'🥩',description:desc})
+      body:JSON.stringify({name})
     });
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'추가 실패');
@@ -764,8 +757,8 @@ async function saveNewCat(){
   }catch(e){toast('❌ '+e.message);}
 }
 
-async function delCat(id,name){
-  if(!confirm('"'+name+'" 카테고리를 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.'))return;
+async function deleteCategory(id,name){
+  if(!confirm('"'+name+'" 카테고리를 삭제하시겠습니까?\n\n해당 카테고리의 상품이 있으면 삭제할 수 없습니다.'))return;
   try{
     const r=await fetch(API+'/admin/categories/'+id,{
       method:'DELETE',credentials:'include',
@@ -774,32 +767,6 @@ async function delCat(id,name){
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'삭제 실패');
     toast('✅ 삭제됐습니다');
-    await renderTabCategories();
-  }catch(e){toast('❌ '+e.message);}
-}
-
-async function toggleCatActive(id,is_active){
-  try{
-    const r=await fetch(API+'/admin/categories/'+id,{
-      method:'PUT',credentials:'include',
-      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
-      body:JSON.stringify({is_active})
-    });
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error||'변경 실패');
-    await renderTabCategories();
-  }catch(e){toast('❌ '+e.message);}
-}
-
-async function moveCat(id,direction){
-  try{
-    const r=await fetch(API+'/admin/categories/'+id,{
-      method:'PUT',credentials:'include',
-      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
-      body:JSON.stringify({move:direction})
-    });
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error||'순서 변경 실패');
     await renderTabCategories();
   }catch(e){toast('❌ '+e.message);}
 }
