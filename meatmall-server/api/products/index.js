@@ -3,6 +3,17 @@ const router = express.Router();
 const supabase = require('../../lib/supabase');
 const { requireAdmin, optionalAuth } = require('../../middleware/auth');
 
+// ── 상품 목록 캐시 (60초 TTL, 관리자 우회) ───────────────
+const _pc = new Map();
+function _pcGet(k) {
+  const e = _pc.get(k);
+  if (!e) return null;
+  if (Date.now() > e.exp) { _pc.delete(k); return null; }
+  return e.data;
+}
+function _pcSet(k, d) { _pc.set(k, { data: d, exp: Date.now() + 60000 }); }
+function _pcClear() { _pc.clear(); }
+
 // ====================================================
 // CORS
 // ====================================================
@@ -46,6 +57,13 @@ router.get('/', optionalAuth, async (req, res) => {
       is_subscribe
     } = req.query;
 
+    const isAdmin = !!req.user?.is_admin;
+    const cacheKey = isAdmin ? null : `list:${JSON.stringify(req.query)}`;
+    if (cacheKey) {
+      const cached = _pcGet(cacheKey);
+      if (cached) return res.json(cached);
+    }
+
     const pageNum = Number(page) || 1;
     const limitNum = Number(limit) || 20;
 
@@ -55,7 +73,7 @@ router.get('/', optionalAuth, async (req, res) => {
       .range((pageNum - 1) * limitNum, pageNum * limitNum - 1);
 
     // 일반 사용자는 활성 상품만 조회
-    if (!req.user?.is_admin) {
+    if (!isAdmin) {
       query = query.eq('is_active', true);
     }
 
@@ -79,13 +97,9 @@ router.get('/', optionalAuth, async (req, res) => {
 
     if (error) throw error;
 
-    res.json({
-      ok: true,
-      products,
-      total: count,
-      page: pageNum,
-      limit: limitNum
-    });
+    const result = { ok: true, products, total: count, page: pageNum, limit: limitNum };
+    if (cacheKey) _pcSet(cacheKey, result);
+    res.json(result);
   } catch (err) {
     console.error('[products/get]', err);
 
@@ -215,6 +229,7 @@ router.post('/', requireAdmin, async (req, res) => {
 
     if (error) throw error;
 
+    _pcClear();
     res.status(201).json({
       ok: true,
       product
@@ -249,6 +264,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 
     if (error) throw error;
 
+    _pcClear();
     res.json({
       ok: true,
       product
@@ -278,6 +294,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     if (error) throw error;
 
+    _pcClear();
     res.json({
       ok: true
     });

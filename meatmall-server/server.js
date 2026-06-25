@@ -6,6 +6,23 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 
+// ====================================================
+// 인메모리 캐시 유틸리티 (TTL 기반)
+// ====================================================
+const _srvCache = new Map();
+function getCache(key) {
+  const e = _srvCache.get(key);
+  if (!e) return null;
+  if (Date.now() > e.exp) { _srvCache.delete(key); return null; }
+  return e.data;
+}
+function setCache(key, data, ttl = 60000) {
+  _srvCache.set(key, { data, exp: Date.now() + ttl });
+}
+function clearCache(key) {
+  if (key) _srvCache.delete(key); else _srvCache.clear();
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -160,3 +177,6 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+module.exports.getCache = getCache;
+module.exports.setCache = setCache;
+module.exports.clearCache = clearCache;
