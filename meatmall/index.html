@@ -156,8 +156,7 @@ function render(list){
   grid.innerHTML=avail.map(p=>{
     const disc=p.origin_price?Math.round((1-p.price/p.origin_price)*100):0;
     return `<div class="pcard" onclick="go('pages/product.html?id=${p.id}')">
-    <div class="pcard-thumb">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}">`:''}
-      <span style="position:relative;z-index:1">${p.emoji||'🥩'}</span>
+    <div class="pcard-thumb">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}">`:`<div style="position:absolute;inset:0;background:#2a2a2a"></div>`}
       ${disc>0?`<div class="disc-badge">${disc}%</div>`:''}
       ${p.haccp?`<div style="position:absolute;top:7px;right:7px;background:rgba(0,0,0,.7);border:1px solid var(--gold-bdr);color:var(--gold);font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px">HACCP</div>`:''}
     </div>
@@ -172,7 +171,7 @@ function render(list){
       </div>
     </div></div>`}).join('');
   const sw=document.getElementById('soldout-wrap');
-  if(sold.length){sw.innerHTML=`<div class="soldout-sec"><div class="soldout-title">✕ SOLD OUT — 현재 품절</div>${sold.map(p=>`<div class="soldout-row"><span>${p.emoji||'🥩'} ${p.name}</span><span class="soldout-badge">SOLD OUT</span></div>`).join('')}<div style="font-size:.75rem;color:rgba(255,255,255,.25);margin-top:10px;line-height:1.7">기준 미달 정육은 입고돼도 판매하지 않습니다</div></div>`}
+  if(sold.length){sw.innerHTML=`<div class="soldout-sec"><div class="soldout-title">✕ SOLD OUT — 현재 품절</div>${sold.map(p=>`<div class="soldout-row"><span>${p.name}</span><span class="soldout-badge">SOLD OUT</span></div>`).join('')}<div style="font-size:.75rem;color:rgba(255,255,255,.25);margin-top:10px;line-height:1.7">기준 미달 정육은 입고돼도 판매하지 않습니다</div></div>`}
   else sw.innerHTML='';
 }
 async function loadPrds(){

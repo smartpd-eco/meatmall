@@ -190,8 +190,7 @@ function renderProduct(){
   document.getElementById('product-content').innerHTML = `
   <!-- 이미지 -->
   <div class="product-hero">
-    ${p.thumbnail_url ? `<img src="${p.thumbnail_url}" alt="${p.name}">` : ''}
-    <span style="position:relative;z-index:1">${p.emoji||'🥩'}</span>
+    ${p.thumbnail_url ? `<img src="${p.thumbnail_url}" alt="${p.name}">` : `<div style="position:absolute;inset:0;background:#2a2a2a"></div>`}
     <div class="hero-badges">
       ${discPct>0?`<span class="tag tag-accent">${discPct}%</span>`:''}
       ${p.haccp?`<span class="tag tag-green">HACCP</span>`:''}
@@ -315,7 +314,7 @@ async function loadRecommend(category, excludeId){
     if(!list) return;
     list.innerHTML = items.map(p=>`
     <div class="rec-card" onclick="go('../pages/product.html?id=${p.id}')">
-      <div class="rec-thumb">${p.emoji||'🥩'}</div>
+      <div class="rec-thumb" style="position:relative;overflow:hidden;background:#2a2a2a">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`:''}</div>
       <div class="rec-info">
         <div class="rec-name">${p.name}</div>
         <div class="rec-price">${fmt(p.price)}원</div>
