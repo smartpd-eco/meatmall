@@ -162,11 +162,13 @@ async function loadProduct(){
   if(!productId){ go('../index.html'); return; }
   try {
     const r = await fetch(`${API}/products/${productId}`);
-    if(!r.ok) throw new Error('상품 없음');
+    if(!r.ok) throw new Error('HTTP '+r.status);
     const d = await r.json();
     product = d.product;
+    if(!product) throw new Error('상품 데이터 없음');
     renderProduct();
   } catch(e){
+    console.error('[loadProduct]', e);
     document.getElementById('product-content').innerHTML=`
     <div style="text-align:center;padding:60px 24px;color:var(--gray-400)">
       <div style="font-size:3rem;margin-bottom:12px">😢</div>
@@ -190,7 +192,7 @@ function renderProduct(){
   document.getElementById('product-content').innerHTML = `
   <!-- 이미지 -->
   <div class="product-hero">
-    ${p.thumbnail_url ? `<img src="${p.thumbnail_url}" alt="${p.name}" loading="lazy">` : `<div style="position:absolute;inset:0;background:#2a2a2a"></div>`}
+    ${p.thumbnail_url ? `<img src="${p.thumbnail_url}" alt="${p.name}" loading="lazy">` : `<span style="position:relative;z-index:1">${p.emoji||'🥩'}</span>`}
     <div class="hero-badges">
       ${discPct>0?`<span class="tag tag-accent">${discPct}%</span>`:''}
       ${p.haccp?`<span class="tag tag-green">HACCP</span>`:''}
@@ -200,7 +202,7 @@ function renderProduct(){
   </div>
 
   <!-- 기본 정보 -->
-  <div class="product-info-wrap">
+  <div class="product-info-wrap" style="padding:16px">
     <div class="product-category">${catLabel[p.category]||p.category} · ${srcLabel[p.source_type]||''}</div>
     <div class="product-title">${p.name}</div>
     <div class="product-origin">
