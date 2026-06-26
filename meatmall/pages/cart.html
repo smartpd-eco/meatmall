@@ -241,7 +241,7 @@ let selectedAddr = null;
 let cartAddrs=[];
 let _addrLoadSeq=0; // async race 방지용 시퀀스 번호
 
-// 배송지 목록 로드 — API 우선, 실패 시 localStorage 폴백
+// 배송지 목록 로드 — 반드시 API에서만 조회 (localStorage 폴백 제거)
 async function loadAddrSheet(){
   const seq=++_addrLoadSeq;
   const token=localStorage.getItem('mm_access_token');
@@ -251,7 +251,7 @@ async function loadAddrSheet(){
       if(r.ok){
         const d=await r.json();
         const raw=d.addresses||d||[];
-        if(seq!==_addrLoadSeq)return; // 더 최신 요청이 있으면 버림
+        if(seq!==_addrLoadSeq)return;
         cartAddrs=raw.map(a=>({
           id:a.id,recipient:a.recipient,phone:a.phone,
           zipCode:a.zip_code||a.zipCode||'',address1:a.address1||'',address2:a.address2||'',
@@ -259,12 +259,9 @@ async function loadAddrSheet(){
         }));
         localStorage.setItem('mm_addresses',JSON.stringify(cartAddrs));
       }
-    }catch(e){}
+    }catch(e){ console.error('[loadAddrSheet]',e); }
   }
   if(seq!==_addrLoadSeq)return;
-  if(!cartAddrs.length){
-    cartAddrs=JSON.parse(localStorage.getItem('mm_addresses')||'[]');
-  }
   renderAddrSheet();
 }
 

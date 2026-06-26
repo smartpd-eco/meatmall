@@ -46,6 +46,7 @@ const Store = {
   logout() {
     this.user = null;
     localStorage.removeItem('mm_user');
+    localStorage.removeItem('mm_addresses');
     toast('로그아웃 되었습니다');
   }
 };
