@@ -444,7 +444,7 @@ async function showOrderDetail(id){
       <div style="display:flex;gap:8px;margin-top:8px">
         <input id="tracking-no" style="flex:1;height:36px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 10px;font-size:.82rem;outline:none;background:#1C1C1C;color:#fff" placeholder="운송장번호 (배송 시)" value="${o.tracking_number||''}">
         <select id="carrier-sel" style="width:110px;height:36px;border:1px solid var(--gray-300);border-radius:var(--radius-md);padding:0 6px;font-size:.78rem;outline:none">
-          <option>CJ대한통운</option><option>한진</option><option>롯데</option><option>우체국</option>
+          <option>CJ대한통운</option><option>한진</option><option>롯데</option><option>우체국</option><option>로젠택배</option>
         </select>
       </div>
       ${o.payment_method==='VBANK'&&o.payment_status!=='paid'?`
