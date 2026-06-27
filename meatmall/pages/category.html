@@ -204,11 +204,15 @@ const CAT_KO = {samgyeop:'삼겹살',ogyeop:'오겹살',moksal:'목살',apdaree:
 let currentCat=urlCat, viewMode='grid', allProducts=[];
 
 async function initPage(){
-  try{
-    const r=await fetch(`${API}/admin/categories`);
-    if(!r.ok) throw new Error();
-    const d=await r.json();
-    const cats=d.categories||[];
+  // 카테고리 탭과 상품 목록을 병렬 요청
+  const catPromise = fetch(`${API}/admin/categories`)
+    .then(r=>r.ok?r.json():null).catch(()=>null);
+
+  const [catData] = await Promise.all([catPromise, loadProducts()]);
+
+  const defaults=[{v:'',l:'전체'},{v:'삼겹살',l:'삼겹살'},{v:'오겹살',l:'오겹살'},{v:'목살',l:'목살'},{v:'앞다리살',l:'앞다리살'},{v:'미박앞다리살',l:'미박앞다리'},{v:'등심',l:'등심'}];
+  if(catData && catData.categories && catData.categories.length){
+    const cats=catData.categories;
     cats.forEach(c=>{ CAT_KO[c.name]=c.name; });
     document.getElementById('cat-tabs').innerHTML=
       `<div class="cat-tab${!currentCat?' on':''}" onclick="selectCat('',this)">전체</div>`+
@@ -216,14 +220,11 @@ async function initPage(){
         const esc=c.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         return `<div class="cat-tab${currentCat===c.name?' on':''}" onclick="selectCat('${esc}',this)">${c.name}</div>`;
       }).join('');
-  }catch(e){
-    // 폴백: 기본 6개 탭 하드코딩
-    const defaults=[{v:'',l:'전체'},{v:'삼겹살',l:'삼겹살'},{v:'오겹살',l:'오겹살'},{v:'목살',l:'목살'},{v:'앞다리살',l:'앞다리살'},{v:'미박앞다리살',l:'미박앞다리'},{v:'등심',l:'등심'}];
+  }else{
     document.getElementById('cat-tabs').innerHTML=defaults.filter(Boolean).map(t=>
       `<div class="cat-tab${currentCat===t.v?' on':''}" onclick="selectCat('${t.v}',this)">${t.l}</div>`
     ).join('');
   }
-  loadProducts();
 }
 
 function selectCat(cat,el){
