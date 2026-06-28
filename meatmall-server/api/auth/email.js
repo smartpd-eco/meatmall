@@ -78,12 +78,13 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: '이메일과 비밀번호를 입력해주세요' });
 
     // 사용자 조회
-    const { data: user } = await supabase
+    const { data: user, error: dbErr } = await supabase
       .from('users')
       .select('id, email, name, password_hash, grade, point, is_admin, is_active')
       .eq('email', email)
       .single();
 
+    if (dbErr) console.error('[login/db]', dbErr.code, dbErr.message);
     if (!user || !user.password_hash)
       return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다' });
 
