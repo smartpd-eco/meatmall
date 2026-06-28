@@ -23,6 +23,15 @@
   --serif:'Noto Serif KR',serif;
   --max-w:430px; --hh:56px; --nh:62px;
   --shadow-gold:0 2px 16px rgba(201,168,76,.2);
+  /* ── 텍스트 테마 변수 ── */
+  --text-primary: #FFFFFF;
+  --text-high: #F0F2F5;
+  --text-medium: #D1D5DB;
+  --text-low: #9CA3AF;
+  --light-bg: #FAF6F0;
+  --light-text-main: #1A1A1A;
+  --light-text-body: #333333;
+  --light-text-sub: #887365;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px;-webkit-text-size-adjust:100%}

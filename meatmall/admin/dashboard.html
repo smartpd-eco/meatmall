@@ -15,9 +15,9 @@ body{background:#0F0F0F}.app-wrap{background:var(--onyx)!important}
 :root{--max-w:480px}
 body{background:#0F0F0F}
 .admin-header{background:linear-gradient(180deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;width:100%;box-sizing:border-box;border-bottom:2px solid #C9A84C;box-shadow:0 2px 12px rgba(201,168,76,.15)}
-.admin-logo{font-family:var(--font-display);font-size:1rem;font-weight:700;color:#fff}
+.admin-logo{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--text-primary)}
 .admin-logo small{font-size:.68rem;font-weight:400;opacity:.7;margin-left:6px}
-.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;cursor:pointer;border:none}
+.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--text-primary);cursor:pointer;border:none}
 .admin-tabs{display:flex;background:linear-gradient(180deg,#1C1A12,#111);overflow-x:auto;scrollbar-width:none;width:100%;box-sizing:border-box;border-bottom:2px solid #C9A84C}
 .admin-tabs::-webkit-scrollbar{display:none}
 .admin-tab{flex-shrink:0;padding:10px 14px;font-size:.8rem;font-weight:600;color:rgba(201,168,76,.45);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s}
@@ -27,7 +27,7 @@ body{background:#0F0F0F}
 .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
 .kpi-card{background:#1C1C1C;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:16px;box-shadow:0 2px 12px rgba(201,168,76,.1)}
 .kpi-label{font-size:.74rem;color:rgba(201,168,76,.6);margin-bottom:6px}
-.kpi-value{font-size:1.3rem;font-weight:800;color:#fff}
+.kpi-value{font-size:1.3rem;font-weight:800;color:var(--text-primary)}
 .kpi-delta{font-size:.74rem;font-weight:700;margin-top:4px}
 .up{color:#EF4444}.down{color:var(--blue)}
 
@@ -52,21 +52,21 @@ body{background:#0F0F0F}
 .rev-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(0deg,#A8862A,#E8C97A);transition:height .4s;cursor:pointer;min-height:4px}
 .rev-bar:hover{background:var(--gold,#C9A84C)}
 .rev-label{font-size:.62rem;color:rgba(201,168,76,.55)}
-.rev-value{font-size:.65rem;font-weight:700;color:#fff}
+.rev-value{font-size:.65rem;font-weight:700;color:var(--text-primary)}
 
 /* 주문 목록 */
 .order-row{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.8rem;cursor:pointer;transition:background .1s}
 .order-row:last-child{border-bottom:none}
 .order-row:active{background:rgba(201,168,76,.05)}
-.order-id{font-weight:700;color:#fff;min-width:80px;font-size:.76rem}
+.order-id{font-weight:700;color:var(--text-primary);min-width:80px;font-size:.76rem}
 .order-buyer{color:rgba(255,255,255,.65);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.order-amt{font-weight:700;color:#fff;white-space:nowrap}
+.order-amt{font-weight:700;color:var(--text-primary);white-space:nowrap}
 
 /* 재고 목록 */
 .stock-row{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.12);font-size:.82rem}
 .stock-row:last-child{border-bottom:none}
 .stock-emo{font-size:1.3rem;flex-shrink:0}
-.stock-name{flex:1;font-weight:600;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:130px}
+.stock-name{flex:1;font-weight:600;color:var(--text-primary);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:130px}
 .stock-bar-bg{height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;width:70px}
 .stock-bar-fill{height:100%;border-radius:3px;transition:width .3s}
 .stock-qty{font-size:.76rem;color:rgba(201,168,76,.55);min-width:36px;text-align:right}
@@ -79,9 +79,9 @@ body{background:#0F0F0F}
 /* 매출 테이블 */
 .rev-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.12);font-size:.82rem}
 .rev-row:last-child{border-bottom:none}
-.rev-pg{flex:1;font-weight:600;color:#fff}
+.rev-pg{flex:1;font-weight:600;color:var(--text-primary)}
 .rev-fee{color:#EF4444;margin-right:8px;font-size:.76rem}
-.rev-amt{font-weight:800;color:#fff}
+.rev-amt{font-weight:800;color:var(--text-primary)}
 .rev-pct-bar{height:5px;border-radius:3px;margin-top:3px}
 
 /* CS 티켓 */
@@ -89,7 +89,7 @@ body{background:#0F0F0F}
 .ticket-row:last-child{border-bottom:none}
 .ticket-row:active{background:#1C1C1C}
 .ticket-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.ticket-title{font-size:.88rem;font-weight:600;color:#fff;flex:1}
+.ticket-title{font-size:.88rem;font-weight:600;color:var(--text-primary);flex:1}
 .ticket-meta{font-size:.74rem;color:rgba(201,168,76,.55);display:flex;gap:8px}
 
 /* 빠른 액션 */
@@ -104,11 +104,11 @@ body{background:#0F0F0F}
 .login-box{background:#1C1C1C;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-lg);padding:32px 24px;width:100%;max-width:360px}
 
 /* 주문 상세 바텀시트 */
-.order-detail-content{padding:16px;font-size:.88rem;line-height:1.8;color:#fff}
+.order-detail-content{padding:16px;font-size:.88rem;line-height:1.8;color:var(--text-primary)}
 .detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(201,168,76,.12)}
 .detail-row:last-child{border-bottom:none}
-.detail-key{color:rgba(255,255,255,.5)}
-.detail-val{font-weight:600;color:#fff}
+.detail-key{color:var(--text-medium)}
+.detail-val{font-weight:600;color:var(--text-primary)}
 /* 시트 다크테마 오버라이드 */
 #detail-sheet{background:#1C1C1C}
 #detail-sheet .sheet-head{border-bottom:1px solid rgba(201,168,76,.2)}
