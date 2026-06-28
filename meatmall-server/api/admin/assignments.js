@@ -79,7 +79,7 @@ router.post('/auto', async (req, res) => {
   try {
     const { data: pendingOrders, error: ordErr } = await supabase
       .from('orders')
-      .select('*, order_items(product_id, quantity, price), addresses(zipcode, address, dong)')
+      .select('*, order_items(product_id, quantity, price)')
       .eq('status', 'pending')
       .eq('payment_status', 'paid');
     if (ordErr) throw ordErr;
