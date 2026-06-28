@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -35,7 +35,7 @@ body{background:#0F0F0F}
 .alert-bar{margin:0 14px 10px;border-radius:var(--radius-md);padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:.82rem}
 .alert-urgent{background:rgba(239,68,68,.1);border-left:3px solid #EF4444}
 .alert-warn{background:rgba(201,168,76,.1);border-left:3px solid var(--gold,#C9A84C)}
-.alert-text{flex:1;color:rgba(255,255,255,.8);line-height:1.4}
+.alert-text{flex:1;color:#D1D5DB;line-height:1.4}
 .alert-text strong{font-weight:700}
 .alert-btn{font-size:.74rem;font-weight:700;color:var(--gold,#C9A84C);cursor:pointer;padding:4px 8px;border:1px solid var(--gold,#C9A84C);border-radius:var(--radius-sm);white-space:nowrap;background:none}
 
@@ -59,7 +59,7 @@ body{background:#0F0F0F}
 .order-row:last-child{border-bottom:none}
 .order-row:active{background:rgba(201,168,76,.05)}
 .order-id{font-weight:700;color:var(--text-primary);min-width:80px;font-size:.76rem}
-.order-buyer{color:rgba(255,255,255,.65);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.order-buyer{color:#D1D5DB;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .order-amt{font-weight:700;color:var(--text-primary);white-space:nowrap}
 
 /* 재고 목록 */
@@ -113,7 +113,7 @@ body{background:#0F0F0F}
 #detail-sheet{background:#1C1C1C}
 #detail-sheet .sheet-head{border-bottom:1px solid rgba(201,168,76,.2)}
 #detail-sheet .sheet-title{color:#fff}
-#detail-sheet .sheet-close{color:rgba(255,255,255,.5)}
+#detail-sheet .sheet-close{color:#9CA3AF}
 
 /* 로딩 스켈레톤 */
 .skel{background:linear-gradient(90deg,var(--gray-100) 25%,#ece9e6 50%,var(--gray-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
@@ -128,7 +128,7 @@ window.addEventListener('pageshow', function(e){
 </head>
 <body>
 <div id="app" style="display:flex;flex-direction:column;min-height:100vh;background:#0F0F0F">
-  <div style="text-align:center;padding:60px 24px;color:rgba(255,255,255,.3)">🔄 로딩 중...</div>
+  <div style="text-align:center;padding:60px 24px;color:#9CA3AF">🔄 로딩 중...</div>
 </div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
 <div class="sheet" id="detail-sheet">
@@ -202,7 +202,7 @@ function renderLogin(){
     <div style="text-align:center;margin-bottom:28px">
       <div style="font-size:3rem;margin-bottom:10px">🥩</div>
       <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:#fff">정육본가</div>
-      <div style="font-size:.85rem;color:rgba(255,255,255,.7);margin-top:4px">관리자 시스템</div>
+      <div style="font-size:.85rem;color:#D1D5DB;margin-top:4px">관리자 시스템</div>
     </div>
     <div class="login-box">
       <div style="font-size:1rem;font-weight:800;color:#fff;margin-bottom:20px">🔐 관리자 로그인</div>
@@ -215,7 +215,7 @@ function renderLogin(){
         <input class="form-input" id="apw" type="password" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')adminLogin()">
       </div>
       <button class="btn btn-primary btn-full btn-lg" id="login-btn" onclick="adminLogin()">로그인</button>
-      <div style="margin-top:14px;text-align:center;font-size:.76rem;color:rgba(255,255,255,.3)">
+      <div style="margin-top:14px;text-align:center;font-size:.76rem;color:#9CA3AF">
         정육본가 관리자 전용 시스템
       </div>
     </div>
@@ -275,7 +275,7 @@ function renderDashboard(){
     <div class="admin-tab" onclick="window.open('../index.html','_blank')">🛍️ 쇼핑몰</div>
   </div>
   <div id="tab-content" style="min-height:80vh;padding-bottom:32px">
-    <div style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">🔄 로딩 중...</div>
+    <div style="text-align:center;padding:40px;color:#9CA3AF">🔄 로딩 중...</div>
   </div>`;
   switchTab('dashboard', document.querySelector('.admin-tab[data-tab="dashboard"]'));
 }
@@ -285,7 +285,7 @@ async function switchTab(name, el){
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
   const content = document.getElementById('tab-content');
-  content.innerHTML='<div style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">🔄 불러오는 중...</div>';
+  content.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF">🔄 불러오는 중...</div>';
 
   const renders = {
     dashboard:  renderTabDashboard,
@@ -392,7 +392,7 @@ async function renderTabOrders(){
   </div>
   <div class="admin-section" style="margin-top:4px">
     ${orders.length===0
-      ? '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">주문이 없습니다</div>'
+      ? '<div style="padding:40px;text-align:center;color:#9CA3AF">주문이 없습니다</div>'
       : orders.map(o=>`
       <div class="order-row" onclick="showOrderDetail('${o.id}')">
         <div>
@@ -409,7 +409,7 @@ async function renderTabOrders(){
 }
 
 async function showOrderDetail(id){
-  openSheet('주문 상세', '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">🔄 불러오는 중...</div>');
+  openSheet('주문 상세', '<div style="padding:40px;text-align:center;color:#9CA3AF">🔄 불러오는 중...</div>');
   let success = false;
   try {
     const r = await fetch(API+'/admin/orders/'+id,{headers:{Authorization:'Bearer '+adminToken}});
@@ -450,7 +450,7 @@ async function showOrderDetail(id){
       ${o.payment_method==='VBANK'&&o.payment_status!=='paid'?`
       <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--radius-md);padding:12px;margin-top:8px;font-size:.84rem">
         <div style="font-weight:700;color:#92400E;margin-bottom:8px">🏦 무통장 입금 확인</div>
-        <div style="color:rgba(255,255,255,.65);margin-bottom:8px">
+        <div style="color:#D1D5DB;margin-bottom:8px">
           입금계좌: <strong>기업은행 123-456789-01-001 (주)정육본가</strong><br>
           주문금액: <strong style="color:var(--primary)">${fmt(o.final_amount)}원</strong><br>
           입금기한: <strong>${o.deposit_deadline?new Date(o.deposit_deadline).toLocaleDateString('ko-KR'):'3일 이내'}</strong>
@@ -508,7 +508,7 @@ async function renderTabInventory(){
   </div>
   <div class="admin-section" style="margin-top:4px">
     ${inventory.length===0
-      ? '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">상품이 없습니다</div>'
+      ? '<div style="padding:40px;text-align:center;color:#9CA3AF">상품이 없습니다</div>'
       : inventory.map(p=>`
       <div class="stock-row" onclick="showStockEdit('${p.id}','${p.name}',${p.stock},${p.min_stock})">
         <span class="stock-emo">${p.emoji||'🥩'}</span>
@@ -518,7 +518,7 @@ async function renderTabInventory(){
         </div>
         <div>
           <div class="stock-bar-bg"><div class="stock-bar-fill" style="width:${p.pct||0}%;background:${barColor[p.status||'ok']}"></div></div>
-          <div style="font-size:.65rem;color:rgba(255,255,255,.3);margin-top:2px;text-align:right">${p.pct||0}%</div>
+          <div style="font-size:.65rem;color:#9CA3AF;margin-top:2px;text-align:right">${p.pct||0}%</div>
         </div>
         <div class="stock-qty">${p.stock}개</div>
         <span class="stock-status ${statusCls[p.status||'ok']}">${statusTxt[p.status||'ok']}</span>
@@ -598,7 +598,7 @@ async function renderTabRevenue(){
     <div class="chart-wrap">
       <div class="rev-bars">
         ${days.length===0
-          ? '<div style="color:rgba(255,255,255,.3);font-size:.82rem;padding:20px">데이터 없음</div>'
+          ? '<div style="color:#9CA3AF;font-size:.82rem;padding:20px">데이터 없음</div>'
           : days.map((d,i)=>{
               const h=Math.round((values[i]/maxVal)*90);
               const label=d.slice(5);
@@ -625,7 +625,7 @@ async function renderTabRevenue(){
       </div>
       <span class="rev-fee">수수료 -${fmt(v.fee||0)}원</span>
       <span class="rev-amt">${fmt(v.amount||0)}원</span>
-    </div>`).join('') || '<div style="padding:20px;text-align:center;color:rgba(255,255,255,.3)">결제 데이터 없음</div>'}
+    </div>`).join('') || '<div style="padding:20px;text-align:center;color:#9CA3AF">결제 데이터 없음</div>'}
   </div>`;
 }
 
@@ -651,7 +651,7 @@ async function renderTabCS(){
   </div>
   <div class="admin-section" style="margin-top:4px">
     ${tickets.length===0
-      ? '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">CS 문의가 없습니다</div>'
+      ? '<div style="padding:40px;text-align:center;color:#9CA3AF">CS 문의가 없습니다</div>'
       : tickets.map(t=>`
       <div class="ticket-row" onclick="showCSDetail('${t.id}')">
         <div class="ticket-head">
@@ -677,7 +677,7 @@ async function showCSDetail(id){
     <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
       <div style="background:#1C1C1C;border-radius:var(--radius-md);padding:12px;font-size:.84rem;line-height:1.7">
         <div style="font-weight:700;color:#fff;margin-bottom:4px">${t.title}</div>
-        <div style="color:rgba(255,255,255,.65)">${t.content}</div>
+        <div style="color:#D1D5DB">${t.content}</div>
         <div style="font-size:.74rem;color:rgba(201,168,76,.55);margin-top:8px">
           ${t.users?.name||'비회원'} · ${t.users?.phone||''} · ${new Date(t.created_at).toLocaleString('ko-KR')}
         </div>
@@ -695,7 +695,7 @@ async function showCSDetail(id){
         <button class="btn btn-primary" style="flex:2;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F" onclick="submitCSAnswer('${t.id}')">📨 답변 전송</button>
         <button class="btn btn-secondary" style="flex:1" onclick="closeSheet()">취소</button>
       </div>
-      <p style="text-align:center;font-size:.74rem;color:rgba(255,255,255,.3)">답변 전송 시 카카오 알림톡으로 고객에게 발송됩니다</p>
+      <p style="text-align:center;font-size:.74rem;color:#9CA3AF">답변 전송 시 카카오 알림톡으로 고객에게 발송됩니다</p>
     </div>`);
   } catch(e){ toast('문의 로드 실패'); }
 }
@@ -750,7 +750,7 @@ async function renderTabCategories() {
   } catch(e) { console.error('[categories] fetch 오류:', e.message); }
 
   const rowsHtml = _cats.length === 0
-    ? '<div style="padding:36px;text-align:center;color:rgba(255,255,255,.3)">카테고리가 없습니다<br><span style="font-size:.78rem;display:block;margin-top:6px">위에서 카테고리를 추가해주세요</span></div>'
+    ? '<div style="padding:36px;text-align:center;color:#9CA3AF">카테고리가 없습니다<br><span style="font-size:.78rem;display:block;margin-top:6px">위에서 카테고리를 추가해주세요</span></div>'
     : _cats.map(c => catRowHTML(c)).join('');
 
   const content = document.getElementById('tab-content');
@@ -792,7 +792,7 @@ function editCategory(id) {
     + ' onkeydown="if(event.key===\'Enter\')saveCategory(\'' + id + '\');if(event.key===\'Escape\')cancelEditCategory(\'' + id + '\')">'
     + '<div style="display:flex;gap:5px;flex-shrink:0">'
     + '<button onclick="saveCategory(\'' + id + '\')" style="height:34px;padding:0 12px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.8rem;font-weight:700;cursor:pointer">저장</button>'
-    + '<button onclick="cancelEditCategory(\'' + id + '\')" style="height:34px;padding:0 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-md);font-size:.8rem;color:rgba(255,255,255,.6);cursor:pointer">취소</button>'
+    + '<button onclick="cancelEditCategory(\'' + id + '\')" style="height:34px;padding:0 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-md);font-size:.8rem;color:#D1D5DB;cursor:pointer">취소</button>'
     + '</div>';
   row.style.cssText += ';display:flex;align-items:center;';
   const inp = document.getElementById('edit-cat-' + id);
