@@ -197,13 +197,11 @@ function toast(msg){const el=document.getElementById('toast-global');el.textCont
 
 Store.load(); showAdminBtn();
 
-const _urlCatId = new URLSearchParams(window.location.search).get('cat_id');
 const _urlCatName = new URLSearchParams(window.location.search).get('cat')||'';
 
 // slug→한글 fallback (기존 상품 호환)
 const CAT_KO = {samgyeop:'삼겹살',ogyeop:'오겹살',moksal:'목살',apdaree:'앞다리살',mibakapdaree:'미박앞다리살',deungshim:'등심'};
-let currentCatId = _urlCatId ? Number(_urlCatId) : 0;
-let currentCatName = _urlCatName;
+let currentCat = _urlCatName;
 let viewMode='grid', allProducts=[];
 
 async function initPage(){
@@ -215,24 +213,19 @@ async function initPage(){
 
   if(catData && catData.categories && catData.categories.length){
     const cats=catData.categories;
-    // ?cat= 레거시 URL 지원: name으로 id 매칭
-    if(!currentCatId && currentCatName){
-      const matched=cats.find(c=>c.name===currentCatName||CAT_KO[currentCatName]===c.name);
-      if(matched) currentCatId=matched.id;
-    }
     document.getElementById('cat-tabs').innerHTML=
-      `<div class="cat-tab${!currentCatId?' on':''}" onclick="selectCat(0,this)">전체</div>`+
+      `<div class="cat-tab${!currentCat?' on':''}" onclick="selectCat('',this)">전체</div>`+
       cats.map(c=>
-        `<div class="cat-tab${currentCatId===c.id?' on':''}" onclick="selectCat(${c.id},this)">${c.name}</div>`
+        `<div class="cat-tab${currentCat===c.name?' on':''}" onclick="selectCat('${c.name}',this)">${c.name}</div>`
       ).join('');
   }else{
     document.getElementById('cat-tabs').innerHTML=
-      `<div class="cat-tab on" onclick="selectCat(0,this)">전체</div>`;
+      `<div class="cat-tab on" onclick="selectCat('',this)">전체</div>`;
   }
 }
 
-function selectCat(catId,el){
-  currentCatId=catId;
+function selectCat(catName,el){
+  currentCat=catName;
   document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('on'));
   el.classList.add('on');
   loadProducts();
@@ -261,7 +254,7 @@ async function loadProducts(){
   try{
     const sort=document.getElementById('sort-sel').value;
     let url=`${API}/products?limit=30&sort=${sort}`;
-    if(currentCatId) url+=`&category_id=${currentCatId}`;
+    if(currentCat) url+=`&category=${encodeURIComponent(currentCat)}`;
     const r=await fetch(url);
     if(!r.ok) throw new Error('HTTP '+r.status);
     const d=await r.json();
@@ -299,7 +292,7 @@ function gridCard(p){
   const catKo=p.category_name||CAT_KO[p.category]||p.category||'';
   const thumb=thumbUrl(p);
   return `
-  <div class="pcard" onclick="${sold?'soldAlert()':``go('../pages/product.html?id=${p.id}')``}">
+  <div class="pcard" onclick="${sold?'soldAlert()':`go('../pages/product.html?id=${p.id}')`}">
     <div class="pcard-thumb">
       ${thumb?`<img src="${thumb}" alt="${p.name}" loading="lazy">`:`<span style="position:relative;z-index:1;font-size:2.8rem">${p.emoji||'🥩'}</span>`}
       ${disc>0?`<div class="disc-badge">${disc}%</div>`:''}
@@ -326,7 +319,7 @@ function listCard(p){
   const catKo=p.category_name||CAT_KO[p.category]||p.category||'';
   const thumb=thumbUrl(p);
   return `
-  <div class="lcard" onclick="${sold?'soldAlert()':``go('../pages/product.html?id=${p.id}')``}" style="${sold?'opacity:.5':''}">
+  <div class="lcard" onclick="${sold?'soldAlert()':`go('../pages/product.html?id=${p.id}')`}" style="${sold?'opacity:.5':''}">
     <div class="lthumb">
       ${thumb?`<img src="${thumb}" alt="${p.name}" loading="lazy">`:`<span style="font-size:2rem">${p.emoji||'🥩'}</span>`}
     </div>
