@@ -240,8 +240,20 @@ function setView(v){
   renderProducts(allProducts);
 }
 
-async function loadProducts(){
+function showLoading(){
   document.getElementById('prd-wrap').innerHTML='<div style="text-align:center;padding:60px 24px;color:rgba(255,255,255,.3);font-size:.88rem">상품을 불러오는 중...</div>';
+}
+function hideLoading(){
+  // renderProducts 또는 catch 블록이 이미 콘텐츠를 교체했으면 no-op
+  // 그 어느 쪽도 실행되지 않은 경우(edge case)에만 로딩 화면을 제거
+  const w=document.getElementById('prd-wrap');
+  if(w&&w.innerHTML.includes('불러오는 중')){
+    w.innerHTML='<div class="empty-state"><div class="empty-icon">😢</div><div class="empty-text">상품 로딩에 실패했습니다</div></div>';
+  }
+}
+
+async function loadProducts(){
+  showLoading();
   try{
     const sort=document.getElementById('sort-sel').value;
     let url=`${API}/products?limit=30&sort=${sort}`;
@@ -252,11 +264,14 @@ async function loadProducts(){
     allProducts=d.products||[];
     document.getElementById('result-count').textContent=allProducts.length+'개';
     renderProducts(allProducts);
-    preloadProductImages(allProducts);
   }catch(e){
     console.error('[loadProducts]',e);
     document.getElementById('prd-wrap').innerHTML=`<div class="empty-state"><div class="empty-icon">😢</div><div class="empty-text">상품을 불러오지 못했습니다</div></div>`;
+  }finally{
+    hideLoading(); // 반드시 실행 — 어떤 경우에도 로딩 상태 해제
   }
+  // preloadProductImages는 렌더링 외부에서 호출 — 예외가 상품 목록을 덮어쓰지 않도록
+  if(allProducts.length){ try{preloadProductImages(allProducts);}catch(_){} }
 }
 
 function renderProducts(products){
