@@ -79,7 +79,7 @@ router.post('/auto', async (req, res) => {
   try {
     const { data: pendingOrders, error: ordErr } = await supabase
       .from('orders')
-      .select('*, order_items(product_id, quantity, price)')
+      .select('id, order_number, address1, final_amount, order_items(product_id, qty, price)')
       .eq('status', 'pending')
       .eq('payment_status', 'paid');
     if (ordErr) throw ordErr;
@@ -94,7 +94,7 @@ router.post('/auto', async (req, res) => {
 
     for (const order of pendingOrders) {
       try {
-        const dong = order.addresses?.dong || parseDong(order.address || '');
+        const dong = parseDong(order.address1 || '');
 
         const { data: zone } = await supabase
           .from('delivery_zones')
@@ -109,7 +109,7 @@ router.post('/auto', async (req, res) => {
           continue;
         }
 
-        const totalQty = (order.order_items || []).reduce((s, i) => s + i.quantity, 0);
+        const totalQty = (order.order_items || []).reduce((s, i) => s + (i.qty || 0), 0);
         const firstProductId = order.order_items?.[0]?.product_id;
 
         const best = await findBestVendor(supabase, zone.id, totalQty, firstProductId);
@@ -139,7 +139,7 @@ router.post('/auto', async (req, res) => {
           order_id: order.id,
           vendor_id: best.vendor_id,
           order_number: orderNumber,
-          total_amount: order.total_amount || 0,
+          total_amount: order.final_amount || 0,
           status: 'pending',
           items: order.order_items || []
         });
