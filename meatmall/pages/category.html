@@ -294,7 +294,7 @@ function gridCard(p){
   return `
   <div class="pcard" onclick="${sold?'soldAlert()':`go('../pages/product.html?id=${p.id}')`}">
     <div class="pcard-thumb">
-      ${thumb?`<img src="${thumb}" alt="${p.name}" loading="lazy">`:`<span style="position:relative;z-index:1;font-size:2.8rem">${p.emoji||'🥩'}</span>`}
+      ${thumb?`<img src="${thumb}" alt="${p.name}" loading="lazy">`:`<div style="width:100%;height:100%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;"><span style="color:#555;font-size:12px;">이미지 준비중</span></div>`}
       ${disc>0?`<div class="disc-badge">${disc}%</div>`:''}
       ${p.haccp?`<div class="haccp-badge">HACCP</div>`:''}
       ${sold?`<div class="sold-dim">SOLD OUT</div>`:''}
@@ -321,7 +321,7 @@ function listCard(p){
   return `
   <div class="lcard" onclick="${sold?'soldAlert()':`go('../pages/product.html?id=${p.id}')`}" style="${sold?'opacity:.5':''}">
     <div class="lthumb">
-      ${thumb?`<img src="${thumb}" alt="${p.name}" loading="lazy">`:`<span style="font-size:2rem">${p.emoji||'🥩'}</span>`}
+      ${thumb?`<img src="${thumb}" alt="${p.name}" loading="lazy">`:`<div style="width:100%;height:100%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;"><span style="color:#555;font-size:12px;">이미지 준비중</span></div>`}
     </div>
     <div class="linfo">
       <div class="lcat">${catKo}${sold?' · SOLD OUT':''}</div>
