@@ -70,7 +70,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     let query = supabase
       .from('products')
-      .select('*, categories(name)', { count: 'exact' })
+      .select('*', { count: 'exact' })
       .range((pageNum - 1) * limitNum, pageNum * limitNum - 1);
 
     // 일반 사용자는 활성 상품만 조회
@@ -101,8 +101,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     const formatted = (products || []).map(p => ({
       ...p,
-      category_name: p.categories?.name || p.category,
-      categories: undefined
+      category_name: p.category
     }));
 
     const result = { ok: true, products: formatted, total: count, page: pageNum, limit: limitNum };
@@ -155,7 +154,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const { data: product, error } = await supabase
       .from('products')
-      .select('*, categories(name)')
+      .select('*')
       .eq('id', req.params.id)
       .eq('is_active', true)
       .single();
@@ -166,15 +165,9 @@ router.get('/:id', optionalAuth, async (req, res) => {
       });
     }
 
-    const formatted = {
-      ...product,
-      category_name: product.categories?.name || product.category,
-      categories: undefined
-    };
-
     res.json({
       ok: true,
-      product: formatted
+      product: { ...product, category_name: product.category }
     });
   } catch (err) {
     console.error('[products/id]', err);
