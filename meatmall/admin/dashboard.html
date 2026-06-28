@@ -717,20 +717,45 @@ async function submitCSAnswer(id){
 }
 
 // ── 카테고리 관리 탭 ──────────────────────────────────────
-async function renderTabCategories(){
-  let cats=[];
-  try{
-    const ctrl=new AbortController();
-    const tid=setTimeout(()=>ctrl.abort(),5000);
-    const r=await fetch(API+'/admin/categories',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl.signal});
-    clearTimeout(tid);
-    if(r.ok){const d=await r.json();cats=d.categories||[];}
-  }catch(e){console.log('categories API 오류:',e.message);}
+let _cats = [];
 
-  const content=document.getElementById('tab-content');
-  content.innerHTML=`
+function catRowHTML(c) {
+  const safe = (c.name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  return '<div id="cat-row-' + c.id + '" style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1)">'
+    + '<div style="flex:1;font-size:.9rem;font-weight:600;color:#fff">🥩 ' + c.name + '</div>'
+    + '<div style="width:50px;text-align:center;font-size:.84rem;font-weight:700;color:' + (c.product_count > 0 ? '#C9A84C' : 'rgba(255,255,255,.3)') + '">' + c.product_count + '개</div>'
+    + '<div style="width:80px;display:flex;gap:5px;justify-content:center">'
+    + '<button onclick="editCategory(\'' + c.id + '\')" title="수정" style="width:32px;height:28px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-sm);color:#C9A84C;font-size:.82rem;cursor:pointer">✏️</button>'
+    + '<button onclick="deleteCategory(\'' + c.id + '\',\'' + safe + '\')" title="삭제" style="width:32px;height:28px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);color:#EF4444;font-size:.82rem;cursor:pointer;line-height:1">✕</button>'
+    + '</div></div>';
+}
+
+async function renderTabCategories() {
+  _cats = [];
+  try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 5000);
+    const r = await fetch(API + '/admin/categories', {
+      headers: { Authorization: 'Bearer ' + adminToken },
+      signal: ctrl.signal
+    });
+    clearTimeout(tid);
+    if (r.ok) {
+      const d = await r.json();
+      _cats = d.categories || [];
+    } else {
+      const d = await r.json().catch(() => ({}));
+      console.error('[categories] API 오류:', r.status, d);
+    }
+  } catch(e) { console.error('[categories] fetch 오류:', e.message); }
+
+  const rowsHtml = _cats.length === 0
+    ? '<div style="padding:36px;text-align:center;color:rgba(255,255,255,.3)">카테고리가 없습니다<br><span style="font-size:.78rem;display:block;margin-top:6px">위에서 카테고리를 추가해주세요</span></div>'
+    : _cats.map(c => catRowHTML(c)).join('');
+
+  const content = document.getElementById('tab-content');
+  content.innerHTML = `
   <div style="padding:14px">
-    <!-- 추가 폼 -->
     <div class="admin-section" style="margin-bottom:14px">
       <div class="section-head">
         <div class="section-title">🏷️ 새 카테고리 추가</div>
@@ -741,29 +766,62 @@ async function renderTabCategories(){
       </div>
     </div>
 
-    <!-- 목록 테이블 -->
     <div class="admin-section">
       <div class="section-head">
         <div class="section-title">카테고리 목록</div>
-        <span style="font-size:.76rem;color:rgba(201,168,76,.55)">총 ${cats.length}개</span>
+        <span style="font-size:.76rem;color:rgba(201,168,76,.55)">총 ${_cats.length}개</span>
       </div>
       <div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)">
         <div style="flex:1">카테고리명</div>
-        <div style="width:56px;text-align:center">상품수</div>
-        <div style="width:44px;text-align:center">삭제</div>
+        <div style="width:50px;text-align:center">상품수</div>
+        <div style="width:80px;text-align:center">관리</div>
       </div>
-      ${cats.length===0
-        ? '<div style="padding:36px;text-align:center;color:rgba(255,255,255,.3)">카테고리가 없습니다</div>'
-        : cats.map(c=>`
-        <div style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1)">
-          <div style="flex:1;font-size:.9rem;font-weight:600;color:#fff">🥩 ${c.name}</div>
-          <div style="width:56px;text-align:center;font-size:.84rem;font-weight:700;color:${c.product_count>0?'#C9A84C':'rgba(255,255,255,.3)'}">${c.product_count}개</div>
-          <div style="width:44px;text-align:center">
-            <button onclick="deleteCategory(${c.id},'${c.name.replace(/'/g,'&#39;')}')" style="width:28px;height:28px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);color:#EF4444;font-size:.8rem;cursor:pointer;line-height:1">✕</button>
-          </div>
-        </div>`).join('')}
+      <div id="cat-rows">${rowsHtml}</div>
     </div>
   </div>`;
+}
+
+function editCategory(id) {
+  const c = _cats.find(x => String(x.id) === String(id));
+  if (!c) return;
+  const row = document.getElementById('cat-row-' + id);
+  if (!row) return;
+  const safeVal = (c.name || '').replace(/"/g, '&quot;');
+  row.innerHTML =
+    '<input id="edit-cat-' + id + '" style="flex:1;height:34px;border:1.5px solid rgba(201,168,76,.5);border-radius:var(--radius-md);padding:0 10px;font-size:.88rem;background:#111;color:#fff;outline:none;margin-right:8px" value="' + safeVal + '"'
+    + ' onkeydown="if(event.key===\'Enter\')saveCategory(\'' + id + '\');if(event.key===\'Escape\')cancelEditCategory(\'' + id + '\')">'
+    + '<div style="display:flex;gap:5px;flex-shrink:0">'
+    + '<button onclick="saveCategory(\'' + id + '\')" style="height:34px;padding:0 12px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.8rem;font-weight:700;cursor:pointer">저장</button>'
+    + '<button onclick="cancelEditCategory(\'' + id + '\')" style="height:34px;padding:0 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-md);font-size:.8rem;color:rgba(255,255,255,.6);cursor:pointer">취소</button>'
+    + '</div>';
+  row.style.cssText += ';display:flex;align-items:center;';
+  const inp = document.getElementById('edit-cat-' + id);
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function cancelEditCategory(id) {
+  const c = _cats.find(x => String(x.id) === String(id));
+  if (!c) return;
+  const row = document.getElementById('cat-row-' + id);
+  if (row) row.outerHTML = catRowHTML(c);
+}
+
+async function saveCategory(id) {
+  const input = document.getElementById('edit-cat-' + id);
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) { toast('카테고리 이름을 입력해주세요'); return; }
+  try {
+    const r = await fetch(API + '/admin/categories/' + id, {
+      method: 'PUT', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + adminToken },
+      body: JSON.stringify({ name })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message || d.error || '수정 실패');
+    toast('✅ 카테고리가 수정됐습니다');
+    await renderTabCategories();
+  } catch(e) { toast('❌ ' + e.message); }
 }
 
 async function addCategory(){

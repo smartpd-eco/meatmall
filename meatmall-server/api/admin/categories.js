@@ -67,6 +67,48 @@ router.post('/', requireAdmin, async (req, res) => {
 });
 
 // ════════════════════════════════════════════════════
+// PUT /api/admin/categories/:id — 이름 수정 + 상품 cascade
+// ════════════════════════════════════════════════════
+router.put('/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: '카테고리 이름은 필수입니다' });
+    }
+
+    const { data: cat, error: catErr } = await supabase
+      .from('categories')
+      .select('name')
+      .eq('id', id)
+      .single();
+    if (catErr || !cat) {
+      return res.status(404).json({ success: false, message: '카테고리를 찾을 수 없습니다' });
+    }
+
+    const { data, error } = await supabase
+      .from('categories')
+      .update({ name: name.trim() })
+      .eq('id', id)
+      .select();
+    if (error) throw error;
+
+    // 해당 카테고리 상품 이름도 일괄 변경
+    if (cat.name !== name.trim()) {
+      await supabase.from('products').update({ category: name.trim() }).eq('category', cat.name);
+    }
+
+    res.json({ success: true, category: data[0] });
+  } catch (err) {
+    console.error('[admin/categories PUT]', err);
+    if (err.code === '23505') {
+      return res.status(400).json({ success: false, message: '이미 존재하는 카테고리 이름입니다' });
+    }
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ════════════════════════════════════════════════════
 // DELETE /api/admin/categories/:id — 상품 있으면 400
 // ════════════════════════════════════════════════════
 router.delete('/:id', requireAdmin, async (req, res) => {
