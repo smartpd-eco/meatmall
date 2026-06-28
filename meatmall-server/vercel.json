@@ -1,12 +1,20 @@
 {
   "version": 2,
 
+  "regions": ["icn1"],
+
   "builds": [
     {
       "src": "server.js",
       "use": "@vercel/node"
     }
   ],
+
+  "functions": {
+    "server.js": {
+      "maxDuration": 30
+    }
+  },
 
   "routes": [
     {
@@ -39,10 +47,5 @@
     "NODE_ENV": "production"
   },
 
-  "crons": [
-    {
-      "path": "/api/health",
-      "schedule": "*/5 * * * *"
-    }
-  ]
+  "crons": []
 }
