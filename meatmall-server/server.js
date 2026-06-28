@@ -24,6 +24,7 @@ function clearCache(key) {
 }
 
 const app = express();
+app.set('trust proxy', 1); // Vercel/nginx 프록시 뒤 X-Forwarded-For 신뢰
 const PORT = process.env.PORT || 3000;
 
 // ====================================================
