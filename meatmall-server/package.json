@@ -1,6 +1,6 @@
 {
   "name": "meatmall-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "정육본가 D2C 쇼핑몰 백엔드",
   "main": "server.js",
   "scripts": {
