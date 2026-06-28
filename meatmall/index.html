@@ -135,7 +135,7 @@ function fmt(n){return Number(n).toLocaleString('ko-KR')}
 function toast(m){const t=document.getElementById('toast-wrap');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
 Store.load();updateCartBadge();showAdminBtn();
 let allPrds=[];
-function selCat(catId,el){document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');loadPrds(catId);}
+function selCat(catName,el){document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');loadPrds(catName);}
 function render(list){
   const avail=list.filter(p=>p.stock>0),sold=list.filter(p=>p.stock<=0);
   const grid=document.getElementById('prd-grid');
@@ -161,12 +161,12 @@ function render(list){
   if(sold.length){sw.innerHTML=`<div class="soldout-sec"><div class="soldout-title">✕ SOLD OUT — 현재 품절</div>${sold.map(p=>`<div class="soldout-row"><span>${p.name}</span><span class="soldout-badge">SOLD OUT</span></div>`).join('')}<div style="font-size:.75rem;color:rgba(255,255,255,.25);margin-top:10px;line-height:1.7">기준 미달 정육은 입고돼도 판매하지 않습니다</div></div>`}
   else sw.innerHTML='';
 }
-async function loadPrds(catId){
+async function loadPrds(catFilter){
   const grid=document.getElementById('prd-grid');
   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:rgba(255,255,255,.25)">불러오는 중...</div>';
   document.getElementById('soldout-wrap').innerHTML='';
   try{
-    const url=catId?`${API}/products?limit=30&category_id=${catId}`:`${API}/products?limit=30`;
+    const url=catFilter?`${API}/products?limit=30&category=${encodeURIComponent(catFilter)}`:`${API}/products?limit=30`;
     const r=await fetch(url);
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();
@@ -186,11 +186,11 @@ async function loadCats(){
     const cats=d.categories||[];
     if(!cats.length)return;
     document.getElementById('cat-tabs').innerHTML=
-      '<div class="cat-tab on" onclick="selCat(0,this)">전체</div>'+
-      cats.map(c=>`<div class="cat-tab" onclick="selCat(${c.id},this)">${c.name}</div>`).join('');
+      `<div class="cat-tab on" onclick="selCat('',this)">전체</div>`+
+      cats.map(c=>`<div class="cat-tab" onclick="selCat('${c.name}',this)">${c.name}</div>`).join('');
   }catch(e){}
 }
-Promise.all([loadPrds(0),loadCats()]);
+Promise.all([loadPrds(''),loadCats()]);
 </script>
 </body>
 </html>
