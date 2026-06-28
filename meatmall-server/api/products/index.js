@@ -49,6 +49,7 @@ router.get('/', optionalAuth, async (req, res) => {
   try {
     const {
       category,
+      category_id,
       sort = 'created_at',
       order = 'desc',
       page = 1,
@@ -69,7 +70,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     let query = supabase
       .from('products')
-      .select('*', { count: 'exact' })
+      .select('*, categories(name)', { count: 'exact' })
       .range((pageNum - 1) * limitNum, pageNum * limitNum - 1);
 
     // 일반 사용자는 활성 상품만 조회
@@ -77,7 +78,8 @@ router.get('/', optionalAuth, async (req, res) => {
       query = query.eq('is_active', true);
     }
 
-    if (category) query = query.eq('category', category);
+    if (category_id) query = query.eq('category_id', Number(category_id));
+    else if (category) query = query.eq('category', category);
     if (is_subscribe === 'true' || is_subscribe === true) query = query.eq('is_subscribe', true);
     if (search) query = query.ilike('name', `%${search}%`);
 
@@ -97,7 +99,13 @@ router.get('/', optionalAuth, async (req, res) => {
 
     if (error) throw error;
 
-    const result = { ok: true, products, total: count, page: pageNum, limit: limitNum };
+    const formatted = (products || []).map(p => ({
+      ...p,
+      category_name: p.categories?.name || p.category,
+      categories: undefined
+    }));
+
+    const result = { ok: true, products: formatted, total: count, page: pageNum, limit: limitNum };
     if (cacheKey) _pcSet(cacheKey, result);
     res.json(result);
   } catch (err) {
@@ -147,7 +155,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const { data: product, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, categories(name)')
       .eq('id', req.params.id)
       .eq('is_active', true)
       .single();
@@ -158,9 +166,15 @@ router.get('/:id', optionalAuth, async (req, res) => {
       });
     }
 
+    const formatted = {
+      ...product,
+      category_name: product.categories?.name || product.category,
+      categories: undefined
+    };
+
     res.json({
       ok: true,
-      product
+      product: formatted
     });
   } catch (err) {
     console.error('[products/id]', err);
@@ -184,6 +198,7 @@ router.post('/', requireAdmin, async (req, res) => {
       name,
       description,
       category,
+      category_id,
       source_type,
       origin,
       weight_g,
@@ -198,7 +213,7 @@ router.post('/', requireAdmin, async (req, res) => {
       thumbnail_url
     } = req.body;
 
-    if (!name || !category || price === undefined || price === null || price === '') {
+    if (!name || (!category && !category_id) || price === undefined || price === null || price === '') {
       return res.status(400).json({
         error: '이름, 카테고리, 가격은 필수입니다'
       });
@@ -210,6 +225,7 @@ router.post('/', requireAdmin, async (req, res) => {
         name,
         description,
         category,
+        category_id: category_id ? Number(category_id) : null,
         source_type,
         origin,
         weight_g: Number(weight_g) || 0,

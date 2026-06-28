@@ -139,12 +139,6 @@ document.documentElement.style.visibility='hidden';
     <div class="filter-bar">
       <select class="filter-select" id="filter-cat" onchange="loadProducts()">
         <option value="">전체 카테고리</option>
-        <option value="samgyeop">삼겹살</option>
-        <option value="ogyeop">오겹살</option>
-        <option value="moksal">목살</option>
-        <option value="apdaree">앞다리살</option>
-        <option value="mibakapdaree">미박앞다리살</option>
-        <option value="deungshim">등심</option>
       </select>
       <input class="search-inp" id="search-inp" placeholder="🔍 상품명 검색" oninput="searchProducts()">
       <button class="btn btn-sm btn-primary" onclick="showTab('add')" style="white-space:nowrap">+ 등록</button>
@@ -204,12 +198,7 @@ document.documentElement.style.visibility='hidden';
       <div class="form-section">
         <div class="form-section-title">📦 카테고리 <span style="color:#F87171">*</span></div>
         <div class="cat-grid-admin" id="cat-grid-admin">
-          <div class="cat-btn-admin" id="cat-samgyeop" onclick="selectCat('samgyeop')"><span class="cat-ico">🥩</span>삼겹살</div>
-          <div class="cat-btn-admin" id="cat-ogyeop" onclick="selectCat('ogyeop')"><span class="cat-ico">🥩</span>오겹살</div>
-          <div class="cat-btn-admin" id="cat-moksal" onclick="selectCat('moksal')"><span class="cat-ico">🥩</span>목살</div>
-          <div class="cat-btn-admin" id="cat-apdaree" onclick="selectCat('apdaree')"><span class="cat-ico">🥩</span>앞다리살</div>
-          <div class="cat-btn-admin" id="cat-mibakapdaree" onclick="selectCat('mibakapdaree')"><span class="cat-ico">🥩</span>미박앞다리</div>
-          <div class="cat-btn-admin" id="cat-deungshim" onclick="selectCat('deungshim')"><span class="cat-ico">🥩</span>등심</div>
+          <div style="grid-column:1/-1;text-align:center;padding:12px;font-size:.8rem;color:rgba(255,255,255,.3)">카테고리 불러오는 중...</div>
         </div>
         <span class="form-error" id="err-cat">카테고리를 선택해주세요</span>
       </div>
@@ -373,6 +362,7 @@ function toast(msg) {
     }
     token = _tok;
     document.documentElement.style.visibility = '';
+    loadCategoryOptions();
     loadProducts();
   } catch(e) { window.location.replace('dashboard.html'); }
 })();
@@ -384,6 +374,7 @@ function adminLogout() {
 
 // ── 폼 상태 ──────────────────────────────────────────────
 let token          = '';
+let selectedCatId  = null;
 let selectedCat    = '';
 let selectedSource = 'direct';
 let selectedEmoji  = '🥩';
@@ -401,15 +392,44 @@ function showTab(name) {
   if (name==='list') loadProducts();
 }
 
+// ── 카테고리 동적 로드 (필터 드롭다운 + 폼 그리드) ────────
+async function loadCategoryOptions() {
+  try {
+    const r = await fetch(API + '/admin/categories', {
+      headers: token ? { Authorization:'Bearer '+token } : {}
+    });
+    const d = await r.json();
+    const cats = d.categories || [];
+
+    // 필터 드롭다운
+    const sel = document.getElementById('filter-cat');
+    sel.innerHTML = '<option value="">전체 카테고리</option>' +
+      cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+    // 폼 카테고리 그리드
+    const grid = document.getElementById('cat-grid-admin');
+    if (!cats.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;font-size:.8rem;color:rgba(255,255,255,.3)">카테고리 없음</div>';
+      return;
+    }
+    grid.innerHTML = cats.map(c =>
+      `<div class="cat-btn-admin" id="cat-${c.id}" onclick="selectCat(${c.id},'${c.name.replace(/'/g,"\\'")}')">` +
+      `<span class="cat-ico">🥩</span>${c.name}</div>`
+    ).join('');
+  } catch(e) {
+    console.error('[loadCategoryOptions]', e);
+  }
+}
+
 // ── 상품 목록 로드 ───────────────────────────────────────
 async function loadProducts() {
-  const cat = document.getElementById('filter-cat').value;
+  const catId = document.getElementById('filter-cat').value;
   const wrap = document.getElementById('product-list-wrap');
   wrap.innerHTML = '<div class="loading-box">🔄 불러오는 중...</div>';
 
   try {
     let url = API + '/products?limit=50';
-    if (cat) url += '&category=' + cat;
+    if (catId) url += '&category_id=' + catId;
 
     const r = await fetch(url, {
       headers: token ? { Authorization:'Bearer '+token } : {}
@@ -440,6 +460,7 @@ function renderProductList(products) {
   }
 
   const catLabels = { samgyeop:'삼겹살', ogyeop:'오겹살', moksal:'목살', apdaree:'앞다리살', mibakapdaree:'미박앞다리살', deungshim:'등심' };
+          // category_name from API join takes priority
   const srcLabels = { direct:'직접가공', oem:'OEM PB', wholesale:'거래처' };
 
   wrap.innerHTML = `
@@ -464,7 +485,7 @@ function renderProductList(products) {
             <span class="status-pill ${stockCls==='stock-low'?'pill-low':'pill-on'}">${stockStatus}</span>
           </div>
           <div class="pli-name">${p.name}</div>
-          <div class="pli-meta">${catLabels[p.category]||p.category} · ${srcLabels[p.source_type]||''} · ${p.weight_g||0}g · 재고 ${p.stock}개</div>
+          <div class="pli-meta">${p.category_name||catLabels[p.category]||p.category} · ${srcLabels[p.source_type]||''} · ${p.weight_g||0}g · 재고 ${p.stock}개</div>
           <div class="stock-bar-mini ${stockCls}" style="width:${stockPct}%"></div>
         </div>
         <div style="text-align:right;flex-shrink:0">
@@ -482,8 +503,9 @@ function renderProductList(products) {
 }
 
 // ── 카테고리/소싱/이모지 선택 ────────────────────────────
-function selectCat(id) {
-  selectedCat = id;
+function selectCat(id, name) {
+  selectedCatId = id;
+  selectedCat = name || '';
   document.querySelectorAll('.cat-btn-admin').forEach(b => b.classList.remove('on'));
   document.getElementById('cat-'+id)?.classList.add('on');
   document.getElementById('err-cat').classList.remove('show');
@@ -564,8 +586,8 @@ async function saveProduct() {
 
   if (!name)  { document.getElementById('err-name').classList.add('show');  ok = false; }
   else          document.getElementById('err-name').classList.remove('show');
-  if (!selectedCat) { document.getElementById('err-cat').classList.add('show');   ok = false; }
-  else               document.getElementById('err-cat').classList.remove('show');
+  if (!selectedCatId) { document.getElementById('err-cat').classList.add('show');   ok = false; }
+  else                  document.getElementById('err-cat').classList.remove('show');
   if (!price) { document.getElementById('err-price').classList.add('show'); ok = false; }
   else          document.getElementById('err-price').classList.remove('show');
   if (stock === '') { document.getElementById('err-stock').classList.add('show'); ok = false; }
@@ -599,6 +621,7 @@ async function saveProduct() {
       name,
       description:  document.getElementById('f-desc').value.trim(),
       category:     selectedCat,
+      category_id:  selectedCatId,
       source_type:  selectedSource,
       origin:       document.getElementById('f-origin').value.trim(),
       weight_g:     Number(document.getElementById('f-weight').value) || null,
@@ -664,7 +687,16 @@ async function editProduct(id) {
   document.getElementById('f-subscribe').checked   = p.is_subscribe;
   document.getElementById('f-haccp').checked       = p.haccp;
 
-  selectCat(p.category);
+  if (p.category_id) {
+    selectCat(p.category_id, p.category || '');
+  } else if (p.category) {
+    // 마이그레이션 전 구 상품 fallback: name으로 매칭
+    const btn = document.querySelector(`#cat-grid-admin .cat-btn-admin`);
+    if (btn) {
+      const all = document.querySelectorAll('.cat-btn-admin');
+      all.forEach(b => { if (b.textContent.trim() === p.category) b.click(); });
+    }
+  }
   selectSource(p.source_type || 'direct');
   if (p.emoji) selectEmoji(p.emoji);
   if (p.thumbnail_url) {
@@ -710,6 +742,7 @@ async function deleteProduct(id, name) {
 function resetForm() {
   editingId = null;
   imgBase64 = null;
+  selectedCatId  = null;
   selectedCat    = '';
   selectedSource = 'direct';
   selectedEmoji  = '🥩';
