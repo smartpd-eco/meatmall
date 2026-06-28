@@ -549,29 +549,46 @@ async function saveProduct() {
 
   const btn = document.getElementById('save-btn');
   btn.disabled = true;
-  document.getElementById('save-btn-text').textContent = '저장 중...';
-
-  const payload = {
-    name,
-    description:  document.getElementById('f-desc').value.trim(),
-    category:     selectedCat,
-    source_type:  selectedSource,
-    origin:       document.getElementById('f-origin').value.trim(),
-    weight_g:     Number(document.getElementById('f-weight').value) || null,
-    price,
-    origin_price: Number(document.getElementById('f-origin-price').value) || null,
-    stock:        Number(stock),
-    min_stock:    Number(document.getElementById('f-min-stock').value) || 10,
-    expiry_days:  Number(document.getElementById('f-expiry').value) || null,
-    is_active:    document.getElementById('f-active').checked,
-    is_subscribe: document.getElementById('f-subscribe').checked,
-    haccp:        document.getElementById('f-haccp').checked,
-    emoji:        selectedEmoji,
-    thumbnail_url: imgBase64 || null,
-    // 판매 단위는 description에 포함 or 별도 필드
-  };
 
   try {
+    // ── 이미지 업로드 (새 파일인 경우만 Storage 업로드) ────
+    let thumbnailUrl = null;
+    if (imgBase64 && imgBase64.startsWith('data:')) {
+      document.getElementById('save-btn-text').textContent = '📤 이미지 업로드 중...';
+      const mime = imgBase64.split(';')[0].split(':')[1] || 'image/jpeg';
+      const upR = await fetch(`${API}/upload/image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ base64: imgBase64, contentType: mime })
+      });
+      const upD = await upR.json();
+      if (!upR.ok) throw new Error(upD.error || '이미지 업로드 실패');
+      thumbnailUrl = upD.url;
+    } else if (imgBase64) {
+      thumbnailUrl = imgBase64; // 편집 시 기존 URL 유지
+    }
+
+    document.getElementById('save-btn-text').textContent = '저장 중...';
+
+    const payload = {
+      name,
+      description:  document.getElementById('f-desc').value.trim(),
+      category:     selectedCat,
+      source_type:  selectedSource,
+      origin:       document.getElementById('f-origin').value.trim(),
+      weight_g:     Number(document.getElementById('f-weight').value) || null,
+      price,
+      origin_price: Number(document.getElementById('f-origin-price').value) || null,
+      stock:        Number(stock),
+      min_stock:    Number(document.getElementById('f-min-stock').value) || 10,
+      expiry_days:  Number(document.getElementById('f-expiry').value) || null,
+      is_active:    document.getElementById('f-active').checked,
+      is_subscribe: document.getElementById('f-subscribe').checked,
+      haccp:        document.getElementById('f-haccp').checked,
+      emoji:        selectedEmoji,
+      thumbnail_url: thumbnailUrl,
+    };
+
     const isEdit = !!editingId;
     const url    = isEdit ? `${API}/products/${editingId}` : `${API}/products`;
     const method = isEdit ? 'PATCH' : 'POST';

@@ -131,6 +131,7 @@ app.use('/api/payment', require('./api/payment/index'));
 app.use('/api/admin/categories', require('./api/admin/categories'));
 app.use('/api/admin', require('./api/admin/index'));
 app.use('/api/notify', require('./api/notify/index'));
+app.use('/api/upload', require('./api/upload/index'));
 
 // ====================================================
 // 헬스체크
