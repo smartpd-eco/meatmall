@@ -84,7 +84,7 @@ router.post('/login', async (req, res) => {
       .eq('email', email)
       .single();
 
-    if (dbErr) console.error('[login/db]', dbErr.code, dbErr.message);
+    if (dbErr) console.error('[login/db]', JSON.stringify(dbErr));
     if (!user || !user.password_hash)
       return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다' });
 
