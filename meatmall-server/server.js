@@ -144,7 +144,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     ok: true,
     service: '정육본가 API',
-    version: '2.3',
+    version: '3.0',
     time: new Date().toISOString(),
     endpoints: ['/auth', '/products', '/payment', '/admin', '/notify']
   });
