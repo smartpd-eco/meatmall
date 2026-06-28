@@ -131,11 +131,11 @@ body{background:var(--onyx)}
 
 /* 하단 네비 */
 .dark-nav{
-  position:sticky;bottom:0;
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
   width:100%;max-width:430px;height:62px;
   background:#0F0F0F;
   border-top:2px solid #C9A84C;display:flex;z-index:200;
-  box-sizing:border-box;margin-top:auto;
+  box-sizing:border-box;
   box-shadow:0 -4px 16px rgba(201,168,76,.12);
 }
 .dnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
