@@ -271,6 +271,9 @@ function renderDashboard(){
     <div class="admin-tab" data-tab="categories" onclick="switchTab('categories',this)">🏷️ 카테고리</div>
     <div class="admin-tab" data-tab="revenue" onclick="switchTab('revenue',this)">💰 매출정산</div>
     <div class="admin-tab" data-tab="cs" onclick="switchTab('cs',this)">💬 CS관리</div>
+    <div class="admin-tab" data-tab="vendors" onclick="switchTab('vendors',this)">🏪 거래처관리</div>
+    <div class="admin-tab" data-tab="assignment" onclick="switchTab('assignment',this)">🤖 자동배정</div>
+    <div class="admin-tab" data-tab="assignstats" onclick="switchTab('assignstats',this)">📋 배정현황</div>
     <div class="admin-tab" onclick="go('payment-settings.html')">💳 결제설정</div>
     <div class="admin-tab" onclick="window.open('../index.html','_blank')">🛍️ 쇼핑몰</div>
   </div>
@@ -288,12 +291,15 @@ async function switchTab(name, el){
   content.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF">🔄 불러오는 중...</div>';
 
   const renders = {
-    dashboard:  renderTabDashboard,
-    orders:     renderTabOrders,
-    inventory:  renderTabInventory,
-    categories: renderTabCategories,
-    revenue:    renderTabRevenue,
-    cs:         renderTabCS,
+    dashboard:   renderTabDashboard,
+    orders:      renderTabOrders,
+    inventory:   renderTabInventory,
+    categories:  renderTabCategories,
+    revenue:     renderTabRevenue,
+    cs:          renderTabCS,
+    vendors:     renderTabVendors,
+    assignment:  renderTabAssignment,
+    assignstats: renderTabAssignStats,
   };
   if(renders[name]) await renders[name]();
 }
@@ -870,6 +876,265 @@ async function confirmVbank(orderId){
     closeSheet();
     switchTab('orders', tabEl('orders'));
   } catch(e){ toast('❌ '+e.message); }
+}
+
+// ── 거래처관리 탭 ─────────────────────────────────────────
+let _vendors = [];
+
+async function renderTabVendors() {
+  _vendors = [];
+  try {
+    const r = await fetch(API+'/admin/vendors', { headers: { Authorization: 'Bearer '+adminToken } });
+    if (r.ok) { const d = await r.json(); _vendors = d.vendors || []; }
+  } catch(e) {}
+
+  const activeCount = _vendors.filter(v => v.is_active).length;
+  document.getElementById('tab-content').innerHTML = `
+  <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:.82rem;color:rgba(201,168,76,.55)">총 ${_vendors.length}개 (활성 ${activeCount}개)</span>
+    <button onclick="openVendorForm(0)" style="height:34px;padding:0 14px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.8rem;font-weight:700;cursor:pointer">+ 거래처 등록</button>
+  </div>
+  <div class="admin-section" style="margin-top:4px">
+    <div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)">
+      <div style="flex:1">상호 / 위치</div>
+      <div style="width:60px;text-align:center">평점</div>
+      <div style="width:50px;text-align:center">오늘</div>
+      <div style="width:70px;text-align:center">관리</div>
+    </div>
+    ${_vendors.length === 0
+      ? '<div style="padding:40px;text-align:center;color:#9CA3AF">거래처가 없습니다</div>'
+      : _vendors.map(v => `
+    <div style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.88rem;font-weight:600;color:${v.is_active ? '#fff' : '#9CA3AF'}">${v.vendor_name}${!v.is_active ? ' <span style="font-size:.68rem;color:#EF4444">[비활성]</span>' : ''}</div>
+        <div style="font-size:.72rem;color:rgba(201,168,76,.55);margin-top:2px">${[v.dong,v.district].filter(Boolean).join(' · ') || '-'} · ${v.business_hours || ''}</div>
+      </div>
+      <div style="width:60px;text-align:center;font-size:.84rem;font-weight:700;color:#C9A84C">★ ${v.score||'0.0'}</div>
+      <div style="width:50px;text-align:center;font-size:.82rem;color:#D1D5DB">${v.today_orders||0}건</div>
+      <div style="width:70px;display:flex;gap:4px;justify-content:center">
+        <button onclick="openVendorForm(${v.id})" style="width:28px;height:26px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:4px;color:#C9A84C;font-size:.75rem;cursor:pointer">✏️</button>
+        <button onclick="toggleVendor(${v.id},'${(v.vendor_name||'').replace(/'/g,"\\'")}',${v.is_active})" style="width:32px;height:26px;background:rgba(${v.is_active?'239,68,68':'34,197,94'},.1);border:1px solid rgba(${v.is_active?'239,68,68':'34,197,94'},.3);border-radius:4px;color:${v.is_active?'#EF4444':'#10B981'};font-size:.7rem;font-weight:700;cursor:pointer">${v.is_active?'OFF':'ON'}</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function openVendorForm(id) {
+  const v = id ? _vendors.find(x => x.id === id) : null;
+  openSheet(v ? '거래처 수정' : '거래처 등록', `
+  <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+    <div class="form-group">
+      <div class="form-label">상호명 *</div>
+      <input class="form-input" id="vf-name" value="${v?.vendor_name||''}" placeholder="예: 안산정육 고잔점">
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="form-group" style="flex:1">
+        <div class="form-label">대표자명</div>
+        <input class="form-input" id="vf-owner" value="${v?.owner_name||''}" placeholder="홍길동">
+      </div>
+      <div class="form-group" style="flex:1">
+        <div class="form-label">연락처</div>
+        <input class="form-input" id="vf-phone" value="${v?.phone||''}" placeholder="031-000-0000">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">주소</div>
+      <input class="form-input" id="vf-address" value="${v?.address||''}" placeholder="경기도 안산시 단원구 고잔로 123">
+    </div>
+    <div style="display:flex;gap:6px">
+      <div class="form-group" style="flex:1">
+        <div class="form-label">시</div>
+        <input class="form-input" id="vf-city" value="${v?.city||''}" placeholder="안산시">
+      </div>
+      <div class="form-group" style="flex:1">
+        <div class="form-label">구</div>
+        <input class="form-input" id="vf-district" value="${v?.district||''}" placeholder="단원구">
+      </div>
+      <div class="form-group" style="flex:1">
+        <div class="form-label">동</div>
+        <input class="form-input" id="vf-dong" value="${v?.dong||''}" placeholder="고잔동">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">영업시간</div>
+      <input class="form-input" id="vf-hours" value="${v?.business_hours||'09:00-18:00'}" placeholder="09:00-18:00">
+    </div>
+    <button class="btn btn-primary btn-full" style="background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;margin-top:4px" onclick="saveVendor(${id||0})">
+      ${v ? '수정 저장' : '거래처 등록'}
+    </button>
+  </div>`);
+}
+
+async function saveVendor(id) {
+  const body = {
+    vendor_name:    document.getElementById('vf-name')?.value?.trim(),
+    owner_name:     document.getElementById('vf-owner')?.value?.trim(),
+    phone:          document.getElementById('vf-phone')?.value?.trim(),
+    address:        document.getElementById('vf-address')?.value?.trim(),
+    city:           document.getElementById('vf-city')?.value?.trim(),
+    district:       document.getElementById('vf-district')?.value?.trim(),
+    dong:           document.getElementById('vf-dong')?.value?.trim(),
+    business_hours: document.getElementById('vf-hours')?.value?.trim(),
+  };
+  if (!body.vendor_name) { toast('상호명을 입력해주세요'); return; }
+  try {
+    const url = id ? API+'/admin/vendors/'+id : API+'/admin/vendors';
+    const r = await fetch(url, {
+      method: id ? 'PUT' : 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+adminToken },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || '저장 실패');
+    toast('✅ 거래처가 ' + (id ? '수정' : '등록') + '됐습니다');
+    closeSheet();
+    await renderTabVendors();
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+async function toggleVendor(id, name, isActive) {
+  if (!confirm('"'+name+'"을(를) '+(isActive?'비활성화':'활성화')+'하시겠습니까?')) return;
+  try {
+    const r = await fetch(API+'/admin/vendors/'+id, {
+      method: isActive ? 'DELETE' : 'PUT', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+adminToken },
+      body: isActive ? undefined : JSON.stringify({ is_active: true })
+    });
+    if (!r.ok) throw new Error();
+    toast('✅ 완료됐습니다');
+    await renderTabVendors();
+  } catch(e) { toast('❌ 처리 실패'); }
+}
+
+// ── 자동배정 탭 ───────────────────────────────────────────
+let _pendingOrders = [];
+let _assignments   = [];
+
+async function renderTabAssignment() {
+  _pendingOrders = [];
+  _assignments   = [];
+  try {
+    const [or, ar] = await Promise.all([
+      fetch(API+'/admin/orders?limit=50', { headers: { Authorization: 'Bearer '+adminToken } }),
+      fetch(API+'/admin/assignments?limit=30', { headers: { Authorization: 'Bearer '+adminToken } }),
+    ]);
+    if (or.ok) { const d = await or.json(); _pendingOrders = (d.orders||[]).filter(o => o.status==='pending' && o.payment_status==='paid'); }
+    if (ar.ok) { const d = await ar.json(); _assignments = d.assignments||[]; }
+  } catch(e) {}
+
+  const statusColor = { pending:'#F59E0B', accepted:'#10B981', rejected:'#EF4444', completed:'#6EE7B7', cancelled:'#9CA3AF' };
+  const statusTxt   = { pending:'대기', accepted:'수락', rejected:'거절', completed:'완료', cancelled:'취소' };
+
+  document.getElementById('tab-content').innerHTML = `
+  <div style="padding:14px">
+    <div class="admin-section" style="margin-bottom:14px">
+      <div class="section-head">
+        <div class="section-title">📋 배정 대기 <span style="color:#EF4444">${_pendingOrders.length}건</span></div>
+        <button id="auto-assign-btn" onclick="runAutoAssign()" style="height:36px;padding:0 16px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.8rem;font-weight:700;cursor:pointer">🤖 자동배정 실행</button>
+      </div>
+      ${_pendingOrders.length === 0
+        ? '<div style="padding:28px;text-align:center;color:#9CA3AF">배정 대기 주문이 없습니다</div>'
+        : '<div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)"><div style="width:96px">주문번호</div><div style="flex:1">배송지</div><div style="width:80px;text-align:right">금액</div><div style="width:60px;text-align:right">접수</div></div>'
+          + _pendingOrders.map(o => `
+          <div style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.8rem">
+            <div style="width:96px;font-weight:700;color:#C9A84C;font-size:.74rem">${o.order_number}</div>
+            <div style="flex:1;color:#D1D5DB;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${o.address||o.recipient||'-'}</div>
+            <div style="width:80px;text-align:right;font-weight:700;color:#fff">${fmt(o.final_amount)}원</div>
+            <div style="width:60px;text-align:right;font-size:.7rem;color:rgba(201,168,76,.55)">${new Date(o.created_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</div>
+          </div>`).join('')}
+    </div>
+
+    <div class="admin-section">
+      <div class="section-head">
+        <div class="section-title">📊 배정 결과</div>
+        <button onclick="renderTabAssignment()" class="section-action">새로고침</button>
+      </div>
+      ${_assignments.length === 0
+        ? '<div style="padding:28px;text-align:center;color:#9CA3AF">배정 내역이 없습니다</div>'
+        : '<div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)"><div style="width:96px">주문번호</div><div style="flex:1">배정거래처</div><div style="width:46px;text-align:center">점수</div><div style="width:60px;text-align:center">상태</div></div>'
+          + _assignments.map(a => `
+          <div style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.8rem">
+            <div style="width:96px;font-weight:700;color:#C9A84C;font-size:.74rem">${a.orders?.order_number||'-'}</div>
+            <div style="flex:1;color:#D1D5DB">${a.vendors?.vendor_name||'-'}</div>
+            <div style="width:46px;text-align:center;font-weight:700;color:#fff">${a.score||'-'}</div>
+            <div style="width:60px;text-align:center;font-size:.76rem;font-weight:700;color:${statusColor[a.assignment_status]||'#9CA3AF'}">${statusTxt[a.assignment_status]||a.assignment_status}</div>
+          </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+async function runAutoAssign() {
+  const btn = document.getElementById('auto-assign-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '🔄 배정 중...'; }
+  try {
+    const r = await fetch(API+'/admin/assignments/auto', {
+      method: 'POST', credentials: 'include',
+      headers: { Authorization: 'Bearer '+adminToken }
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error||'배정 실패');
+    const msg = d.message || (d.assigned+'건 배정 완료'+(d.failed>0?', '+d.failed+'건 실패':''));
+    toast('✅ '+msg);
+    await renderTabAssignment();
+  } catch(e) {
+    toast('❌ '+e.message);
+    if (btn) { btn.disabled=false; btn.textContent='🤖 자동배정 실행'; }
+  }
+}
+
+// ── 배정현황 탭 ───────────────────────────────────────────
+async function renderTabAssignStats() {
+  let stats = {}, vendorStats = {};
+  try {
+    const r = await fetch(API+'/admin/assignments/stats', { headers: { Authorization: 'Bearer '+adminToken } });
+    if (r.ok) { const d = await r.json(); stats = d.stats||{}; vendorStats = d.vendor_stats||{}; }
+  } catch(e) {}
+
+  const vs = Object.entries(vendorStats);
+
+  document.getElementById('tab-content').innerHTML = `
+  <div style="padding:14px">
+    <div class="kpi-grid" style="margin-bottom:14px">
+      <div class="kpi-card">
+        <div class="kpi-label">총 배정</div>
+        <div class="kpi-value">${stats.total||0}건</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">자동 / 수동</div>
+        <div class="kpi-value" style="font-size:1.1rem">${stats.auto||0} / ${stats.manual||0}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">처리완료</div>
+        <div class="kpi-value" style="color:#10B981">${stats.completed||0}건</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">수락 / 거절</div>
+        <div class="kpi-value" style="font-size:1.1rem">${stats.accepted||0} / <span style="color:#EF4444">${stats.rejected||0}</span></div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="section-head">
+        <div class="section-title">거래처별 처리 현황</div>
+        <span style="font-size:.76rem;color:rgba(201,168,76,.55)">오늘 기준</span>
+      </div>
+      ${vs.length === 0
+        ? '<div style="padding:30px;text-align:center;color:#9CA3AF">배정 데이터가 없습니다</div>'
+        : '<div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)"><div style="flex:1">거래처</div><div style="width:52px;text-align:center">오늘배정</div><div style="width:46px;text-align:center">완료</div><div style="width:46px;text-align:center">진행중</div><div style="width:46px;text-align:center">거절</div></div>'
+          + vs.map(([name, v]) => `
+          <div style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.82rem">
+            <div style="flex:1;font-weight:600;color:#fff">${name}</div>
+            <div style="width:52px;text-align:center;font-weight:700;color:#C9A84C">${v.total}</div>
+            <div style="width:46px;text-align:center;color:#10B981">${v.completed}</div>
+            <div style="width:46px;text-align:center;color:#F59E0B">${v.in_progress}</div>
+            <div style="width:46px;text-align:center;color:#EF4444">${v.rejected}</div>
+          </div>`).join('')}
+    </div>
+
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="renderTabAssignStats()" class="btn btn-outline" style="font-size:.8rem;padding:8px 20px">🔄 새로고침</button>
+    </div>
+  </div>`;
 }
 
 function adminLogout(){
