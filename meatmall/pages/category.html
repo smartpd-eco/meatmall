@@ -272,14 +272,17 @@ function renderProducts(products){
   }
 }
 
+function thumbUrl(p){ return p.thumbnail_url&&!p.thumbnail_url.startsWith('data:')?p.thumbnail_url:null; }
+
 function gridCard(p){
   const disc=p.origin_price?Math.round((1-p.price/p.origin_price)*100):0;
   const sold=p.stock<=0;
   const catKo=CAT_KO[p.category]||p.category||'';
+  const thumb=thumbUrl(p);
   return `
   <div class="pcard" onclick="${sold?'soldAlert()':``go('../pages/product.html?id=${p.id}')``}">
     <div class="pcard-thumb">
-      ${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" loading="lazy">`:`<div style="position:absolute;inset:0;background:#2a2a2a"></div>`}
+      ${thumb?`<img src="${thumb}" alt="${p.name}" loading="lazy">`:`<span style="position:relative;z-index:1;font-size:2.8rem">${p.emoji||'🥩'}</span>`}
       ${disc>0?`<div class="disc-badge">${disc}%</div>`:''}
       ${p.haccp?`<div class="haccp-badge">HACCP</div>`:''}
       ${sold?`<div class="sold-dim">SOLD OUT</div>`:''}
@@ -302,10 +305,11 @@ function listCard(p){
   const disc=p.origin_price?Math.round((1-p.price/p.origin_price)*100):0;
   const sold=p.stock<=0;
   const catKo=CAT_KO[p.category]||p.category||'';
+  const thumb=thumbUrl(p);
   return `
   <div class="lcard" onclick="${sold?'soldAlert()':``go('../pages/product.html?id=${p.id}')``}" style="${sold?'opacity:.5':''}">
     <div class="lthumb">
-      ${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" loading="lazy">`:`<div style="position:absolute;inset:0;background:#2a2a2a"></div>`}
+      ${thumb?`<img src="${thumb}" alt="${p.name}" loading="lazy">`:`<span style="font-size:2rem">${p.emoji||'🥩'}</span>`}
     </div>
     <div class="linfo">
       <div class="lcat">${catKo}${sold?' · SOLD OUT':''}</div>
