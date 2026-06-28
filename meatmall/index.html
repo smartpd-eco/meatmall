@@ -89,12 +89,6 @@
 
   <div class="cat-tabs" id="cat-tabs">
     <div class="cat-tab on" onclick="selCat('',this)">전체</div>
-    <div class="cat-tab" onclick="selCat('samgyeop',this)">삼겹살</div>
-    <div class="cat-tab" onclick="selCat('ogyeop',this)">오겹살</div>
-    <div class="cat-tab" onclick="selCat('moksal',this)">목살</div>
-    <div class="cat-tab" onclick="selCat('apdaree',this)">앞다리살</div>
-    <div class="cat-tab" onclick="selCat('mibakapdaree',this)">미박앞다리</div>
-    <div class="cat-tab" onclick="selCat('deungshim',this)">등심</div>
   </div>
 
   <div class="owner-banner">
@@ -171,7 +165,19 @@ async function loadPrds(){
   try{const r=await fetch(API+'/products?limit=30');if(!r.ok)throw new Error();const d=await r.json();allPrds=d.products||[];render(allPrds);preloadProductImages(allPrds)}
   catch(e){document.getElementById('prd-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:rgba(255,255,255,.25)">상품을 불러오지 못했습니다</div>'}
 }
-loadPrds();
+async function loadCats(){
+  try{
+    const r=await fetch(API+'/admin/categories');
+    if(!r.ok)return;
+    const d=await r.json();
+    const cats=d.categories||[];
+    if(!cats.length)return;
+    document.getElementById('cat-tabs').innerHTML=
+      '<div class="cat-tab on" onclick="selCat(\'\',this)">전체</div>'+
+      cats.map(c=>`<div class="cat-tab" onclick="selCat('${c.name.replace(/'/g,"\\'")}',this)">${c.name}</div>`).join('');
+  }catch(e){}
+}
+Promise.all([loadPrds(),loadCats()]);
 </script>
 </body>
 </html>
