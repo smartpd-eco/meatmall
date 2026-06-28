@@ -10,9 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-body{background:var(--onyx)!important}.app-wrap{background:var(--onyx)!important}
-
-body{background:#F1F0EF}
+body{background:#0F0F0F!important;color:var(--text-primary)}.app-wrap{background:#0F0F0F!important}
 .admin-header{background:linear-gradient(180deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;width:100%;box-sizing:border-box;border-bottom:2px solid #C9A84C;box-shadow:0 2px 12px rgba(201,168,76,.15)}
 .admin-logo{font-size:1rem;font-weight:700;color:var(--text-primary)}
 .admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--text-primary);cursor:pointer;border:none}
@@ -28,7 +26,7 @@ body{background:#F1F0EF}
 .badge-live{background:#DCFCE7;color:#166534}
 .badge-test{background:#FEF3C7;color:#92400E}
 .key-row{margin-bottom:12px}
-.key-label{font-size:.8rem;font-weight:600;color:var(--gray-600);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
+.key-label{font-size:.8rem;font-weight:600;color:var(--text-medium);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
 .key-input{width:100%;height:44px;border:1.5px solid rgba(201,168,76,.25);background:#1C1C1C;color:var(--text-primary);border-radius:var(--radius-md);padding:0 12px;font-size:.84rem;font-family:monospace;outline:none}
 .key-input:focus{border-color:var(--primary)}
 .key-input.filled{border-color:#22C55E;background:rgba(34,197,94,.08)}
@@ -51,7 +49,8 @@ body{background:#F1F0EF}
 .step-text{flex:1;font-size:.84rem;color:rgba(255,255,255,.65);line-height:1.6}
 .step-text strong{color:var(--text-primary)}
 .copy-btn{font-size:.72rem;font-weight:600;color:var(--gold,#C9A84C);background:none;border:1px solid var(--gold,#C9A84C);padding:2px 8px;border-radius:4px;cursor:pointer}
-code{font-family:monospace;background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:.8rem}
+code{font-family:monospace;background:rgba(201,168,76,.12);color:var(--text-primary);padding:1px 5px;border-radius:3px;font-size:.8rem}
+.btn-outline{background:linear-gradient(135deg,#A8862A,#E8C97A)!important;color:#0F0F0F!important;border:none!important;font-weight:700!important}
 </style>
 <script>
 // 뒤로가기 캐시(BFCache) 방지
@@ -86,7 +85,7 @@ document.documentElement.style.visibility='hidden';
       </div>
       <div class="card-body">
         <div class="info-box" id="mode-info">서버 연결 확인 중...</div>
-        <div style="margin-top:12px;font-size:.82rem;color:var(--gray-600);line-height:1.8">
+        <div style="margin-top:12px;font-size:.82rem;color:var(--text-medium);line-height:1.8">
           <strong>테스트 모드:</strong> 실제 결제 없이 UI 테스트 가능<br>
           <strong>운영 모드:</strong> 실제 카드/간편결제 처리
         </div>
@@ -210,7 +209,7 @@ document.documentElement.style.visibility='hidden';
       </div>
       <div class="card-body">
         <table style="width:100%;border-collapse:collapse;font-size:.83rem">
-          <tr style="background:var(--gray-100)">
+          <tr style="background:#262626">
             <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--text-primary)">결제수단</th>
             <th style="padding:8px 10px;text-align:right;font-weight:700;color:var(--text-primary)">수수료율</th>
             <th style="padding:8px 10px;text-align:right;font-weight:700;color:var(--text-primary)">비고</th>
@@ -223,7 +222,7 @@ document.documentElement.style.visibility='hidden';
             ['무통장입금','0%','수수료 없음'],
             ['휴대폰결제','4.5%','통신사별 상이'],
           ].map(([m,f,n])=>`
-          <tr style="border-bottom:1px solid var(--gray-100)">
+          <tr style="border-bottom:1px solid rgba(201,168,76,.15)">
             <td style="padding:9px 10px;color:var(--text-primary)">${m}</td>
             <td style="padding:9px 10px;text-align:right;font-weight:700;color:var(--primary)">${f}</td>
             <td style="padding:9px 10px;text-align:right;color:rgba(201,168,76,.5)">${n}</td>
