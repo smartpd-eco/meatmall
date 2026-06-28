@@ -135,7 +135,7 @@ function fmt(n){return Number(n).toLocaleString('ko-KR')}
 function toast(m){const t=document.getElementById('toast-wrap');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
 Store.load();updateCartBadge();showAdminBtn();
 let allPrds=[];
-function selCat(cat,el){document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');render(cat?allPrds.filter(p=>p.category===cat):allPrds)}
+function selCat(cat,el){document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');loadPrds(cat);}
 function render(list){
   const avail=list.filter(p=>p.stock>0),sold=list.filter(p=>p.stock<=0);
   const grid=document.getElementById('prd-grid');
@@ -161,9 +161,25 @@ function render(list){
   if(sold.length){sw.innerHTML=`<div class="soldout-sec"><div class="soldout-title">✕ SOLD OUT — 현재 품절</div>${sold.map(p=>`<div class="soldout-row"><span>${p.name}</span><span class="soldout-badge">SOLD OUT</span></div>`).join('')}<div style="font-size:.75rem;color:rgba(255,255,255,.25);margin-top:10px;line-height:1.7">기준 미달 정육은 입고돼도 판매하지 않습니다</div></div>`}
   else sw.innerHTML='';
 }
-async function loadPrds(){
-  try{const r=await fetch(API+'/products?limit=30');if(!r.ok)throw new Error();const d=await r.json();allPrds=d.products||[];render(allPrds);preloadProductImages(allPrds)}
-  catch(e){document.getElementById('prd-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:rgba(255,255,255,.25)">상품을 불러오지 못했습니다</div>'}
+async function loadPrds(cat){
+  const grid=document.getElementById('prd-grid');
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:rgba(255,255,255,.25)">불러오는 중...</div>';
+  document.getElementById('soldout-wrap').innerHTML='';
+  try{
+    // 현재 DB 상품이 슬러그(samgyeop 등)로 저장되어 있어 한글→슬러그 변환 필요
+    const slugOf=Object.fromEntries(Object.entries(CAT).map(([k,v])=>[v,k]));
+    const slug=cat?(slugOf[cat]||cat):'';
+    const url=slug?`${API}/products?limit=30&category=${encodeURIComponent(slug)}`:`${API}/products?limit=30`;
+    const r=await fetch(url);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    allPrds=d.products||[];
+    render(allPrds);
+    try{preloadProductImages(allPrds);}catch(_){}
+  }catch(e){
+    console.error('[loadPrds]',e);
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:rgba(255,255,255,.25)">상품을 불러오지 못했습니다</div>';
+  }
 }
 async function loadCats(){
   try{
