@@ -4,7 +4,7 @@ const router   = express.Router();
 const supabase = require('../../lib/supabase');
 const { signAccessToken, signRefreshToken } = require('../../lib/jwt');
 
-const FRONTEND = process.env.FRONTEND_URL || 'https://smartpd-eco.github.io/meatmall';
+const FRONTEND = 'https://smartpd-eco.github.io/meatmall';
 
 async function handleSocialUser({ provider, providerId, email, name }) {
   // 1. 기존 소셜 계정 확인
