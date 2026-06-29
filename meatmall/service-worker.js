@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jeongyuk-v1';
+const CACHE_NAME = 'jeongyuk-v' + '20260630';
 const CACHE_URLS = [
   '/meatmall/',
   '/meatmall/index.html',
@@ -13,19 +13,23 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(CACHE_URLS))
   );
-  self.skipWaiting();
 });
 
-/* ── 활성화: 이전 버전 캐시 삭제 ── */
+/* ── 활성화: 이전 버전 캐시 자동 삭제 ── */
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+        keys.filter(key => key !== CACHE_NAME)
+            .map(key => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
+});
+
+/* ── skipWaiting 메시지 수신 ── */
+self.addEventListener('message', event => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
 });
 
 /* ── 요청 가로채기: Cache First 전략 ── */

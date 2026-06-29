@@ -236,9 +236,19 @@ function dismissPwaBanner(){
   if (b) b.style.display = 'none';
 }
 
-/* ── Service Worker 등록 ── */
+/* ── Service Worker 등록 + 자동 업데이트 ── */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/meatmall/service-worker.js');
+  navigator.serviceWorker.register('/meatmall/service-worker.js').then(registration => {
+    registration.addEventListener('updatefound', () => {
+      var newWorker = registration.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          newWorker.postMessage('skipWaiting');
+          window.location.reload();
+        }
+      });
+    });
+  });
 }
 </script>
 </body>
