@@ -1,1154 +1,744 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>관리자 대시보드 · 정육본가</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/main.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-body{background:#0F0F0F}.app-wrap{background:var(--onyx)!important}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0F0F0F;color:#F0F2F5;font-family:'Noto Sans KR',sans-serif;font-size:14px;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
 
-:root{--max-w:480px}
-body{background:#0F0F0F}
-.admin-header{background:linear-gradient(180deg,#1C1A12,#0F0F0F);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100;width:100%;box-sizing:border-box;border-bottom:2px solid #C9A84C;box-shadow:0 2px 12px rgba(201,168,76,.15)}
-.admin-logo{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--text-primary)}
-.admin-logo small{font-size:.68rem;font-weight:400;opacity:.7;margin-left:6px}
-.admin-hbtn{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--text-primary);cursor:pointer;border:none}
-.admin-tabs{display:flex;background:linear-gradient(180deg,#1C1A12,#111);overflow-x:auto;scrollbar-width:none;width:100%;box-sizing:border-box;border-bottom:2px solid #C9A84C}
-.admin-tabs::-webkit-scrollbar{display:none}
-.admin-tab{flex-shrink:0;padding:10px 14px;font-size:.8rem;font-weight:600;color:rgba(201,168,76,.45);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s}
-.admin-tab.active{color:#C9A84C;border-bottom-color:#C9A84C;font-weight:800}
+.adm{display:flex;flex-direction:column;min-height:100vh}
 
-/* KPI */
-.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
-.kpi-card{background:#1C1C1C;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:16px;box-shadow:0 2px 12px rgba(201,168,76,.1)}
-.kpi-label{font-size:.74rem;color:rgba(201,168,76,.6);margin-bottom:6px}
-.kpi-value{font-size:1.3rem;font-weight:800;color:var(--text-primary)}
-.kpi-delta{font-size:.74rem;font-weight:700;margin-top:4px}
-.up{color:#EF4444}.down{color:var(--blue)}
+/* HEADER */
+.adm-hdr{height:54px;background:#0F0F0F;border-bottom:2px solid #C9A84C;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200;flex-shrink:0}
+.adm-brand{font-size:1.1rem;font-weight:800;color:#C9A84C;letter-spacing:.04em}
+.adm-brand small{font-size:.65rem;color:rgba(201,168,76,.5);font-weight:400;margin-left:8px;letter-spacing:.1em}
+.adm-hright{display:flex;align-items:center;gap:14px;font-size:.82rem;color:#9CA3AF}
+.adm-logout{border:1px solid rgba(201,168,76,.4);color:#C9A84C;background:transparent;padding:5px 14px;border-radius:5px;font-size:.8rem;font-weight:600;transition:background .15s}
+.adm-logout:hover{background:rgba(201,168,76,.08)}
+.adm-shop{color:#9CA3AF;font-size:.8rem;text-decoration:none}
+.adm-shop:hover{color:#C9A84C}
 
-/* 알림 배너 */
-.alert-bar{margin:0 14px 10px;border-radius:var(--radius-md);padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:.82rem}
-.alert-urgent{background:rgba(239,68,68,.1);border-left:3px solid #EF4444}
-.alert-warn{background:rgba(201,168,76,.1);border-left:3px solid var(--gold,#C9A84C)}
-.alert-text{flex:1;color:#D1D5DB;line-height:1.4}
-.alert-text strong{font-weight:700}
-.alert-btn{font-size:.74rem;font-weight:700;color:var(--gold,#C9A84C);cursor:pointer;padding:4px 8px;border:1px solid var(--gold,#C9A84C);border-radius:var(--radius-sm);white-space:nowrap;background:none}
+/* TABS */
+.adm-tabs{display:flex;background:#111;border-bottom:2px solid #C9A84C;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+.adm-tabs::-webkit-scrollbar{display:none}
+.adm-tab{flex-shrink:0;padding:13px 22px;font-size:.85rem;font-weight:600;color:rgba(201,168,76,.4);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:color .15s,border-color .15s}
+.adm-tab:hover{color:rgba(201,168,76,.7)}
+.adm-tab.on{color:#C9A84C;border-bottom-color:#C9A84C}
+.adm-tab-ext{color:rgba(201,168,76,.3)!important}
+.adm-tab-ext:hover{color:rgba(201,168,76,.55)!important}
 
-/* 섹션 카드 */
-.admin-section{background:#1C1C1C;margin:0 14px 12px;border:1.5px solid rgba(201,168,76,.25);border-radius:var(--radius-md);overflow:hidden}
-.section-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 10px;border-bottom:1px solid rgba(201,168,76,.15)}
-.section-title{font-size:.9rem;font-weight:700;color:var(--gold,#C9A84C)}
-.section-action{font-size:.76rem;color:var(--gold,#C9A84C);font-weight:600;cursor:pointer;background:none;border:none}
+/* BODY */
+.adm-body{flex:1;padding:24px 28px;overflow-x:auto}
 
-/* 매출 차트 */
-.chart-wrap{padding:14px 16px;overflow-x:auto}
-.rev-bars{display:flex;gap:6px;align-items:flex-end;height:100px}
-.rev-bar-w{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:28px}
-.rev-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(0deg,#A8862A,#E8C97A);transition:height .4s;cursor:pointer;min-height:4px}
-.rev-bar:hover{background:var(--gold,#C9A84C)}
-.rev-label{font-size:.62rem;color:rgba(201,168,76,.55)}
-.rev-value{font-size:.65rem;font-weight:700;color:var(--text-primary)}
+/* STAT GRID */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#1A1A1A;border:1px solid #262626;border-radius:10px;padding:20px}
+.stat-lbl{font-size:.76rem;color:#9CA3AF;margin-bottom:8px}
+.stat-val{font-size:1.8rem;font-weight:800;color:#C9A84C;line-height:1}
+.stat-sub{font-size:.75rem;color:#6B7280;margin-top:5px}
 
-/* 주문 목록 */
-.order-row{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.8rem;cursor:pointer;transition:background .1s}
-.order-row:last-child{border-bottom:none}
-.order-row:active{background:rgba(201,168,76,.05)}
-.order-id{font-weight:700;color:var(--text-primary);min-width:80px;font-size:.76rem}
-.order-buyer{color:#D1D5DB;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.order-amt{font-weight:700;color:var(--text-primary);white-space:nowrap}
+/* CARD */
+.card{background:#1A1A1A;border:1px solid #262626;border-radius:10px;padding:20px;margin-bottom:20px}
+.card:last-child{margin-bottom:0}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px}
+.card-title{font-size:.95rem;font-weight:700;color:#F0F2F5}
+.card-sub{font-size:.78rem;color:#9CA3AF;margin-top:3px}
 
-/* 재고 목록 */
-.stock-row{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.12);font-size:.82rem}
-.stock-row:last-child{border-bottom:none}
-.stock-emo{font-size:1.3rem;flex-shrink:0}
-.stock-name{flex:1;font-weight:600;color:var(--text-primary);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:130px}
-.stock-bar-bg{height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;width:70px}
-.stock-bar-fill{height:100%;border-radius:3px;transition:width .3s}
-.stock-qty{font-size:.76rem;color:rgba(201,168,76,.55);min-width:36px;text-align:right}
-.stock-status{font-size:.7rem;font-weight:700;padding:2px 6px;border-radius:999px}
-.s-ok{background:rgba(34,197,94,.12);color:#86EFAC}
-.s-warn{background:#FEF3C7;color:#92400E}
-.s-low{background:var(--red-light);color:#EF4444}
-.s-out{background:#1C1C1C;color:rgba(201,168,76,.55)}
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:#141414;color:#9CA3AF;font-size:.76rem;font-weight:600;padding:10px 14px;text-align:left;border-bottom:1px solid #1E1E1E;white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid #1E1E1E;font-size:.84rem;color:#D1D5DB;vertical-align:middle}
+tbody tr:hover td{background:#1C1C1C}
+tbody tr:last-child td{border-bottom:none}
 
-/* 매출 테이블 */
-.rev-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.12);font-size:.82rem}
-.rev-row:last-child{border-bottom:none}
-.rev-pg{flex:1;font-weight:600;color:var(--text-primary)}
-.rev-fee{color:#EF4444;margin-right:8px;font-size:.76rem}
-.rev-amt{font-weight:800;color:var(--text-primary)}
-.rev-pct-bar{height:5px;border-radius:3px;margin-top:3px}
+/* BADGES */
+.bdg{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.71rem;font-weight:700;white-space:nowrap}
+.bdg-pending{background:rgba(234,179,8,.15);color:#EAB308}
+.bdg-preparing{background:rgba(59,130,246,.15);color:#3B82F6}
+.bdg-shipping{background:rgba(168,85,247,.15);color:#A855F7}
+.bdg-delivered{background:rgba(34,197,94,.15);color:#22C55E}
+.bdg-cancelled{background:rgba(239,68,68,.15);color:#EF4444}
+.bdg-accepted{background:rgba(34,197,94,.15);color:#22C55E}
+.bdg-rejected{background:rgba(239,68,68,.15);color:#EF4444}
+.bdg-completed{background:rgba(16,185,129,.15);color:#10B981}
+.bdg-active{background:rgba(34,197,94,.15);color:#22C55E}
+.bdg-inactive{background:rgba(100,116,139,.15);color:#94A3B8}
 
-/* CS 티켓 */
-.ticket-row{padding:12px 16px;border-bottom:1px solid rgba(201,168,76,.12);cursor:pointer}
-.ticket-row:last-child{border-bottom:none}
-.ticket-row:active{background:#1C1C1C}
-.ticket-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.ticket-title{font-size:.88rem;font-weight:600;color:var(--text-primary);flex:1}
-.ticket-meta{font-size:.74rem;color:rgba(201,168,76,.55);display:flex;gap:8px}
+/* BUTTONS */
+.btn{padding:7px 16px;border-radius:6px;border:none;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F}
+.btn-outline{background:transparent;border:1px solid #C9A84C;color:#C9A84C}
+.btn-danger{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.3)}
+.btn-success{background:rgba(34,197,94,.12);color:#22C55E;border:1px solid rgba(34,197,94,.3)}
+.btn-sm{padding:4px 10px;font-size:.76rem}
 
-/* 빠른 액션 */
-.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
-.qa-btn{background:#1C1C1C;border:1.5px solid rgba(201,168,76,.35);border-radius:var(--radius-md);padding:14px 8px;text-align:center;cursor:pointer;transition:all .15s}
-.qa-btn:active{transform:scale(.95)}
-.qa-ico{font-size:1.5rem;margin-bottom:6px}
-.qa-lbl{font-size:.68rem;font-weight:700;color:rgba(201,168,76,.8)}
+/* FILTER BAR */
+.fbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 
-/* 로그인 */
-.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,#0F0F0F,#1C1A12)}
-.login-box{background:#1C1C1C;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-lg);padding:32px 24px;width:100%;max-width:360px}
+/* FORMS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+.form-row.c1{grid-template-columns:1fr}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr}
+.fgrp{display:flex;flex-direction:column;gap:5px}
+.flbl{font-size:.79rem;color:#9CA3AF}
+.finput{background:#141414;border:1px solid #2A2A2A;color:#F0F2F5;padding:9px 12px;border-radius:6px;font-size:.88rem;outline:none;width:100%}
+.finput:focus{border-color:#C9A84C}
+.fselect{background:#141414;border:1px solid #2A2A2A;color:#F0F2F5;padding:9px 12px;border-radius:6px;font-size:.88rem;outline:none;width:100%;cursor:pointer}
+.fselect:focus{border-color:#C9A84C}
+textarea.finput{resize:vertical;min-height:80px;padding:10px 12px}
 
-/* 주문 상세 바텀시트 */
-.order-detail-content{padding:16px;font-size:.88rem;line-height:1.8;color:var(--text-primary)}
-.detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(201,168,76,.12)}
-.detail-row:last-child{border-bottom:none}
-.detail-key{color:var(--text-medium)}
-.detail-val{font-weight:600;color:var(--text-primary)}
-/* 시트 다크테마 오버라이드 */
-#detail-sheet{background:#1C1C1C}
-#detail-sheet .sheet-head{border-bottom:1px solid rgba(201,168,76,.2)}
-#detail-sheet .sheet-title{color:#fff}
-#detail-sheet .sheet-close{color:#9CA3AF}
+/* INLINE filter inputs */
+.fin-sm{background:#141414;border:1px solid #2A2A2A;color:#F0F2F5;padding:7px 11px;border-radius:6px;font-size:.82rem;outline:none}
+.fin-sm:focus{border-color:#C9A84C}
 
-/* 로딩 스켈레톤 */
-.skel{background:linear-gradient(90deg,var(--gray-100) 25%,#ece9e6 50%,var(--gray-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
-@keyframes shimmer{to{background-position:-200% 0}}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:900;display:none}
+.overlay.show{display:block}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1A1A1A;border:1px solid #333;border-radius:12px;padding:28px 28px 22px;width:520px;max-width:94vw;max-height:88vh;overflow-y:auto;z-index:901;display:none}
+.modal.show{display:block}
+.modal-title{font-size:1rem;font-weight:700;color:#F0F2F5;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #262626}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid #262626}
+
+/* CHART BAR */
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:140px;padding:8px 0}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.bar-lbl{font-size:.65rem;color:#6B7280;margin-top:2px}
+.bar-val{font-size:.66rem;color:#9CA3AF}
+.bar-fill{width:100%;background:linear-gradient(0deg,#A8862A,#E8C97A);border-radius:3px 3px 0 0;transition:height .4s}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px;color:#6B7280;font-size:.88rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);background:#1C1C1C;border:1px solid #C9A84C;color:#F0F2F5;padding:10px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
-<script>
-// 뒤로가기 캐시(BFCache) 방지 - 뒤로가기 시 항상 새로고침
-window.addEventListener('pageshow', function(e){
-  if(e.persisted){ window.location.reload(); }
-});
-</script>
+<script>window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()})</script>
 </head>
 <body>
-<div id="app" style="display:flex;flex-direction:column;min-height:100vh;background:#0F0F0F">
-  <div style="text-align:center;padding:60px 24px;color:#9CA3AF">🔄 로딩 중...</div>
+<div class="adm">
+
+  <!-- HEADER -->
+  <header class="adm-hdr">
+    <div class="adm-brand">정육본가 <small>ADMIN DASHBOARD</small></div>
+    <div class="adm-hright">
+      <span id="adm-user">로딩 중...</span>
+      <a class="adm-shop" href="../index.html" target="_blank">쇼핑몰 ↗</a>
+      <button class="adm-logout" onclick="logout()">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="adm-tabs" id="adm-tabs">
+    <div class="adm-tab on" data-tab="orders"     onclick="switchTab('orders',this)">📦 주문관리</div>
+    <div class="adm-tab"    data-tab="revenue"    onclick="switchTab('revenue',this)">💰 매출통계</div>
+    <div class="adm-tab"    data-tab="cs"         onclick="switchTab('cs',this)">💬 CS관리</div>
+    <div class="adm-tab"    data-tab="vendors"    onclick="switchTab('vendors',this)">🏪 거래처관리</div>
+    <div class="adm-tab"    data-tab="autoassign" onclick="switchTab('autoassign',this)">🤖 자동배정</div>
+    <div class="adm-tab"    data-tab="assignlist" onclick="switchTab('assignlist',this)">📋 배정현황</div>
+    <div class="adm-tab adm-tab-ext" onclick="go('products.html')">📦 상품관리 ↗</div>
+    <div class="adm-tab adm-tab-ext" onclick="go('payment-settings.html')">💳 결제설정 ↗</div>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="adm-body" id="adm-body">
+    <div class="empty">🔄 로딩 중...</div>
+  </main>
 </div>
-<div class="overlay" id="overlay" onclick="closeSheet()"></div>
-<div class="sheet" id="detail-sheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-head">
-    <div class="sheet-title" id="sheet-title">상세 정보</div>
-    <span class="sheet-close" onclick="closeSheet()">✕</span>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <div class="modal-title" id="modal-title"></div>
+  <div id="modal-body"></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" id="modal-cancel" onclick="closeModal()">닫기</button>
+    <button class="btn btn-gold"    id="modal-ok">확인</button>
   </div>
-  <div id="sheet-body" style="max-height:60vh;overflow-y:auto"></div>
 </div>
-<div id="toast-global" class="toast"></div>
-<script src="../js/app.js"></script>
+
+<div class="toast" id="toast"></div>
+
 <script>
 const API = 'https://meatmall-server.vercel.app/api';
-let adminToken  = null;
-let activeTab   = 'dashboard';
-let allOrders   = [];   // 주문 목록 캐시 (showOrderDetail 재사용)
-let allTickets  = [];   // CS 목록 캐시 (showCSDetail 재사용)
+let TOKEN = '';
+let _modalOkFn = null;
 
-function tabEl(name){ return document.querySelector(`.admin-tab[data-tab="${name}"]`); }
+/* ─── UTILS ─── */
+function go(u){ location.href = u; }
+function fmt(n){ return Number(n||0).toLocaleString('ko-KR'); }
+function fmtDate(d){ return d ? new Date(d).toLocaleDateString('ko-KR') : '–'; }
+function fmtDT(d){ return d ? new Date(d).toLocaleString('ko-KR') : '–'; }
 
-function go(url){ window.location.href=url; }
-function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
 function toast(msg){
-  const el=document.getElementById('toast-global');
-  el.textContent=msg;el.classList.add('show');
-  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400);
-}
-function openSheet(title, html){
-  document.getElementById('sheet-title').textContent=title;
-  document.getElementById('sheet-body').innerHTML=html;
-  document.getElementById('overlay').classList.add('open');
-  document.getElementById('detail-sheet').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function closeSheet(){
-  document.getElementById('overlay').classList.remove('open');
-  document.getElementById('detail-sheet').classList.remove('open');
-  document.body.style.overflow='';
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2700);
 }
 
-// ── 인증 (DB is_admin 재검증) ───────────────────────────
+function hdrs(){ return { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }; }
+
+async function api(path, opts = {}){
+  const r = await fetch(API + path, { headers: hdrs(), ...opts });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || d.message || 'API 오류 ' + r.status);
+  return d;
+}
+
+function openModal(title, bodyHtml, okLabel, okFn){
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  const okBtn = document.getElementById('modal-ok');
+  okBtn.textContent = okLabel || '확인';
+  okBtn.style.display = okFn ? '' : 'none';
+  document.getElementById('modal-cancel').textContent = okFn ? '취소' : '닫기';
+  _modalOkFn = okFn || null;
+  okBtn.onclick = () => { if (_modalOkFn) _modalOkFn(); };
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('modal').classList.remove('show');
+}
+
+/* ─── AUTH ─── */
 async function init(){
-  adminToken = localStorage.getItem('mm_access_token');
-  if (!adminToken) { renderLogin(); return; }
+  TOKEN = localStorage.getItem('mm_access_token') || '';
+  if (!TOKEN){ go('../login.html'); return; }
   try {
-    const r = await fetch(API+'/auth/me', {
-      headers: { Authorization: 'Bearer '+adminToken }
-    });
-    const d = await r.json();
-    if (!r.ok || !d.user?.is_admin) {
-      adminToken = null;
-      localStorage.removeItem('mm_access_token');
-      localStorage.removeItem('mm_user_cache');
-      sessionStorage.removeItem('mm_admin');
-      renderLogin();
-      return;
-    }
+    const d = await api('/auth/me');
+    if (!d.user?.is_admin){ go('../login.html'); return; }
     localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
-    sessionStorage.setItem('mm_admin', 'true');
-    renderDashboard();
-  } catch(e) {
-    renderLogin();
-  }
+    document.getElementById('adm-user').textContent = d.user.name || d.user.email || '관리자';
+  } catch(e){ go('../login.html'); return; }
+  switchTab('orders');
 }
 
-// ── 로그인 ───────────────────────────────────────────────
-function renderLogin(){
-  document.getElementById('app').innerHTML=`
-  <div class="login-wrap" style="background:linear-gradient(160deg,#0F0F0F,#1C1A12)">
-    <div style="text-align:center;margin-bottom:28px">
-      <div style="font-size:3rem;margin-bottom:10px">🥩</div>
-      <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:#fff">정육본가</div>
-      <div style="font-size:.85rem;color:#D1D5DB;margin-top:4px">관리자 시스템</div>
-    </div>
-    <div class="login-box">
-      <div style="font-size:1rem;font-weight:800;color:#fff;margin-bottom:20px">🔐 관리자 로그인</div>
-      <div class="form-group" style="margin-bottom:12px">
-        <div class="form-label">이메일</div>
-        <input class="form-input" id="aid" type="email" placeholder="admin@meatmall.co.kr">
-      </div>
-      <div class="form-group" style="margin-bottom:20px">
-        <div class="form-label">비밀번호</div>
-        <input class="form-input" id="apw" type="password" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')adminLogin()">
-      </div>
-      <button class="btn btn-primary btn-full btn-lg" id="login-btn" onclick="adminLogin()">로그인</button>
-      <div style="margin-top:14px;text-align:center;font-size:.76rem;color:#9CA3AF">
-        정육본가 관리자 전용 시스템
-      </div>
-    </div>
-  </div>`;
+function logout(){
+  if (!confirm('로그아웃 하시겠습니까?')) return;
+  ['mm_access_token','mm_user_cache'].forEach(k => localStorage.removeItem(k));
+  sessionStorage.removeItem('mm_admin');
+  go('../login.html');
 }
 
-async function adminLogin(){
-  const email = document.getElementById('aid').value.trim();
-  const pw    = document.getElementById('apw').value;
-  if (!email||!pw){ toast('이메일과 비밀번호를 입력해주세요'); return; }
-
-  const btn = document.getElementById('login-btn');
-  btn.innerHTML='<div class="spinner"></div>'; btn.disabled=true;
-
-  try {
-    const r = await fetch(API+'/auth/login',{
-      method:'POST', credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({email, password:pw})
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error||'로그인 실패');
-    if (!d.user?.is_admin) throw new Error('관리자 권한이 없습니다');
-
-    localStorage.setItem('mm_access_token', d.accessToken);
-    localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
-    sessionStorage.setItem('mm_admin','true');
-    adminToken = d.accessToken;
-    toast('관리자로 로그인했습니다');
-    setTimeout(()=>renderDashboard(), 400);
-  } catch(e){
-    btn.innerHTML='로그인'; btn.disabled=false;
-    toast('❌ '+e.message);
-  }
+/* ─── TAB SWITCH ─── */
+function switchTab(name, el){
+  document.querySelectorAll('.adm-tab[data-tab]').forEach(t => t.classList.remove('on'));
+  const tabEl = el || document.querySelector(`.adm-tab[data-tab="${name}"]`);
+  if (tabEl) tabEl.classList.add('on');
+  document.getElementById('adm-body').innerHTML = '<div class="empty">🔄 불러오는 중...</div>';
+  ({ orders: tabOrders, revenue: tabRevenue, cs: tabCS, vendors: tabVendors, autoassign: tabAutoAssign, assignlist: tabAssignList }[name] || (() => {}))();
 }
 
-// ── 대시보드 렌더 ────────────────────────────────────────
-function renderDashboard(){
-  document.getElementById('app').innerHTML=`
-  <div class="admin-header">
-    <div class="admin-logo" style="font-family:'Noto Serif KR',serif;font-size:1rem;font-weight:700;color:#C9A84C;letter-spacing:.06em;cursor:pointer" onclick="window.open('../index.html','_blank')">정육본가<small style="font-size:.58rem;color:rgba(201,168,76,.55);letter-spacing:.14em;display:block;font-family:sans-serif;font-weight:400">관리자</small></div>
-    <div style="display:flex;gap:6px">
-      <div class="admin-hbtn" onclick="window.open('../index.html','_blank')" title="쇼핑몰 보기" style="font-size:.8rem;width:auto;padding:0 8px;border-radius:var(--radius-sm)">🛍️ 쇼핑몰</div>
-      <div class="admin-hbtn" onclick="go('products.html')" title="상품관리">📦</div>
-      <div class="admin-hbtn" onclick="adminLogout()" title="로그아웃">🚪</div>
-    </div>
-  </div>
-  <div class="admin-tabs" id="admin-tabs">
-    <div class="admin-tab" onclick="go('products.html')" style="color:#F59E0B;font-weight:800">➕ 상품등록</div>
-    <div class="admin-tab active" data-tab="dashboard" onclick="switchTab('dashboard',this)">📊 대시보드</div>
-    <div class="admin-tab" data-tab="orders" onclick="switchTab('orders',this)">📦 주문관리</div>
-    <div class="admin-tab" data-tab="inventory" onclick="switchTab('inventory',this)">🗄️ 재고관리</div>
-    <div class="admin-tab" data-tab="categories" onclick="switchTab('categories',this)">🏷️ 카테고리</div>
-    <div class="admin-tab" data-tab="revenue" onclick="switchTab('revenue',this)">💰 매출정산</div>
-    <div class="admin-tab" data-tab="cs" onclick="switchTab('cs',this)">💬 CS관리</div>
-    <div class="admin-tab" data-tab="vendors" onclick="switchTab('vendors',this)">🏪 거래처관리</div>
-    <div class="admin-tab" data-tab="assignment" onclick="switchTab('assignment',this)">🤖 자동배정</div>
-    <div class="admin-tab" data-tab="assignstats" onclick="switchTab('assignstats',this)">📋 배정현황</div>
-    <div class="admin-tab" onclick="go('payment-settings.html')">💳 결제설정</div>
-    <div class="admin-tab" onclick="window.open('../index.html','_blank')">🛍️ 쇼핑몰</div>
-  </div>
-  <div id="tab-content" style="min-height:80vh;padding-bottom:32px">
-    <div style="text-align:center;padding:40px;color:#9CA3AF">🔄 로딩 중...</div>
-  </div>`;
-  switchTab('dashboard', document.querySelector('.admin-tab[data-tab="dashboard"]'));
+/* ══════════════════════════════════════════════
+   TAB 1 — 주문관리
+   GET  /api/admin/orders
+   PUT  /api/admin/orders/:id  (상태변경)
+══════════════════════════════════════════════ */
+const S_LABEL = { pending:'결제대기', pending_deposit:'입금대기', preparing:'준비중', shipping:'배송중', delivered:'배송완료', cancelled:'취소', refund_req:'환불요청', refunded:'환불완료' };
+const S_CLASS = { pending:'bdg-pending', pending_deposit:'bdg-pending', preparing:'bdg-preparing', shipping:'bdg-shipping', delivered:'bdg-delivered', cancelled:'bdg-cancelled', refund_req:'bdg-cancelled', refunded:'bdg-cancelled' };
+let _orders = [];
+
+async function tabOrders(){
+  try { const d = await api('/admin/orders?limit=50'); _orders = d.orders || []; }
+  catch(e){ _orders = []; }
+  renderOrdersTab();
 }
 
-async function switchTab(name, el){
-  activeTab = name;
-  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
-  const content = document.getElementById('tab-content');
-  content.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF">🔄 불러오는 중...</div>';
-
-  const renders = {
-    dashboard:   renderTabDashboard,
-    orders:      renderTabOrders,
-    inventory:   renderTabInventory,
-    categories:  renderTabCategories,
-    revenue:     renderTabRevenue,
-    cs:          renderTabCS,
-    vendors:     renderTabVendors,
-    assignment:  renderTabAssignment,
-    assignstats: renderTabAssignStats,
-  };
-  if(renders[name]) await renders[name]();
-}
-
-// ── 대시보드 탭 ──────────────────────────────────────────
-async function renderTabDashboard(){
-  let kpi={}, alerts={};
-  try {
-    // 3초 타임아웃 설정
-    const controller = new AbortController();
-    const tid = setTimeout(()=>controller.abort(), 3000);
-    const r = await fetch(API+'/admin/dashboard',{
-      headers:{Authorization:'Bearer '+adminToken},
-      signal: controller.signal
-    });
-    clearTimeout(tid);
-    if(r.ok){ const d=await r.json(); kpi=d.kpi||{}; alerts=d.alerts||{}; }
-  } catch(e){ console.log('대시보드 API 없음, 기본값 사용'); }
-
-  const content = document.getElementById('tab-content');
-  content.innerHTML=`
-  ${alerts.pendingCS > 0 ? `
-  <div class="alert-bar alert-urgent" style="margin-top:14px">
-    <span style="font-size:1.2rem">🚨</span>
-    <div class="alert-text"><strong>미답변 CS ${alerts.pendingCS}건</strong> 처리가 필요합니다</div>
-    <button class="alert-btn" onclick="switchTab('cs',tabEl('cs'))">처리</button>
-  </div>` : ''}
-  ${(alerts.lowStock||[]).length > 0 ? `
-  <div class="alert-bar alert-warn">
-    <span style="font-size:1.2rem">⚠️</span>
-    <div class="alert-text"><strong>재고 부족 ${alerts.lowStock.length}개 상품</strong></div>
-    <button class="alert-btn" onclick="switchTab('inventory',tabEl('inventory'))">확인</button>
-  </div>` : ''}
-
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-label">오늘 매출</div>
-      <div class="kpi-value" style="font-size:1.1rem">${fmt(kpi.todayRevenue||0)}원</div>
-      <div class="kpi-delta" style="color:rgba(201,168,76,.55)">${kpi.todayOrders||0}건</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">이번달 매출</div>
-      <div class="kpi-value" style="font-size:1rem">${fmt(kpi.monthRevenue||0)}원</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">미처리 주문</div>
-      <div class="kpi-value" style="color:${(kpi.pendingOrders||0)>0?'var(--red)':'var(--dark)'}">${kpi.pendingOrders||0}건</div>
-      <div class="kpi-delta" style="color:rgba(201,168,76,.55)">처리 필요</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">활성 구독자</div>
-      <div class="kpi-value">${kpi.activeSubscribers||0}명</div>
-    </div>
-  </div>
-
-  <!-- 빠른 액션 -->
-  <div class="quick-grid">
-    <div class="qa-btn" onclick="window.open('../index.html','_blank')">
-      <div class="qa-ico">🛍️</div><div class="qa-lbl">쇼핑몰</div>
-    </div>
-    <div class="qa-btn" onclick="go('products.html')">
-      <div class="qa-ico">📦</div><div class="qa-lbl">상품관리</div>
-    </div>
-    <div class="qa-btn" onclick="switchTab('categories',tabEl('categories'))">
-      <div class="qa-ico">🏷️</div><div class="qa-lbl">카테고리</div>
-    </div>
-    <div class="qa-btn" onclick="switchTab('orders',tabEl('orders'))">
-      <div class="qa-ico">🧾</div><div class="qa-lbl">주문처리</div>
-    </div>
-  </div>`;
-}
-
-// ── 주문관리 탭 ──────────────────────────────────────────
-async function renderTabOrders(){
-  let orders=[], total=0;
-  try {
-    const ctrl2 = new AbortController();
-    const t2 = setTimeout(()=>ctrl2.abort(), 5000);
-    const r = await fetch(API+'/admin/orders?limit=30',{
-      headers:{Authorization:'Bearer '+adminToken}, signal:ctrl2.signal
-    });
-    clearTimeout(t2);
-    if(r.ok){ const d=await r.json(); orders=d.orders||[]; total=d.total||0; allOrders=orders; }
-  } catch(e){}
-
-  const statusLabel = {pending:'결제대기',pending_deposit:'입금대기🏦',preparing:'준비중',shipping:'배송중',delivered:'완료',cancelled:'취소',refund_req:'환불요청',refunded:'환불완료'};
-  const statusClass = {pending:'status-pending',pending_deposit:'status-pending',preparing:'status-preparing',shipping:'status-shipping',delivered:'status-done',cancelled:'status-cancel',refund_req:'status-cancel',refunded:'status-cancel'};
-
-  document.getElementById('tab-content').innerHTML=`
-  <div style="padding:12px 14px 6px;display:flex;gap:8px;align-items:center">
-    <input style="flex:1;height:36px;border:1px solid rgba(201,168,76,.25);border-radius:var(--radius-md);padding:0 12px;font-size:.82rem;outline:none" placeholder="🔍 주문번호·수령인 검색">
-    <select style="height:36px;border:1px solid rgba(201,168,76,.25);border-radius:var(--radius-md);padding:0 8px;font-size:.8rem;outline:none;background:#fff">
-      <option>전체 ${total}건</option>
-      <option>준비중</option><option>배송중</option><option>완료</option><option>취소</option>
-    </select>
-  </div>
-  <div class="admin-section" style="margin-top:4px">
-    ${orders.length===0
-      ? '<div style="padding:40px;text-align:center;color:#9CA3AF">주문이 없습니다</div>'
-      : orders.map(o=>`
-      <div class="order-row" onclick="showOrderDetail('${o.id}')">
-        <div>
-          <div class="order-id">${o.order_number}</div>
-          <div style="font-size:.72rem;color:rgba(201,168,76,.55);margin-top:1px">${o.recipient} · ${o.users?.name||''}</div>
-        </div>
-        <div class="order-buyer">${(o.order_items||[]).length>0?o.order_items[0].name+(o.order_items.length>1?` 외 ${o.order_items.length-1}건`:''):'상품없음'}</div>
-        <div style="text-align:right;flex-shrink:0">
-          <span class="status-chip ${statusClass[o.status]||'status-pending'}" style="display:block;margin-bottom:3px;font-size:.7rem">${statusLabel[o.status]||o.status}</span>
-          <span class="order-amt">${fmt(o.final_amount)}원</span>
-        </div>
-      </div>`).join('')}
-  </div>`;
-}
-
-async function showOrderDetail(id){
-  openSheet('주문 상세', '<div style="padding:40px;text-align:center;color:#9CA3AF">🔄 불러오는 중...</div>');
-  let success = false;
-  try {
-    const r = await fetch(API+'/admin/orders/'+id,{headers:{Authorization:'Bearer '+adminToken}});
-    if(!r.ok) throw new Error();
-    const d = await r.json();
-    const o = d.order;
-    if(!o) throw new Error('주문 데이터 없음');
-
-    const STATUS_MAP=[['pending','결제대기'],['pending_deposit','입금대기'],['preparing','준비중'],['shipping','배송중'],['delivered','완료'],['cancelled','취소'],['refund_req','환불요청'],['refunded','환불완료']];
-    const statusOptions = STATUS_MAP.map(([v,l])=>`<option value="${v}" ${o.status===v?'selected':''}>${l}</option>`).join('');
-
-    document.getElementById('sheet-body').innerHTML = `
-    <div class="order-detail-content">
-      <div class="detail-row"><span class="detail-key">주문번호</span><span class="detail-val">${o.order_number}</span></div>
-      <div class="detail-row"><span class="detail-key">수령인</span><span class="detail-val">${o.recipient} · ${o.phone}</span></div>
-      <div class="detail-row"><span class="detail-key">배송지</span><span class="detail-val" style="text-align:right;max-width:200px">[${o.zip_code}] ${o.address1} ${o.address2||''}</span></div>
-      <div class="detail-row"><span class="detail-key">결제금액</span><span class="detail-val">${fmt(o.final_amount)}원</span></div>
-      <div class="detail-row"><span class="detail-key">결제수단</span><span class="detail-val">${o.payment_method||'-'}</span></div>
-      <div class="detail-row"><span class="detail-key">결제일시</span><span class="detail-val">${o.paid_at?new Date(o.paid_at).toLocaleString('ko-KR'):'-'}</span></div>
-      <div style="margin:12px 0 8px;font-weight:700;font-size:.88rem;color:#fff">주문 상품</div>
-      ${(o.order_items||[]).map(i=>`
-      <div class="detail-row">
-        <span class="detail-key">${i.name} ×${i.qty}</span>
-        <span class="detail-val">${fmt(i.subtotal)}원</span>
-      </div>`).join('')}
-      <div style="margin:14px 0 8px;font-weight:700;font-size:.88rem;color:#fff">상태 변경</div>
-      <div style="display:flex;gap:8px">
-        <select id="new-status" style="flex:1;height:40px;border:1.5px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 10px;font-size:.84rem;outline:none;background:#1C1C1C;color:#fff">
-          ${statusOptions}
+function renderOrdersTab(){
+  document.getElementById('adm-body').innerHTML = `
+  <div class="card">
+    <div class="card-head">
+      <div><div class="card-title">주문 목록</div><div class="card-sub">총 ${_orders.length}건</div></div>
+      <div class="fbar" style="margin-bottom:0">
+        <input class="fin-sm" id="ord-q" placeholder="주문번호·수령인 검색" oninput="filterOrders()" style="width:220px">
+        <select class="fin-sm" id="ord-sf" onchange="filterOrders()" style="width:130px">
+          <option value="">전체 상태</option>
+          <option value="pending">결제대기</option>
+          <option value="preparing">준비중</option>
+          <option value="shipping">배송중</option>
+          <option value="delivered">완료</option>
+          <option value="cancelled">취소</option>
         </select>
       </div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="tracking-no" style="flex:1;height:36px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 10px;font-size:.82rem;outline:none;background:#1C1C1C;color:#fff" placeholder="운송장번호 (배송 시)" value="${o.tracking_number||''}">
-        <select id="carrier-sel" style="width:110px;height:36px;border:1px solid var(--gray-300);border-radius:var(--radius-md);padding:0 6px;font-size:.78rem;outline:none">
-          <option>CJ대한통운</option><option>한진</option><option>롯데</option><option>우체국</option><option>로젠택배</option>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>주문번호</th><th>수령인</th><th>상품</th><th>금액</th><th>결제수단</th><th>상태</th><th>주문일</th><th>액션</th></tr></thead>
+        <tbody id="ord-tbody">${orderRows(_orders)}</tbody>
+      </table>
+    </div>
+    <div id="ord-cnt" style="padding-top:10px;font-size:.76rem;color:#6B7280">총 ${_orders.length}건</div>
+  </div>`;
+}
+
+function orderRows(list){
+  if (!list.length) return '<tr><td colspan="8" class="empty">주문 없음</td></tr>';
+  return list.map(o => `
+  <tr>
+    <td><span style="font-family:monospace;font-size:.78rem;color:#C9A84C">${o.order_number}</span></td>
+    <td>${o.recipient||'–'}</td>
+    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem">${(o.order_items||[]).map(i=>i.name).join(', ')||'–'}</td>
+    <td style="font-weight:700">${fmt(o.final_amount)}원</td>
+    <td style="font-size:.78rem">${o.payment_method||'–'}</td>
+    <td><span class="bdg ${S_CLASS[o.status]||'bdg-pending'}">${S_LABEL[o.status]||o.status}</span></td>
+    <td style="font-size:.78rem">${fmtDate(o.created_at)}</td>
+    <td><button class="btn btn-sm btn-outline" onclick="openOrderEdit('${o.id}')">상태변경</button></td>
+  </tr>`).join('');
+}
+
+function filterOrders(){
+  const q = (document.getElementById('ord-q').value||'').toLowerCase();
+  const s = document.getElementById('ord-sf').value;
+  const f = _orders.filter(o =>
+    (!q || (o.order_number||'').toLowerCase().includes(q) || (o.recipient||'').toLowerCase().includes(q)) &&
+    (!s || o.status === s)
+  );
+  document.getElementById('ord-tbody').innerHTML = orderRows(f);
+  document.getElementById('ord-cnt').textContent = `총 ${f.length}건`;
+}
+
+function openOrderEdit(id){
+  const o = _orders.find(x => x.id === id);
+  if (!o) return;
+  const opts = Object.entries(S_LABEL).map(([v,l]) => `<option value="${v}"${o.status===v?' selected':''}>${l}</option>`).join('');
+  openModal('주문 상태 변경', `
+  <div style="font-size:.84rem;color:#9CA3AF;margin-bottom:14px">주문번호: <strong style="color:#C9A84C">${o.order_number}</strong> · ${o.recipient}</div>
+  <div class="fgrp" style="margin-bottom:12px">
+    <label class="flbl">새 상태</label>
+    <select class="fselect" id="mod-st">${opts}</select>
+  </div>
+  <div class="fgrp">
+    <label class="flbl">운송장번호 (선택)</label>
+    <input class="finput" id="mod-tk" value="${o.tracking_number||''}" placeholder="운송장번호 입력">
+  </div>`, '저장', async () => {
+    const status   = document.getElementById('mod-st').value;
+    const tracking = document.getElementById('mod-tk').value.trim();
+    try {
+      await api('/admin/orders/' + id, { method: 'PUT', body: JSON.stringify({ status, ...(tracking && { tracking_number: tracking }) }) });
+      toast('✅ 주문 상태가 변경됐습니다');
+      closeModal(); tabOrders();
+    } catch(e){ toast('❌ ' + e.message); }
+  });
+}
+
+/* ══════════════════════════════════════════════
+   TAB 2 — 매출통계
+   GET /api/admin/revenue
+══════════════════════════════════════════════ */
+async function tabRevenue(){
+  let d = { totalRevenue: 0, orderCount: 0, avgOrder: 0, daily: {}, byMethod: {} };
+  try { Object.assign(d, await api('/admin/revenue?period=30d')); } catch(e){}
+
+  const days  = Object.keys(d.daily || {}).sort().slice(-14);
+  const vals  = days.map(k => d.daily[k] || 0);
+  const maxV  = Math.max(...vals, 1);
+  const avg   = d.avgOrder || (d.orderCount ? Math.round(d.totalRevenue / d.orderCount) : 0);
+
+  document.getElementById('adm-body').innerHTML = `
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-lbl">총 매출 (30일)</div><div class="stat-val">${fmt(d.totalRevenue)}</div><div class="stat-sub">원</div></div>
+    <div class="stat-card"><div class="stat-lbl">주문 건수</div><div class="stat-val">${fmt(d.orderCount)}</div><div class="stat-sub">건</div></div>
+    <div class="stat-card"><div class="stat-lbl">평균 주문금액</div><div class="stat-val" style="font-size:1.4rem">${fmt(avg)}</div><div class="stat-sub">원</div></div>
+    <div class="stat-card"><div class="stat-lbl">순이익 추정 (PG 8% 공제)</div><div class="stat-val" style="color:#22C55E;font-size:1.4rem">${fmt(Math.round(d.totalRevenue * 0.92))}</div><div class="stat-sub">원</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">최근 14일 매출 추이</div></div>
+    <div class="bar-chart">
+      ${days.length ? days.map((day,i) => {
+        const h = Math.max(6, Math.round(vals[i] / maxV * 120));
+        return `<div class="bar-col">
+          <div class="bar-val">${vals[i] >= 10000 ? Math.round(vals[i]/10000)+'만' : vals[i]||''}</div>
+          <div class="bar-fill" style="height:${h}px"></div>
+          <div class="bar-lbl">${day.slice(5)}</div>
+        </div>`;
+      }).join('') : '<div style="color:#6B7280;padding:40px">데이터 없음</div>'}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">결제 수단별 매출</div></div>
+    <table>
+      <thead><tr><th>결제수단</th><th>건수</th><th>매출액</th><th>비중</th></tr></thead>
+      <tbody>
+        ${Object.entries(d.byMethod || {}).map(([m, v]) => `
+        <tr>
+          <td>${{CARD:'💳 카드', KAKAO:'💬 카카오', NAVER:'🟢 네이버', TOSS:'🔵 토스', VBANK:'🏦 무통장', PHONE:'📱 휴대폰'}[m] || m}</td>
+          <td>${v.count || 0}건</td>
+          <td style="font-weight:700">${fmt(v.amount || 0)}원</td>
+          <td>${d.totalRevenue ? Math.round((v.amount||0) / d.totalRevenue * 100) : 0}%</td>
+        </tr>`).join('') || '<tr><td colspan="4" class="empty" style="padding:30px">데이터 없음</td></tr>'}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   TAB 3 — CS관리
+   GET   /api/admin/cs
+   PATCH /api/admin/cs/:id  (답변)
+══════════════════════════════════════════════ */
+let _tickets = [];
+const CS_ST  = { pending:'대기중', in_progress:'처리중', answered:'답변완료', closed:'종료' };
+const CS_TYPE = { order:'주문/배송', payment:'결제/환불', product:'상품문의', subscribe:'정기배송', account:'회원정보', other:'기타' };
+
+async function tabCS(){
+  try { const d = await api('/admin/cs?limit=50'); _tickets = d.tickets || []; }
+  catch(e){ _tickets = []; }
+  renderCSTab();
+}
+
+function renderCSTab(){
+  const pending = _tickets.filter(t => t.status === 'pending').length;
+  document.getElementById('adm-body').innerHTML = `
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">CS 문의 목록</div>
+        ${pending > 0 ? `<div class="card-sub" style="color:#EF4444">미답변 ${pending}건 처리 필요</div>` : '<div class="card-sub">미답변 없음</div>'}
+      </div>
+      <div class="fbar" style="margin-bottom:0">
+        <select class="fin-sm" id="cs-sf" onchange="filterCS()" style="width:130px">
+          <option value="">전체</option>
+          <option value="pending">대기중</option>
+          <option value="in_progress">처리중</option>
+          <option value="answered">답변완료</option>
+          <option value="closed">종료</option>
         </select>
+        <button class="btn btn-outline btn-sm" onclick="tabCS()">새로고침</button>
       </div>
-      ${o.payment_method==='VBANK'&&o.payment_status!=='paid'?`
-      <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--radius-md);padding:12px;margin-top:8px;font-size:.84rem">
-        <div style="font-weight:700;color:#92400E;margin-bottom:8px">🏦 무통장 입금 확인</div>
-        <div style="color:#D1D5DB;margin-bottom:8px">
-          입금계좌: <strong>기업은행 123-456789-01-001 (주)정육본가</strong><br>
-          주문금액: <strong style="color:var(--primary)">${fmt(o.final_amount)}원</strong><br>
-          입금기한: <strong>${o.deposit_deadline?new Date(o.deposit_deadline).toLocaleDateString('ko-KR'):'3일 이내'}</strong>
-        </div>
-        <div style="display:flex;gap:8px">
-          <input id="depositor-name" class="form-input" style="height:36px;font-size:.82rem;flex:1" placeholder="입금자명" value="${o.depositor_name||''}">
-          <input id="deposit-amount" class="form-input" style="height:36px;font-size:.82rem;width:110px" placeholder="입금액" value="${o.final_amount}">
-        </div>
-        <button class="btn btn-primary btn-full" style="margin-top:8px;height:44px" onclick="confirmVbank('${o.order_number}')">✅ 입금 확인 처리</button>
-      </div>` : ''}
-      <button class="btn btn-primary btn-full" style="margin-top:12px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F" onclick="updateOrderStatus('${o.id}')">상태 변경 저장</button>
-    </div>`;
-    success = true;
-  } catch(e){ toast('상세 정보 로드 실패'); }
-  finally { if(!success) closeSheet(); }
-}
-
-async function updateOrderStatus(id){
-  const status  = document.getElementById('new-status')?.value;
-  const tracking= document.getElementById('tracking-no')?.value;
-  const carrier = document.getElementById('carrier-sel')?.value;
-  if(!status){ toast('상태 값을 선택해주세요'); return; }
-  try {
-    const r = await fetch(API+'/admin/orders/'+id,{
-      method:'PATCH', credentials:'include',
-      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
-      body: JSON.stringify({status, tracking_number:tracking||undefined, carrier:carrier||undefined})
-    });
-    if(!r.ok) throw new Error();
-    toast('✅ 주문 상태가 변경됐습니다');
-    closeSheet();
-    switchTab('orders', tabEl('orders'));
-  } catch(e){ toast('❌ 상태 변경 실패'); }
-}
-
-// ── 재고관리 탭 ──────────────────────────────────────────
-async function renderTabInventory(){
-  let inventory=[];
-  try {
-    const ctrl3 = new AbortController();
-    const t3 = setTimeout(()=>ctrl3.abort(), 5000);
-    const r = await fetch(API+'/admin/inventory',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl3.signal});
-    clearTimeout(t3);
-    if(r.ok){ const d=await r.json(); inventory=d.inventory||[]; }
-  } catch(e){}
-
-  const statusCls={ok:'s-ok',warn:'s-warn',low:'s-low',out:'s-out'};
-  const statusTxt={ok:'정상',warn:'주의',low:'부족',out:'품절'};
-  const barColor ={ok:'var(--green)',warn:'var(--amber)',low:'var(--red)',out:'var(--gray-300)'};
-
-  document.getElementById('tab-content').innerHTML=`
-  <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center">
-    <span style="font-size:.82rem;color:rgba(201,168,76,.55)">총 ${inventory.length}개 SKU</span>
-    <button class="btn btn-sm btn-outline" onclick="toast('발주서 기능 준비중')">📋 발주서 생성</button>
-  </div>
-  <div class="admin-section" style="margin-top:4px">
-    ${inventory.length===0
-      ? '<div style="padding:40px;text-align:center;color:#9CA3AF">상품이 없습니다</div>'
-      : inventory.map(p=>`
-      <div class="stock-row" onclick="showStockEdit('${p.id}','${p.name}',${p.stock},${p.min_stock})">
-        <span class="stock-emo">${p.emoji||'🥩'}</span>
-        <div style="flex:1;min-width:0">
-          <div class="stock-name">${p.name}</div>
-          <div style="font-size:.7rem;color:rgba(201,168,76,.55)">${p.category}</div>
-        </div>
-        <div>
-          <div class="stock-bar-bg"><div class="stock-bar-fill" style="width:${p.pct||0}%;background:${barColor[p.status||'ok']}"></div></div>
-          <div style="font-size:.65rem;color:#9CA3AF;margin-top:2px;text-align:right">${p.pct||0}%</div>
-        </div>
-        <div class="stock-qty">${p.stock}개</div>
-        <span class="stock-status ${statusCls[p.status||'ok']}">${statusTxt[p.status||'ok']}</span>
-      </div>`).join('')}
+    </div>
+    <table>
+      <thead><tr><th>상태</th><th>유형</th><th>제목</th><th>고객</th><th>연락처</th><th>접수일</th><th>액션</th></tr></thead>
+      <tbody id="cs-tbody">${csRows(_tickets)}</tbody>
+    </table>
   </div>`;
 }
 
-function showStockEdit(id,name,stock,minStock){
-  openSheet('재고 수정', `
-  <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
-    <div style="font-size:.88rem;font-weight:600;color:#fff">${name}</div>
-    <div class="form-group">
-      <div class="form-label">현재 재고</div>
-      <input class="form-input" id="new-stock" type="number" value="${stock}">
-    </div>
-    <div class="form-group">
-      <div class="form-label">안전재고 (최소)</div>
-      <input class="form-input" id="new-minstk" type="number" value="${minStock}">
-    </div>
-    <button class="btn btn-primary btn-full" onclick="updateStock('${id}')">재고 저장</button>
-  </div>`);
+function csRows(list){
+  if (!list.length) return '<tr><td colspan="7" class="empty">문의 없음</td></tr>';
+  return list.map(t => `
+  <tr>
+    <td><span class="bdg ${t.status==='pending'?'bdg-pending':t.status==='answered'?'bdg-delivered':'bdg-preparing'}">${CS_ST[t.status]||t.status}</span></td>
+    <td style="font-size:.78rem">${CS_TYPE[t.type] || t.type || '–'}</td>
+    <td>${t.status==='pending'?'🔴 ':''}<span style="font-weight:500">${t.title}</span></td>
+    <td>${t.users?.name || '비회원'}</td>
+    <td style="font-size:.8rem">${t.users?.phone || '–'}</td>
+    <td style="font-size:.78rem">${fmtDate(t.created_at)}</td>
+    <td><button class="btn btn-sm btn-outline" onclick="openCSDetail('${t.id}')">처리</button></td>
+  </tr>`).join('');
 }
 
-async function updateStock(id){
-  const stock    = Number(document.getElementById('new-stock').value);
-  const minStock = Number(document.getElementById('new-minstk').value);
-  try {
-    const r = await fetch(API+'/admin/inventory/'+id,{
-      method:'PATCH', credentials:'include',
-      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
-      body: JSON.stringify({stock, min_stock:minStock})
-    });
-    if(!r.ok) throw new Error();
-    toast('✅ 재고가 수정됐습니다');
-    closeSheet();
-    switchTab('inventory', tabEl('inventory'));
-  } catch(e){ toast('❌ 재고 수정 실패'); }
+function filterCS(){
+  const s = document.getElementById('cs-sf').value;
+  document.getElementById('cs-tbody').innerHTML = csRows(s ? _tickets.filter(t => t.status === s) : _tickets);
 }
 
-// ── 매출정산 탭 ──────────────────────────────────────────
-async function renderTabRevenue(){
-  let data={totalRevenue:0,totalFee:0,netRevenue:0,daily:{},byMethod:{},orderCount:0};
-  try {
-    const ctrl4 = new AbortController();
-    const t4 = setTimeout(()=>ctrl4.abort(), 5000);
-    const r = await fetch(API+'/admin/revenue?period=7d',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl4.signal});
-    clearTimeout(t4);
-    if(r.ok){ const d=await r.json(); data={...data,...d}; }
-  } catch(e){}
-
-  const days   = Object.keys(data.daily||{}).slice(-7);
-  const values = days.map(d=>data.daily[d]||0);
-  const maxVal = Math.max(...values,1);
-
-  const methodLabel={CARD:'💳 카드',KAKAO:'💬 카카오',NAVER:'🟢 네이버',TOSS:'🔵 토스',VBANK:'🏦 무통장',PHONE:'📱 휴대폰'};
-  const totalAmt = Object.values(data.byMethod||{}).reduce((s,v)=>s+v.amount,0)||1;
-
-  document.getElementById('tab-content').innerHTML=`
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-label">기간 매출</div>
-      <div class="kpi-value" style="font-size:1rem">${fmt(data.totalRevenue||0)}원</div>
-      <div class="kpi-delta" style="color:rgba(201,168,76,.55)">${data.orderCount||0}건</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">PG 수수료</div>
-      <div class="kpi-value" style="font-size:1rem;color:#EF4444">${fmt(data.totalFee||0)}원</div>
-    </div>
-    <div class="kpi-card" style="grid-column:1/-1">
-      <div class="kpi-label">순수익 (추정)</div>
-      <div class="kpi-value" style="color:var(--green)">${fmt(data.netRevenue||0)}원</div>
-    </div>
+function openCSDetail(id){
+  const t = _tickets.find(x => x.id === id); if (!t) return;
+  openModal('CS 문의 처리', `
+  <div style="background:#141414;border-radius:8px;padding:14px;margin-bottom:14px;font-size:.88rem;line-height:1.7">
+    <div style="font-weight:700;color:#F0F2F5;margin-bottom:6px">${t.title}</div>
+    <div style="color:#D1D5DB;white-space:pre-wrap">${t.content || ''}</div>
+    <div style="font-size:.76rem;color:#6B7280;margin-top:10px">${t.users?.name||'비회원'} · ${t.users?.phone||''} · ${fmtDT(t.created_at)}</div>
   </div>
-
-  <div class="admin-section">
-    <div class="section-head"><div class="section-title">📈 최근 7일 매출</div></div>
-    <div class="chart-wrap">
-      <div class="rev-bars">
-        ${days.length===0
-          ? '<div style="color:#9CA3AF;font-size:.82rem;padding:20px">데이터 없음</div>'
-          : days.map((d,i)=>{
-              const h=Math.round((values[i]/maxVal)*90);
-              const label=d.slice(5);
-              return `<div class="rev-bar-w">
-                <div class="rev-value">${values[i]>=10000?Math.round(values[i]/10000)+'만':values[i]+'원'}</div>
-                <div class="rev-bar" style="height:${h}px" title="${fmt(values[i])}원"></div>
-                <div class="rev-label">${label}</div>
-              </div>`;
-            }).join('')}
-      </div>
-    </div>
-  </div>
-
-  <div class="admin-section">
-    <div class="section-head">
-      <div class="section-title">PG사별 정산</div>
-      <button class="section-action" onclick="toast('엑셀 내보내기 준비중')">📥 내보내기</button>
-    </div>
-    ${Object.entries(data.byMethod||{}).map(([m,v])=>`
-    <div class="rev-row">
-      <div style="flex:1">
-        <div class="rev-pg">${methodLabel[m]||m}</div>
-        <div class="rev-pct-bar" style="background:linear-gradient(135deg,#1C1A12,#0F0F0F);opacity:.3;width:${Math.round(v.amount/totalAmt*100)}%"></div>
-      </div>
-      <span class="rev-fee">수수료 -${fmt(v.fee||0)}원</span>
-      <span class="rev-amt">${fmt(v.amount||0)}원</span>
-    </div>`).join('') || '<div style="padding:20px;text-align:center;color:#9CA3AF">결제 데이터 없음</div>'}
-  </div>`;
+  ${t.answer ? `<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:.84rem;color:#86EFAC"><strong>기존 답변:</strong><br>${t.answer}</div>` : ''}
+  <div class="fgrp">
+    <label class="flbl">${t.answer ? '답변 수정' : '답변 작성'}</label>
+    <textarea class="finput" id="cs-ans" rows="4" placeholder="고객에게 보낼 답변을 입력하세요...">${t.answer||''}</textarea>
+  </div>`, '답변 전송', async () => {
+    const ans = document.getElementById('cs-ans').value.trim();
+    if (!ans){ toast('답변을 입력해주세요'); return; }
+    try {
+      await api('/admin/cs/' + id, { method: 'PATCH', body: JSON.stringify({ answer: ans, status: 'answered' }) });
+      toast('✅ 답변이 전송됐습니다'); closeModal(); tabCS();
+    } catch(e){ toast('❌ ' + e.message); }
+  });
 }
 
-// ── CS관리 탭 ────────────────────────────────────────────
-async function renderTabCS(){
-  let tickets=[], total=0;
-  try {
-    const ctrl5 = new AbortController();
-    const t5 = setTimeout(()=>ctrl5.abort(), 5000);
-    const r = await fetch(API+'/admin/cs?limit=30',{headers:{Authorization:'Bearer '+adminToken},signal:ctrl5.signal});
-    clearTimeout(t5);
-    if(r.ok){ const d=await r.json(); tickets=d.tickets||[]; total=d.total||0; allTickets=tickets; }
-  } catch(e){}
-
-  const statusCls={pending:'tag-primary',in_progress:'tag-amber',answered:'tag-green',closed:'tag-gray'};
-  const statusTxt={pending:'대기중',in_progress:'처리중',answered:'답변완료',closed:'종료'};
-  const typeLabel={order:'주문/배송',payment:'결제/환불',product:'상품문의',subscribe:'정기배송',account:'회원정보',other:'기타'};
-
-  document.getElementById('tab-content').innerHTML=`
-  <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center">
-    <span style="font-size:.82rem;color:rgba(201,168,76,.55)">총 ${total}건</span>
-    <span style="font-size:.78rem;color:#EF4444;font-weight:700">미답변 ${tickets.filter(t=>t.status==='pending').length}건 ⚠️</span>
-  </div>
-  <div class="admin-section" style="margin-top:4px">
-    ${tickets.length===0
-      ? '<div style="padding:40px;text-align:center;color:#9CA3AF">CS 문의가 없습니다</div>'
-      : tickets.map(t=>`
-      <div class="ticket-row" onclick="showCSDetail('${t.id}')">
-        <div class="ticket-head">
-          <span class="tag ${statusCls[t.status]||'tag-gray'}" style="font-size:.7rem">${statusTxt[t.status]||t.status}</span>
-          <span style="font-size:.76rem;color:var(--secondary);font-weight:600">[${typeLabel[t.type]||t.type}]</span>
-          <div class="ticket-title">${t.status==='pending'?'🔴 ':''} ${t.title}</div>
-        </div>
-        <div class="ticket-meta">
-          <span>👤 ${t.users?.name||'비회원'}</span>
-          <span>📞 ${t.users?.phone||'-'}</span>
-          <span>⏱️ ${new Date(t.created_at).toLocaleDateString('ko-KR')}</span>
-        </div>
-      </div>`).join('')}
-  </div>`;
-}
-
-async function showCSDetail(id){
-  try {
-    const t = allTickets.find(x=>x.id===id);
-    if(!t){ toast('문의 정보를 찾을 수 없습니다'); return; }
-
-    openSheet('CS 문의 처리', `
-    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
-      <div style="background:#1C1C1C;border-radius:var(--radius-md);padding:12px;font-size:.84rem;line-height:1.7">
-        <div style="font-weight:700;color:#fff;margin-bottom:4px">${t.title}</div>
-        <div style="color:#D1D5DB">${t.content}</div>
-        <div style="font-size:.74rem;color:rgba(201,168,76,.55);margin-top:8px">
-          ${t.users?.name||'비회원'} · ${t.users?.phone||''} · ${new Date(t.created_at).toLocaleString('ko-KR')}
-        </div>
-      </div>
-      ${t.answer ? `
-      <div style="background:var(--cream);border:1px solid var(--peach);border-radius:var(--radius-md);padding:12px;font-size:.84rem;line-height:1.7">
-        <div style="font-weight:700;color:var(--primary);margin-bottom:4px">✅ 기존 답변</div>
-        <div>${t.answer}</div>
-      </div>` : ''}
-      <div class="form-group">
-        <div class="form-label">${t.answer?'답변 수정':'답변 작성'}</div>
-        <textarea id="cs-answer" class="form-input" rows="5" style="height:120px;resize:vertical;padding:10px" placeholder="고객에게 보낼 답변을 입력하세요...">${t.answer||''}</textarea>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-primary" style="flex:2;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F" onclick="submitCSAnswer('${t.id}')">📨 답변 전송</button>
-        <button class="btn btn-secondary" style="flex:1" onclick="closeSheet()">취소</button>
-      </div>
-      <p style="text-align:center;font-size:.74rem;color:#9CA3AF">답변 전송 시 카카오 알림톡으로 고객에게 발송됩니다</p>
-    </div>`);
-  } catch(e){ toast('문의 로드 실패'); }
-}
-
-async function submitCSAnswer(id){
-  const answer = document.getElementById('cs-answer').value.trim();
-  if(!answer){ toast('답변 내용을 입력해주세요'); return; }
-  try {
-    const r = await fetch(API+'/admin/cs/'+id,{
-      method:'PATCH', credentials:'include',
-      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
-      body: JSON.stringify({answer, status:'answered'})
-    });
-    if(!r.ok) throw new Error();
-    toast('✅ 답변이 전송됐습니다');
-    closeSheet();
-    switchTab('cs', tabEl('cs'));
-  } catch(e){ toast('❌ 답변 전송 실패'); }
-}
-
-// ── 카테고리 관리 탭 ──────────────────────────────────────
-let _cats = [];
-
-function catRowHTML(c) {
-  const safe = (c.name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-  return '<div id="cat-row-' + c.id + '" style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1)">'
-    + '<div style="flex:1;font-size:.9rem;font-weight:600;color:#fff">🥩 ' + c.name + '</div>'
-    + '<div style="width:50px;text-align:center;font-size:.84rem;font-weight:700;color:' + (c.product_count > 0 ? '#C9A84C' : 'rgba(255,255,255,.3)') + '">' + c.product_count + '개</div>'
-    + '<div style="width:80px;display:flex;gap:5px;justify-content:center">'
-    + '<button onclick="editCategory(\'' + c.id + '\')" title="수정" style="width:32px;height:28px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-sm);color:#C9A84C;font-size:.82rem;cursor:pointer">✏️</button>'
-    + '<button onclick="deleteCategory(\'' + c.id + '\',\'' + safe + '\')" title="삭제" style="width:32px;height:28px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);color:#EF4444;font-size:.82rem;cursor:pointer;line-height:1">✕</button>'
-    + '</div></div>';
-}
-
-async function renderTabCategories() {
-  _cats = [];
-  try {
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 5000);
-    const r = await fetch(API + '/admin/categories', {
-      headers: { Authorization: 'Bearer ' + adminToken },
-      signal: ctrl.signal
-    });
-    clearTimeout(tid);
-    if (r.ok) {
-      const d = await r.json();
-      _cats = d.categories || [];
-    } else {
-      const d = await r.json().catch(() => ({}));
-      console.error('[categories] API 오류:', r.status, d);
-    }
-  } catch(e) { console.error('[categories] fetch 오류:', e.message); }
-
-  const rowsHtml = _cats.length === 0
-    ? '<div style="padding:36px;text-align:center;color:#9CA3AF">카테고리가 없습니다<br><span style="font-size:.78rem;display:block;margin-top:6px">위에서 카테고리를 추가해주세요</span></div>'
-    : _cats.map(c => catRowHTML(c)).join('');
-
-  const content = document.getElementById('tab-content');
-  content.innerHTML = `
-  <div style="padding:14px">
-    <div class="admin-section" style="margin-bottom:14px">
-      <div class="section-head">
-        <div class="section-title">🏷️ 새 카테고리 추가</div>
-      </div>
-      <div style="padding:14px;display:flex;gap:8px">
-        <input id="new-cat-name" style="flex:1;height:40px;border:1px solid rgba(201,168,76,.3);border-radius:var(--radius-md);padding:0 12px;font-size:.88rem;background:#111;color:#fff;outline:none" placeholder="카테고리 이름 입력 (예: 항정살)" onkeydown="if(event.key==='Enter')addCategory()">
-        <button onclick="addCategory()" style="height:40px;padding:0 18px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">+ 추가</button>
-      </div>
-    </div>
-
-    <div class="admin-section">
-      <div class="section-head">
-        <div class="section-title">카테고리 목록</div>
-        <span style="font-size:.76rem;color:rgba(201,168,76,.55)">총 ${_cats.length}개</span>
-      </div>
-      <div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)">
-        <div style="flex:1">카테고리명</div>
-        <div style="width:50px;text-align:center">상품수</div>
-        <div style="width:80px;text-align:center">관리</div>
-      </div>
-      <div id="cat-rows">${rowsHtml}</div>
-    </div>
-  </div>`;
-}
-
-function editCategory(id) {
-  const c = _cats.find(x => String(x.id) === String(id));
-  if (!c) return;
-  const row = document.getElementById('cat-row-' + id);
-  if (!row) return;
-  const safeVal = (c.name || '').replace(/"/g, '&quot;');
-  row.innerHTML =
-    '<input id="edit-cat-' + id + '" style="flex:1;height:34px;border:1.5px solid rgba(201,168,76,.5);border-radius:var(--radius-md);padding:0 10px;font-size:.88rem;background:#111;color:#fff;outline:none;margin-right:8px" value="' + safeVal + '"'
-    + ' onkeydown="if(event.key===\'Enter\')saveCategory(\'' + id + '\');if(event.key===\'Escape\')cancelEditCategory(\'' + id + '\')">'
-    + '<div style="display:flex;gap:5px;flex-shrink:0">'
-    + '<button onclick="saveCategory(\'' + id + '\')" style="height:34px;padding:0 12px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.8rem;font-weight:700;cursor:pointer">저장</button>'
-    + '<button onclick="cancelEditCategory(\'' + id + '\')" style="height:34px;padding:0 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-md);font-size:.8rem;color:#D1D5DB;cursor:pointer">취소</button>'
-    + '</div>';
-  row.style.cssText += ';display:flex;align-items:center;';
-  const inp = document.getElementById('edit-cat-' + id);
-  if (inp) { inp.focus(); inp.select(); }
-}
-
-function cancelEditCategory(id) {
-  const c = _cats.find(x => String(x.id) === String(id));
-  if (!c) return;
-  const row = document.getElementById('cat-row-' + id);
-  if (row) row.outerHTML = catRowHTML(c);
-}
-
-async function saveCategory(id) {
-  const input = document.getElementById('edit-cat-' + id);
-  if (!input) return;
-  const name = input.value.trim();
-  if (!name) { toast('카테고리 이름을 입력해주세요'); return; }
-  try {
-    const r = await fetch(API + '/admin/categories/' + id, {
-      method: 'PUT', credentials: 'include',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + adminToken },
-      body: JSON.stringify({ name })
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.message || d.error || '수정 실패');
-    toast('✅ 카테고리가 수정됐습니다');
-    await renderTabCategories();
-  } catch(e) { toast('❌ ' + e.message); }
-}
-
-async function addCategory(){
-  const name=document.getElementById('new-cat-name').value.trim();
-  if(!name){toast('카테고리 이름을 입력해주세요');return;}
-  try{
-    const r=await fetch(API+'/admin/categories',{
-      method:'POST',credentials:'include',
-      headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken},
-      body:JSON.stringify({name})
-    });
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.message||d.error||'추가 실패');
-    toast('✅ 카테고리가 추가됐습니다');
-    await renderTabCategories();
-  }catch(e){toast('❌ '+e.message);}
-}
-
-async function deleteCategory(id,name){
-  if(!confirm('"'+name+'" 카테고리를 삭제하시겠습니까?\n\n해당 카테고리의 상품이 있으면 삭제할 수 없습니다.'))return;
-  try{
-    const r=await fetch(API+'/admin/categories/'+id,{
-      method:'DELETE',credentials:'include',
-      headers:{Authorization:'Bearer '+adminToken}
-    });
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.message||d.error||'삭제 실패');
-    toast('✅ 삭제됐습니다');
-    await renderTabCategories();
-  }catch(e){toast('❌ '+e.message);}
-}
-
-async function confirmVbank(orderId){
-  const depositorName  = document.getElementById('depositor-name')?.value || '';
-  const depositAmount  = document.getElementById('deposit-amount')?.value || '';
-  if (!confirm(`입금자: ${depositorName || '미확인'}\n금액: ${depositAmount}원\n\n입금 확인 처리하시겠습니까?`)) return;
-  try {
-    const r = await fetch(API+'/payment/vbank-confirm',{
-      method:'POST', credentials:'include',
-      headers:{'Content-Type':'application/json', Authorization:'Bearer '+adminToken},
-      body: JSON.stringify({ orderId, depositorName, depositAmount:Number(depositAmount) })
-    });
-    const d = await r.json();
-    if(!r.ok) throw new Error(d.error);
-    toast('✅ 입금 확인 완료! 주문이 준비중으로 변경됐습니다.');
-    closeSheet();
-    switchTab('orders', tabEl('orders'));
-  } catch(e){ toast('❌ '+e.message); }
-}
-
-// ── 거래처관리 탭 ─────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   TAB 4 — 거래처관리
+   GET    /api/admin/vendors
+   POST   /api/admin/vendors
+   PUT    /api/admin/vendors/:id
+   DELETE /api/admin/vendors/:id
+   POST   /api/admin/vendors/:id/zones
+══════════════════════════════════════════════ */
 let _vendors = [];
 
-async function renderTabVendors() {
-  _vendors = [];
-  try {
-    const r = await fetch(API+'/admin/vendors', { headers: { Authorization: 'Bearer '+adminToken } });
-    if (r.ok) { const d = await r.json(); _vendors = d.vendors || []; }
-  } catch(e) {}
+async function tabVendors(){
+  try { const d = await api('/admin/vendors'); _vendors = d.vendors || []; }
+  catch(e){ _vendors = []; }
+  renderVendorsTab();
+}
 
-  const activeCount = _vendors.filter(v => v.is_active).length;
-  document.getElementById('tab-content').innerHTML = `
-  <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center">
-    <span style="font-size:.82rem;color:rgba(201,168,76,.55)">총 ${_vendors.length}개 (활성 ${activeCount}개)</span>
-    <button onclick="openVendorForm(0)" style="height:34px;padding:0 14px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.8rem;font-weight:700;cursor:pointer">+ 거래처 등록</button>
-  </div>
-  <div class="admin-section" style="margin-top:4px">
-    <div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)">
-      <div style="flex:1">상호 / 위치</div>
-      <div style="width:60px;text-align:center">평점</div>
-      <div style="width:50px;text-align:center">오늘</div>
-      <div style="width:70px;text-align:center">관리</div>
+function renderVendorsTab(){
+  document.getElementById('adm-body').innerHTML = `
+  <div class="card">
+    <div class="card-head">
+      <div><div class="card-title">거래처 목록</div><div class="card-sub">총 ${_vendors.length}개 · 활성 ${_vendors.filter(v=>v.is_active).length}개</div></div>
+      <button class="btn btn-gold" onclick="openVendorForm(null)">+ 거래처 등록</button>
     </div>
-    ${_vendors.length === 0
-      ? '<div style="padding:40px;text-align:center;color:#9CA3AF">거래처가 없습니다</div>'
-      : _vendors.map(v => `
-    <div style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(201,168,76,.1)">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:.88rem;font-weight:600;color:${v.is_active ? '#fff' : '#9CA3AF'}">${v.vendor_name}${!v.is_active ? ' <span style="font-size:.68rem;color:#EF4444">[비활성]</span>' : ''}</div>
-        <div style="font-size:.72rem;color:rgba(201,168,76,.55);margin-top:2px">${[v.dong,v.district].filter(Boolean).join(' · ') || '-'} · ${v.business_hours || ''}</div>
-      </div>
-      <div style="width:60px;text-align:center;font-size:.84rem;font-weight:700;color:#C9A84C">★ ${v.score||'0.0'}</div>
-      <div style="width:50px;text-align:center;font-size:.82rem;color:#D1D5DB">${v.today_orders||0}건</div>
-      <div style="width:70px;display:flex;gap:4px;justify-content:center">
-        <button onclick="openVendorForm(${v.id})" style="width:28px;height:26px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:4px;color:#C9A84C;font-size:.75rem;cursor:pointer">✏️</button>
-        <button onclick="toggleVendor(${v.id},'${(v.vendor_name||'').replace(/'/g,"\\'")}',${v.is_active})" style="width:32px;height:26px;background:rgba(${v.is_active?'239,68,68':'34,197,94'},.1);border:1px solid rgba(${v.is_active?'239,68,68':'34,197,94'},.3);border-radius:4px;color:${v.is_active?'#EF4444':'#10B981'};font-size:.7rem;font-weight:700;cursor:pointer">${v.is_active?'OFF':'ON'}</button>
-      </div>
-    </div>`).join('')}
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>상호명</th><th>대표자</th><th>연락처</th><th>주소</th><th>배정구역</th><th>영업시간</th><th>평점</th><th>상태</th><th>액션</th></tr></thead>
+        <tbody>
+          ${_vendors.length ? _vendors.map(v => `
+          <tr>
+            <td><span style="font-weight:600">${v.vendor_name}</span></td>
+            <td>${v.owner_name||'–'}</td>
+            <td style="font-size:.8rem">${v.phone||'–'}</td>
+            <td style="font-size:.78rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.address||'–'}</td>
+            <td style="font-size:.78rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(v.zones||[]).map(z=>z.dong||z).join(', ')||'–'}</td>
+            <td style="font-size:.78rem">${v.business_hours||'–'}</td>
+            <td style="font-weight:700;color:#C9A84C">${v.score != null ? v.score : '–'}</td>
+            <td><span class="bdg ${v.is_active?'bdg-active':'bdg-inactive'}">${v.is_active?'활성':'비활성'}</span></td>
+            <td>
+              <div style="display:flex;gap:4px">
+                <button class="btn btn-sm btn-outline" onclick="openVendorForm(${v.id})">수정</button>
+                <button class="btn btn-sm btn-outline" onclick="openZoneForm(${v.id},'${(v.vendor_name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">구역</button>
+                <button class="btn btn-sm btn-danger" onclick="toggleVendor(${v.id},'${(v.vendor_name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}',${v.is_active})">${v.is_active?'비활성':'활성화'}</button>
+              </div>
+            </td>
+          </tr>`).join('') : '<tr><td colspan="9" class="empty">거래처 없음</td></tr>'}
+        </tbody>
+      </table>
+    </div>
   </div>`;
 }
 
-function openVendorForm(id) {
+function openVendorForm(id){
   const v = id ? _vendors.find(x => x.id === id) : null;
-  openSheet(v ? '거래처 수정' : '거래처 등록', `
-  <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
-    <div class="form-group">
-      <div class="form-label">상호명 *</div>
-      <input class="form-input" id="vf-name" value="${v?.vendor_name||''}" placeholder="예: 안산정육 고잔점">
-    </div>
-    <div style="display:flex;gap:8px">
-      <div class="form-group" style="flex:1">
-        <div class="form-label">대표자명</div>
-        <input class="form-input" id="vf-owner" value="${v?.owner_name||''}" placeholder="홍길동">
-      </div>
-      <div class="form-group" style="flex:1">
-        <div class="form-label">연락처</div>
-        <input class="form-input" id="vf-phone" value="${v?.phone||''}" placeholder="031-000-0000">
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="form-label">주소</div>
-      <input class="form-input" id="vf-address" value="${v?.address||''}" placeholder="경기도 안산시 단원구 고잔로 123">
-    </div>
-    <div style="display:flex;gap:6px">
-      <div class="form-group" style="flex:1">
-        <div class="form-label">시</div>
-        <input class="form-input" id="vf-city" value="${v?.city||''}" placeholder="안산시">
-      </div>
-      <div class="form-group" style="flex:1">
-        <div class="form-label">구</div>
-        <input class="form-input" id="vf-district" value="${v?.district||''}" placeholder="단원구">
-      </div>
-      <div class="form-group" style="flex:1">
-        <div class="form-label">동</div>
-        <input class="form-input" id="vf-dong" value="${v?.dong||''}" placeholder="고잔동">
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="form-label">영업시간</div>
-      <input class="form-input" id="vf-hours" value="${v?.business_hours||'09:00-18:00'}" placeholder="09:00-18:00">
-    </div>
-    <button class="btn btn-primary btn-full" style="background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;margin-top:4px" onclick="saveVendor(${id||0})">
-      ${v ? '수정 저장' : '거래처 등록'}
-    </button>
-  </div>`);
+  openModal(v ? '거래처 수정' : '거래처 등록', `
+  <div class="form-row">
+    <div class="fgrp"><label class="flbl">상호명 *</label><input class="finput" id="vf-name" value="${v?.vendor_name||''}" placeholder="정육마트 안산점"></div>
+    <div class="fgrp"><label class="flbl">대표자명</label><input class="finput" id="vf-owner" value="${v?.owner_name||''}" placeholder="홍길동"></div>
+  </div>
+  <div class="form-row">
+    <div class="fgrp"><label class="flbl">연락처</label><input class="finput" id="vf-phone" value="${v?.phone||''}" placeholder="031-000-0000"></div>
+    <div class="fgrp"><label class="flbl">영업시간</label><input class="finput" id="vf-hours" value="${v?.business_hours||'09:00-18:00'}"></div>
+  </div>
+  <div class="form-row c1">
+    <div class="fgrp"><label class="flbl">주소</label><input class="finput" id="vf-addr" value="${v?.address||''}" placeholder="경기도 안산시 단원구 고잔로 123"></div>
+  </div>
+  <div class="form-row c3">
+    <div class="fgrp"><label class="flbl">시</label><input class="finput" id="vf-city" value="${v?.city||''}" placeholder="안산시"></div>
+    <div class="fgrp"><label class="flbl">구</label><input class="finput" id="vf-district" value="${v?.district||''}" placeholder="단원구"></div>
+    <div class="fgrp"><label class="flbl">동</label><input class="finput" id="vf-dong" value="${v?.dong||''}" placeholder="고잔동"></div>
+  </div>`, '저장', async () => {
+    const name = document.getElementById('vf-name').value.trim();
+    if (!name){ toast('상호명을 입력해주세요'); return; }
+    const body = {
+      vendor_name:    name,
+      owner_name:     document.getElementById('vf-owner').value.trim(),
+      phone:          document.getElementById('vf-phone').value.trim(),
+      business_hours: document.getElementById('vf-hours').value.trim(),
+      address:        document.getElementById('vf-addr').value.trim(),
+      city:           document.getElementById('vf-city').value.trim(),
+      district:       document.getElementById('vf-district').value.trim(),
+      dong:           document.getElementById('vf-dong').value.trim(),
+    };
+    try {
+      if (id) await api('/admin/vendors/' + id, { method: 'PUT', body: JSON.stringify(body) });
+      else    await api('/admin/vendors',        { method: 'POST', body: JSON.stringify(body) });
+      toast('✅ 거래처가 ' + (id ? '수정' : '등록') + '됐습니다');
+      closeModal(); tabVendors();
+    } catch(e){ toast('❌ ' + e.message); }
+  });
 }
 
-async function saveVendor(id) {
-  const body = {
-    vendor_name:    document.getElementById('vf-name')?.value?.trim(),
-    owner_name:     document.getElementById('vf-owner')?.value?.trim(),
-    phone:          document.getElementById('vf-phone')?.value?.trim(),
-    address:        document.getElementById('vf-address')?.value?.trim(),
-    city:           document.getElementById('vf-city')?.value?.trim(),
-    district:       document.getElementById('vf-district')?.value?.trim(),
-    dong:           document.getElementById('vf-dong')?.value?.trim(),
-    business_hours: document.getElementById('vf-hours')?.value?.trim(),
-  };
-  if (!body.vendor_name) { toast('상호명을 입력해주세요'); return; }
-  try {
-    const url = id ? API+'/admin/vendors/'+id : API+'/admin/vendors';
-    const r = await fetch(url, {
-      method: id ? 'PUT' : 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+adminToken },
-      body: JSON.stringify(body)
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error || '저장 실패');
-    toast('✅ 거래처가 ' + (id ? '수정' : '등록') + '됐습니다');
-    closeSheet();
-    await renderTabVendors();
-  } catch(e) { toast('❌ '+e.message); }
+function openZoneForm(vendorId, vendorName){
+  const v = _vendors.find(x => x.id === vendorId);
+  const existing = (v?.zones || []).map(z => z.dong || z).join(', ');
+  openModal(`배정 구역 관리 — ${vendorName}`, `
+  <div style="font-size:.82rem;color:#9CA3AF;margin-bottom:14px">배정 가능한 동(洞) 이름을 쉼표로 구분하여 입력하세요.</div>
+  <div class="fgrp">
+    <label class="flbl">배정 구역 (쉼표 구분)</label>
+    <textarea class="finput" id="zone-inp" rows="3" placeholder="고잔동, 선부동, 초지동, 원곡동">${existing}</textarea>
+  </div>`, '저장', async () => {
+    const raw   = document.getElementById('zone-inp').value;
+    const zones = raw.split(',').map(s => s.trim()).filter(Boolean);
+    if (!zones.length){ toast('구역을 하나 이상 입력해주세요'); return; }
+    try {
+      await api('/admin/vendors/' + vendorId + '/zones', { method: 'POST', body: JSON.stringify({ zones }) });
+      toast('✅ 배정 구역이 저장됐습니다'); closeModal(); tabVendors();
+    } catch(e){ toast('❌ ' + e.message); }
+  });
 }
 
-async function toggleVendor(id, name, isActive) {
-  if (!confirm('"'+name+'"을(를) '+(isActive?'비활성화':'활성화')+'하시겠습니까?')) return;
+async function toggleVendor(id, name, isActive){
+  if (!confirm(`"${name}"을(를) ${isActive ? '비활성화' : '활성화'}하시겠습니까?`)) return;
   try {
-    const r = await fetch(API+'/admin/vendors/'+id, {
-      method: isActive ? 'DELETE' : 'PUT', credentials: 'include',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+adminToken },
-      body: isActive ? undefined : JSON.stringify({ is_active: true })
-    });
-    if (!r.ok) throw new Error();
-    toast('✅ 완료됐습니다');
-    await renderTabVendors();
-  } catch(e) { toast('❌ 처리 실패'); }
+    if (isActive) await api('/admin/vendors/' + id, { method: 'DELETE' });
+    else          await api('/admin/vendors/' + id, { method: 'PUT', body: JSON.stringify({ is_active: true }) });
+    toast('✅ 완료됐습니다'); tabVendors();
+  } catch(e){ toast('❌ ' + e.message); }
 }
 
-// ── 자동배정 탭 ───────────────────────────────────────────
-let _pendingOrders = [];
-let _assignments   = [];
+/* ══════════════════════════════════════════════
+   TAB 5 — 자동배정
+   POST /api/admin/assignments  (자동배정 실행)
+   GET  /api/admin/assignments/stats
+══════════════════════════════════════════════ */
+async function tabAutoAssign(){
+  let stats = { total: 0, auto: 0, manual: 0, accepted: 0, rejected: 0, completed: 0 };
+  try { const d = await api('/admin/assignments/stats'); Object.assign(stats, d.stats || d); } catch(e){}
 
-async function renderTabAssignment() {
-  _pendingOrders = [];
-  _assignments   = [];
-  try {
-    const [or, ar] = await Promise.all([
-      fetch(API+'/admin/orders?limit=50', { headers: { Authorization: 'Bearer '+adminToken } }),
-      fetch(API+'/admin/assignments?limit=30', { headers: { Authorization: 'Bearer '+adminToken } }),
-    ]);
-    if (or.ok) { const d = await or.json(); _pendingOrders = (d.orders||[]).filter(o => o.status==='pending' && o.payment_status==='paid'); }
-    if (ar.ok) { const d = await ar.json(); _assignments = d.assignments||[]; }
-  } catch(e) {}
-
-  const statusColor = { pending:'#F59E0B', accepted:'#10B981', rejected:'#EF4444', completed:'#6EE7B7', cancelled:'#9CA3AF' };
-  const statusTxt   = { pending:'대기', accepted:'수락', rejected:'거절', completed:'완료', cancelled:'취소' };
-
-  document.getElementById('tab-content').innerHTML = `
-  <div style="padding:14px">
-    <div class="admin-section" style="margin-bottom:14px">
-      <div class="section-head">
-        <div class="section-title">📋 배정 대기 <span style="color:#EF4444">${_pendingOrders.length}건</span></div>
-        <button id="auto-assign-btn" onclick="runAutoAssign()" style="height:36px;padding:0 16px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F;border:none;border-radius:var(--radius-md);font-size:.8rem;font-weight:700;cursor:pointer">🤖 자동배정 실행</button>
+  document.getElementById('adm-body').innerHTML = `
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-lbl">총 배정건수</div><div class="stat-val">${stats.total}</div><div class="stat-sub">건</div></div>
+    <div class="stat-card"><div class="stat-lbl">자동 / 수동</div><div class="stat-val" style="font-size:1.4rem">${stats.auto} <span style="color:#6B7280;font-size:1rem">/</span> ${stats.manual}</div></div>
+    <div class="stat-card"><div class="stat-lbl">수락 / 거절</div><div class="stat-val" style="font-size:1.4rem">${stats.accepted} <span style="color:#6B7280;font-size:1rem">/</span> <span style="color:#EF4444">${stats.rejected}</span></div></div>
+    <div class="stat-card"><div class="stat-lbl">완료</div><div class="stat-val" style="color:#22C55E">${stats.completed}</div><div class="stat-sub">건</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">자동배정 실행</div>
+        <div class="card-sub">결제 완료된 미배정 주문을 거래처에 자동으로 배정합니다</div>
       </div>
-      ${_pendingOrders.length === 0
-        ? '<div style="padding:28px;text-align:center;color:#9CA3AF">배정 대기 주문이 없습니다</div>'
-        : '<div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)"><div style="width:96px">주문번호</div><div style="flex:1">배송지</div><div style="width:80px;text-align:right">금액</div><div style="width:60px;text-align:right">접수</div></div>'
-          + _pendingOrders.map(o => `
-          <div style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.8rem">
-            <div style="width:96px;font-weight:700;color:#C9A84C;font-size:.74rem">${o.order_number}</div>
-            <div style="flex:1;color:#D1D5DB;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${o.address||o.recipient||'-'}</div>
-            <div style="width:80px;text-align:right;font-weight:700;color:#fff">${fmt(o.final_amount)}원</div>
-            <div style="width:60px;text-align:right;font-size:.7rem;color:rgba(201,168,76,.55)">${new Date(o.created_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</div>
-          </div>`).join('')}
+      <button class="btn btn-gold" id="aa-btn" onclick="runAutoAssign()" style="padding:12px 28px;font-size:.9rem">🤖 자동배정 실행</button>
     </div>
-
-    <div class="admin-section">
-      <div class="section-head">
-        <div class="section-title">📊 배정 결과</div>
-        <button onclick="renderTabAssignment()" class="section-action">새로고침</button>
-      </div>
-      ${_assignments.length === 0
-        ? '<div style="padding:28px;text-align:center;color:#9CA3AF">배정 내역이 없습니다</div>'
-        : '<div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)"><div style="width:96px">주문번호</div><div style="flex:1">배정거래처</div><div style="width:46px;text-align:center">점수</div><div style="width:60px;text-align:center">상태</div></div>'
-          + _assignments.map(a => `
-          <div style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.8rem">
-            <div style="width:96px;font-weight:700;color:#C9A84C;font-size:.74rem">${a.orders?.order_number||'-'}</div>
-            <div style="flex:1;color:#D1D5DB">${a.vendors?.vendor_name||'-'}</div>
-            <div style="width:46px;text-align:center;font-weight:700;color:#fff">${a.score||'-'}</div>
-            <div style="width:60px;text-align:center;font-size:.76rem;font-weight:700;color:${statusColor[a.assignment_status]||'#9CA3AF'}">${statusTxt[a.assignment_status]||a.assignment_status}</div>
-          </div>`).join('')}
+    <div id="aa-result" style="font-size:.88rem;color:#6B7280;padding:6px 0">실행 버튼을 누르면 결과가 여기 표시됩니다.</div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">거래처별 배정 현황</div>
+      <button class="btn btn-outline btn-sm" onclick="tabAutoAssign()">새로고침</button>
+    </div>
+    <div id="vendor-stats">
+      ${(stats.vendor_stats ? Object.entries(stats.vendor_stats) : []).length ? `
+      <table>
+        <thead><tr><th>거래처</th><th>오늘 배정</th><th>완료</th><th>진행중</th><th>거절</th></tr></thead>
+        <tbody>
+          ${Object.entries(stats.vendor_stats || {}).map(([name, v]) => `
+          <tr>
+            <td style="font-weight:600">${name}</td>
+            <td style="font-weight:700;color:#C9A84C">${v.total||0}</td>
+            <td style="color:#22C55E">${v.completed||0}</td>
+            <td style="color:#F59E0B">${v.in_progress||0}</td>
+            <td style="color:#EF4444">${v.rejected||0}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<div class="empty" style="padding:30px">배정 데이터 없음</div>'}
     </div>
   </div>`;
 }
 
-async function runAutoAssign() {
-  const btn = document.getElementById('auto-assign-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '🔄 배정 중...'; }
+async function runAutoAssign(){
+  const btn = document.getElementById('aa-btn');
+  const res = document.getElementById('aa-result');
+  btn.disabled = true; btn.textContent = '🔄 배정 중...';
+  res.innerHTML = '<span style="color:#C9A84C">배정 처리 중...</span>';
   try {
-    const r = await fetch(API+'/admin/assignments/auto', {
-      method: 'POST', credentials: 'include',
-      headers: { Authorization: 'Bearer '+adminToken }
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error||'배정 실패');
-    const msg = d.message || (d.assigned+'건 배정 완료'+(d.failed>0?', '+d.failed+'건 실패':''));
-    toast('✅ '+msg);
-    await renderTabAssignment();
-  } catch(e) {
-    toast('❌ '+e.message);
-    if (btn) { btn.disabled=false; btn.textContent='🤖 자동배정 실행'; }
+    const d = await api('/admin/assignments', { method: 'POST', body: JSON.stringify({}) });
+    const msg = d.message || ((d.assigned || 0) + '건 배정 완료' + (d.failed > 0 ? `, ${d.failed}건 실패` : ''));
+    res.innerHTML = `<span style="color:#22C55E">✅ ${msg}</span>`;
+    toast('✅ 자동배정 완료');
+  } catch(e){
+    res.innerHTML = `<span style="color:#EF4444">❌ ${e.message}</span>`;
+    toast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '🤖 자동배정 실행';
   }
 }
 
-// ── 배정현황 탭 ───────────────────────────────────────────
-async function renderTabAssignStats() {
-  let stats = {}, vendorStats = {};
-  try {
-    const r = await fetch(API+'/admin/assignments/stats', { headers: { Authorization: 'Bearer '+adminToken } });
-    if (r.ok) { const d = await r.json(); stats = d.stats||{}; vendorStats = d.vendor_stats||{}; }
-  } catch(e) {}
+/* ══════════════════════════════════════════════
+   TAB 6 — 배정현황
+   GET /api/admin/assignments
+   PUT /api/admin/assignments/:id/accept
+   PUT /api/admin/assignments/:id/reject
+══════════════════════════════════════════════ */
+let _assigns = [];
 
-  const vs = Object.entries(vendorStats);
+async function tabAssignList(){
+  try { const d = await api('/admin/assignments'); _assigns = d.assignments || []; }
+  catch(e){ _assigns = []; }
+  renderAssignTab();
+}
 
-  document.getElementById('tab-content').innerHTML = `
-  <div style="padding:14px">
-    <div class="kpi-grid" style="margin-bottom:14px">
-      <div class="kpi-card">
-        <div class="kpi-label">총 배정</div>
-        <div class="kpi-value">${stats.total||0}건</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">자동 / 수동</div>
-        <div class="kpi-value" style="font-size:1.1rem">${stats.auto||0} / ${stats.manual||0}</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">처리완료</div>
-        <div class="kpi-value" style="color:#10B981">${stats.completed||0}건</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">수락 / 거절</div>
-        <div class="kpi-value" style="font-size:1.1rem">${stats.accepted||0} / <span style="color:#EF4444">${stats.rejected||0}</span></div>
+function renderAssignTab(){
+  document.getElementById('adm-body').innerHTML = `
+  <div class="card">
+    <div class="card-head">
+      <div><div class="card-title">배정 현황</div><div class="card-sub">총 ${_assigns.length}건</div></div>
+      <div class="fbar" style="margin-bottom:0">
+        <select class="fin-sm" id="asf" onchange="filterAssigns()" style="width:130px">
+          <option value="">전체</option>
+          <option value="pending">대기</option>
+          <option value="accepted">수락</option>
+          <option value="rejected">거절</option>
+          <option value="completed">완료</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="tabAssignList()">🔄 새로고침</button>
       </div>
     </div>
-
-    <div class="admin-section">
-      <div class="section-head">
-        <div class="section-title">거래처별 처리 현황</div>
-        <span style="font-size:.76rem;color:rgba(201,168,76,.55)">오늘 기준</span>
-      </div>
-      ${vs.length === 0
-        ? '<div style="padding:30px;text-align:center;color:#9CA3AF">배정 데이터가 없습니다</div>'
-        : '<div style="display:flex;padding:8px 16px;font-size:.72rem;color:rgba(201,168,76,.4);border-bottom:1px solid rgba(201,168,76,.12)"><div style="flex:1">거래처</div><div style="width:52px;text-align:center">오늘배정</div><div style="width:46px;text-align:center">완료</div><div style="width:46px;text-align:center">진행중</div><div style="width:46px;text-align:center">거절</div></div>'
-          + vs.map(([name, v]) => `
-          <div style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.82rem">
-            <div style="flex:1;font-weight:600;color:#fff">${name}</div>
-            <div style="width:52px;text-align:center;font-weight:700;color:#C9A84C">${v.total}</div>
-            <div style="width:46px;text-align:center;color:#10B981">${v.completed}</div>
-            <div style="width:46px;text-align:center;color:#F59E0B">${v.in_progress}</div>
-            <div style="width:46px;text-align:center;color:#EF4444">${v.rejected}</div>
-          </div>`).join('')}
-    </div>
-
-    <div style="text-align:center;margin-top:14px">
-      <button onclick="renderTabAssignStats()" class="btn btn-outline" style="font-size:.8rem;padding:8px 20px">🔄 새로고침</button>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>주문번호</th><th>배정 거래처</th><th>배정 유형</th><th>배정 점수</th><th>상태</th><th>배정일</th><th>액션</th></tr></thead>
+        <tbody id="assign-tbody">${assignRows(_assigns)}</tbody>
+      </table>
     </div>
   </div>`;
 }
 
-function adminLogout(){
-  if(!confirm('로그아웃 하시겠습니까?')) return;
-  sessionStorage.removeItem('mm_admin');
-  localStorage.removeItem('mm_access_token');
-  localStorage.removeItem('mm_user_cache');
-  localStorage.removeItem('mm_token');
-  // 일반 로그인 페이지로 이동
-  window.location.href = '../login.html';
+function assignRows(list){
+  if (!list.length) return '<tr><td colspan="7" class="empty">배정 내역 없음</td></tr>';
+  return list.map(a => {
+    const st = a.assignment_status;
+    const stMap = { pending:'대기', accepted:'수락', rejected:'거절', completed:'완료', cancelled:'취소' };
+    const stCls = { pending:'bdg-pending', accepted:'bdg-accepted', rejected:'bdg-rejected', completed:'bdg-completed', cancelled:'bdg-cancelled' };
+    return `
+    <tr>
+      <td><span style="font-family:monospace;font-size:.78rem;color:#C9A84C">${a.orders?.order_number || a.order_number || '–'}</span></td>
+      <td style="font-weight:500">${a.vendors?.vendor_name || a.vendor_name || '–'}</td>
+      <td style="font-size:.8rem">${a.assign_type === 'auto' ? '🤖 자동' : '✋ 수동'}</td>
+      <td style="color:#C9A84C">${a.score != null ? a.score : '–'}</td>
+      <td><span class="bdg ${stCls[st] || 'bdg-pending'}">${stMap[st] || st}</span></td>
+      <td style="font-size:.78rem">${fmtDate(a.assigned_at || a.created_at)}</td>
+      <td>
+        ${st === 'pending' ? `
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-sm btn-success" onclick="acceptAssign('${a.id}')">수락</button>
+          <button class="btn btn-sm btn-danger"  onclick="rejectAssign('${a.id}')">거절</button>
+        </div>` : '–'}
+      </td>
+    </tr>`;
+  }).join('');
 }
 
-// 페이지 떠날 때 탭 상태 초기화
-window.addEventListener('beforeunload', function(){ activeTab = 'dashboard'; });
+function filterAssigns(){
+  const s = document.getElementById('asf').value;
+  document.getElementById('assign-tbody').innerHTML = assignRows(s ? _assigns.filter(a => a.assignment_status === s) : _assigns);
+}
+
+async function acceptAssign(id){
+  try {
+    await api('/admin/assignments/' + id + '/accept', { method: 'PUT', body: JSON.stringify({}) });
+    toast('✅ 수락 처리됐습니다'); tabAssignList();
+  } catch(e){ toast('❌ ' + e.message); }
+}
+
+async function rejectAssign(id){
+  const reason = prompt('거절 사유 (선택사항)');
+  if (reason === null) return;
+  try {
+    await api('/admin/assignments/' + id + '/reject', { method: 'PUT', body: JSON.stringify({ reason }) });
+    toast('거절 처리됐습니다'); tabAssignList();
+  } catch(e){ toast('❌ ' + e.message); }
+}
+
 init();
 </script>
 </body>
