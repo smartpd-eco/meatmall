@@ -199,6 +199,12 @@ router.get('/google', (req, res) => {
 
 router.get('/google/callback', async (req, res) => {
   try {
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    console.log('[google] CLIENT_SECRET 존재여부:', !!clientSecret);
+    if (!clientSecret) {
+      return res.redirect(`${FRONTEND}/pages/login.html?error=google_config`);
+    }
+
     const { code } = req.query;
     if (!code) return res.redirect(`${FRONTEND}/login.html?error=google_failed`);
 
@@ -229,7 +235,7 @@ router.get('/google/callback', async (req, res) => {
     });
     await finishSocialLogin(res, user);
   } catch (err) {
-    console.error('[google/callback]', err);
+    console.error('[google/callback] 상세에러:', err.message, err.stack);
     res.redirect(`${FRONTEND}/login.html?error=google_failed`);
   }
 });
