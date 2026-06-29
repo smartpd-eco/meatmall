@@ -1,0 +1,15 @@
+{
+  "name": "정육본가",
+  "short_name": "정육본가",
+  "description": "프리미엄 정육 전문 쇼핑몰 — 90분 배송",
+  "start_url": "/meatmall/",
+  "scope": "/meatmall/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F0F0F",
+  "theme_color": "#0F0F0F",
+  "icons": [
+    { "src": "images/logo2.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "images/logo2.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
