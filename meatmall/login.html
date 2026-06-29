@@ -18,6 +18,7 @@
 .s-kakao{background:#FEE500;color:#3A1D1D}
 .s-naver{background:#03C75A;color:#fff}
 .s-google{background:#fff;color:#333;border:1px solid #ddd!important}
+.s-apple{background:#000;color:#fff;border:1px solid #333!important}
 .divider-txt{display:flex;align-items:center;gap:10px;margin:14px 0;color:#ccc;font-size:.78rem}
 .divider-txt::before,.divider-txt::after{content:'';flex:1;height:1px;background:rgba(201,168,76,.2)}
 </style>
@@ -38,6 +39,12 @@
 
   <div class="login-box">
     <div style="font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--dark-txt);margin-bottom:18px">🔐 로그인</div>
+    <button class="social-btn s-google" onclick="doSocial('google')">🔵 구글로 로그인</button>
+    <button class="social-btn s-kakao" onclick="doSocial('kakao')">💬 카카오로 로그인</button>
+    <button class="social-btn s-naver" onclick="doSocial('naver')"><strong>N</strong> 네이버로 로그인</button>
+    <button class="social-btn s-apple" style="opacity:0.4;cursor:not-allowed" disabled>🍎 Apple로 로그인</button>
+
+    <div class="divider-txt">또는 이메일로 로그인</div>
     <div class="lf-group">
       <label class="lf-label">이메일</label>
       <input class="lt-input" id="email" type="email" placeholder="이메일 입력">
@@ -48,11 +55,6 @@
     </div>
     <div id="login-err" style="color:#DC2626;font-size:.8rem;margin-bottom:10px;display:none"></div>
     <button class="btn-gold" id="login-btn" onclick="doLogin()">로그인</button>
-
-    <div class="divider-txt">소셜 로그인</div>
-    <button class="social-btn s-kakao" onclick="doSocial('kakao')">💬 카카오로 로그인</button>
-    <button class="social-btn s-naver" onclick="doSocial('naver')"><strong>N</strong> 네이버로 로그인</button>
-    <button class="social-btn s-google" onclick="doSocial('google')">🔵 구글로 로그인</button>
 
     <div style="text-align:center;margin-top:16px;font-size:.82rem;color:var(--gray-txt)">
       아직 회원이 아니신가요? <a href="pages/signup.html" style="color:var(--gold);font-weight:700">회원가입</a>
