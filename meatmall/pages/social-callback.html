@@ -1,32 +1,41 @@
-﻿<!DOCTYPE html>
-<html lang="ko"><head>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <title>로그인 처리 중 · 정육본가</title>
-<link rel="stylesheet" href="../css/main.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0F0F0F;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Apple SD Gothic Neo',sans-serif}
+.wrap{text-align:center}
+.brand{font-family:'Noto Serif KR',serif;font-size:1.1rem;color:#C9A84C;margin-bottom:20px}
+.spinner{width:34px;height:34px;border:3px solid rgba(201,168,76,.2);border-top-color:#C9A84C;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg{font-size:.85rem;color:rgba(255,255,255,.45)}
+</style>
 </head>
 <body>
-<div class="app-wrap" style="background:#0F0F0F;display:flex;align-items:center;justify-content:center;min-height:100vh">
-  <div style="text-align:center;padding:40px">
-    <div style="font-family:'Noto Serif KR',serif;font-size:1.1rem;color:#C9A84C;margin-bottom:16px">정육본가</div>
-    <div style="font-size:.9rem;color:rgba(255,255,255,.5);margin-bottom:20px">로그인 처리 중...</div>
-    <div style="width:32px;height:32px;border:2px solid rgba(201,168,76,.2);border-top-color:#C9A84C;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto"></div>
-  </div>
+<div class="wrap">
+  <div class="brand">정육본가</div>
+  <div class="spinner"></div>
+  <div class="msg">로그인 처리 중...</div>
 </div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-<script src="../js/app.js"></script>
 <script>
-const API='https://meatmall-server.vercel.app/api';
-(async function(){
-  const p=new URLSearchParams(window.location.search);
-  const token=p.get('token')||p.get('access_token');
-  if(token){
-    localStorage.setItem('mm_access_token',token);
-    try{const r=await fetch(API+'/auth/me',{headers:{Authorization:'Bearer '+token},credentials:'include'});
-      if(r.ok){const d=await r.json();localStorage.setItem('mm_user_cache',JSON.stringify(d.user));if(d.user?.is_admin)sessionStorage.setItem('mm_admin','true')}}catch(e){}
-    window.location.href=p.get('redirect')||'../index.html';
-  }else{window.location.href='../login.html'}
+(function(){
+  var params       = new URLSearchParams(window.location.search);
+  var accessToken  = params.get('accessToken');
+  var refreshToken = params.get('refreshToken');
+  var error        = params.get('error');
+
+  if (error || !accessToken) {
+    window.location.href = '/meatmall/login.html';
+  } else {
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    window.location.href = '/meatmall/index.html';
+  }
 })();
 </script>
-</body></html>
+</body>
+</html>
