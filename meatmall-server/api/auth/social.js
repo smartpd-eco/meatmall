@@ -76,7 +76,7 @@ async function finishSocialLogin(res, user) {
   });
 
   const params = new URLSearchParams({
-    token: accessToken,
+    accessToken,
     name:  user.name  || '',
     grade: user.grade || 'BASIC',
     point: String(user.point || 0)
