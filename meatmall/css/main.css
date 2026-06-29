@@ -202,9 +202,12 @@ img{max-width:100%;display:block}
 .toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold-dk),var(--gold-lt));color:var(--black);font-weight:800;padding:11px 22px;border-radius:999px;font-size:.88rem;white-space:nowrap;z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 24px rgba(201,168,76,.4)}
 .toast.show{opacity:1}
 
-/* ── 스켈레톤 ── */
-.skel{background:linear-gradient(90deg,#1a1a1a 25%,#252525 50%,#1a1a1a 75%);background-size:200% 100%;animation:sk 1.6s infinite;border-radius:6px}
+/* ── 스켈레톤 (골드 shimmer) ── */
+.skel{background:linear-gradient(90deg,#1A1A1A 25%,rgba(201,168,76,.07) 50%,#1A1A1A 75%);background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px}
 @keyframes sk{to{background-position:-200% 0}}
+.skel-thumb{aspect-ratio:1/1;border-radius:var(--radius-md) var(--radius-md) 0 0}
+.skel-line{height:12px;border-radius:4px;margin-bottom:7px}
+.skel-line:last-child{margin-bottom:0}
 
 /* ── 호환 클래스 ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-md);font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s;border:none;padding:0 16px;height:48px}
