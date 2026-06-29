@@ -88,7 +88,7 @@ async function finishSocialLogin(res, user) {
 router.get('/kakao', (req, res) => {
   const params = new URLSearchParams({
     client_id:     process.env.KAKAO_CLIENT_ID,
-    redirect_uri:  process.env.KAKAO_REDIRECT_URI,
+    redirect_uri:  'https://meatmall.vercel.app/api/auth/kakao/callback',
     response_type: 'code',
     scope:         'profile_nickname'  // 이메일 제거 (비즈앱 아니면 불가)
   });
@@ -108,7 +108,7 @@ router.get('/kakao/callback', async (req, res) => {
         grant_type:    'authorization_code',
         client_id:     process.env.KAKAO_CLIENT_ID,
         client_secret: process.env.KAKAO_CLIENT_SECRET || '',
-        redirect_uri:  process.env.KAKAO_REDIRECT_URI,
+        redirect_uri:  'https://meatmall.vercel.app/api/auth/kakao/callback',
         code
       })
     });
@@ -142,7 +142,7 @@ router.get('/naver', (req, res) => {
   const params = new URLSearchParams({
     response_type: 'code',
     client_id:     process.env.NAVER_CLIENT_ID,
-    redirect_uri:  process.env.NAVER_REDIRECT_URI,
+    redirect_uri:  'https://meatmall.vercel.app/api/auth/naver/callback',
     state
   });
   res.redirect(`https://nid.naver.com/oauth2.0/authorize?${params}`);
@@ -189,7 +189,7 @@ router.get('/naver/callback', async (req, res) => {
 router.get('/google', (req, res) => {
   const params = new URLSearchParams({
     client_id:     process.env.GOOGLE_CLIENT_ID,
-    redirect_uri:  process.env.GOOGLE_REDIRECT_URI,
+    redirect_uri:  'https://meatmall.vercel.app/api/auth/google/callback',
     response_type: 'code',
     scope:         'openid email profile',
     access_type:   'offline'
@@ -209,7 +209,7 @@ router.get('/google/callback', async (req, res) => {
         code,
         client_id:     process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri:  process.env.GOOGLE_REDIRECT_URI,
+        redirect_uri:  'https://meatmall.vercel.app/api/auth/google/callback',
         grant_type:    'authorization_code'
       })
     });
