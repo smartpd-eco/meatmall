@@ -62,7 +62,10 @@ router.get('/', optionalAuth, async (req, res) => {
     const cacheKey = isAdmin ? null : `list:${JSON.stringify(req.query)}`;
     if (cacheKey) {
       const cached = _pcGet(cacheKey);
-      if (cached) return res.json(cached);
+      if (cached) {
+        res.set('Cache-Control', 'public, max-age=60');
+        return res.json(cached);
+      }
     }
 
     const pageNum = Number(page) || 1;
@@ -105,7 +108,10 @@ router.get('/', optionalAuth, async (req, res) => {
     }));
 
     const result = { ok: true, products: formatted, total: count, page: pageNum, limit: limitNum };
-    if (cacheKey) _pcSet(cacheKey, result);
+    if (cacheKey) {
+      _pcSet(cacheKey, result);
+      res.set('Cache-Control', 'public, max-age=60');
+    }
     res.json(result);
   } catch (err) {
     console.error('[products/get]', err);
