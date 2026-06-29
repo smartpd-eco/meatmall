@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="../css/main.css">
 <style>
 body{background:var(--black)!important}.app-wrap{background:var(--black)!important}
-.product-hero{background:#1A1208!important}
+.product-hero{background:#1A1A1A!important}
 
 .product-hero{background:linear-gradient(135deg,#0D0D0D,#1A1208);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:8rem;position:relative;overflow:hidden}
 .product-hero img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
@@ -83,7 +83,7 @@ body{background:var(--black)!important}.app-wrap{background:var(--black)!importa
 .recommend-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
 .recommend-row::-webkit-scrollbar{display:none}
 .rec-card{min-width:130px;width:130px;flex-shrink:0;background:#fff;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer}
-.rec-thumb{aspect-ratio:1/1;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+.rec-thumb{aspect-ratio:1/1;background:#1A1A1A;display:flex;align-items:center;justify-content:center;font-size:2.5rem}
 .rec-info{padding:8px}
 .rec-name{font-size:.76rem;font-weight:600;color:var(--text-primary);line-height:1.3;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rec-price{font-size:.82rem;font-weight:800;color:var(--gold)}
@@ -304,6 +304,7 @@ function renderProduct(){
   </div>
   `;
 
+  if(typeof initLazyImages==='function') initLazyImages();
   loadRecommend(p.category, p.id);
 }
 
@@ -317,12 +318,13 @@ async function loadRecommend(category, excludeId){
     preloadProductImages(items);
     list.innerHTML = items.map(p=>`
     <div class="rec-card" onclick="go('../pages/product.html?id=${p.id}')">
-      <div class="rec-thumb" style="position:relative;overflow:hidden;background:#2a2a2a">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" loading="lazy">`:''}</div>
+      <div class="rec-thumb" style="position:relative;overflow:hidden;background:#1A1A1A">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" loading="lazy">`:''}</div>
       <div class="rec-info">
         <div class="rec-name">${p.name}</div>
         <div class="rec-price">${fmt(p.price)}원</div>
       </div>
     </div>`).join('');
+    if(typeof initLazyImages==='function') initLazyImages();
   } catch(e){}
 }
 

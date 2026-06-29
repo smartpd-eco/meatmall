@@ -80,7 +80,7 @@ body{background:var(--onyx)}
 }
 .pcard:hover{border-color:rgba(201,168,76,.28)}
 .pcard-thumb{
-  aspect-ratio:1/1;background:linear-gradient(135deg,#1a1a1a,#252525);
+  aspect-ratio:1/1;background:#1A1A1A;
   display:flex;align-items:center;justify-content:center;
   font-size:2.8rem;position:relative;overflow:hidden;
 }
@@ -108,7 +108,7 @@ body{background:var(--onyx)}
 .lcard:hover{border-color:rgba(201,168,76,.28)}
 .lthumb{
   width:78px;height:78px;border-radius:var(--radius-sm);
-  background:linear-gradient(135deg,#1a1a1a,#252525);
+  background:#1A1A1A;
   display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;overflow:hidden;position:relative;
 }
 .lthumb img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
@@ -282,6 +282,7 @@ function renderProducts(products){
   } else {
     wrap.innerHTML=`<div class="prd-list">${products.map(listCard).join('')}</div>`;
   }
+  if(typeof initLazyImages==='function') initLazyImages();
 }
 
 function thumbUrl(p){ return p.thumbnail_url||null; }

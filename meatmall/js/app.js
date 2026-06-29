@@ -184,13 +184,24 @@ if (document.readyState === 'loading') {
   showAdminBtn();
 }
 
-// ── 상품 이미지 프리로드 ──────────────────────────────────
+// ── 상품 이미지 프리로드 (뷰포트 근접 2개만 — lazy loading 강화) ──
 function preloadProductImages(products) {
-  (products || []).forEach(p => {
+  (products || []).slice(0, 2).forEach(p => {
     if (p.thumbnail_url) {
       const img = new Image();
       img.src = p.thumbnail_url;
     }
+  });
+}
+
+// ── lazy 이미지 fade-in 초기화 ───────────────────────────
+function initLazyImages() {
+  document.querySelectorAll('img[loading="lazy"]').forEach(img => {
+    if (img.complete && img.naturalWidth > 0) return;
+    img.style.opacity = '0';
+    img.style.transition = 'opacity .3s ease';
+    img.addEventListener('load',  () => { img.style.opacity = '1'; }, { once: true });
+    img.addEventListener('error', () => { img.style.opacity = '1'; }, { once: true });
   });
 }
 
