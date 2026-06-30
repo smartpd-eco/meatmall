@@ -100,4 +100,117 @@ async function calculateCustomerGrade(userId) {
   return segment;
 }
 
-module.exports = { calculateCustomerGrade };
+// ════════════════════════════════════════════════════
+// detectInventoryAlerts()
+//   재고 소스:
+//     - vendor_inventory.current_stock  (공급업체별 재고)
+//     - products.stock                  (직접 재고 — vendor_inventory 없는 상품 보완)
+//   유통기한:
+//     - products.expiry_days(일수)은 날짜가 아님
+//       → vendor_inventory.last_updated + expiry_days = 예상 만료일로 계산
+//   할인율:
+//     - 유통기한임박: 1일=50%, 2일=40%, 3일=30%
+//     - 과다재고:     100~150개=10%, 150~200개=20%, 200개↑=30%
+// ════════════════════════════════════════════════════
+async function detectInventoryAlerts() {
+  const OVERSTOCK_THRESHOLD = 100; // 과다재고 기준 수량
+  const EXPIRY_WARNING_DAYS = 3;   // 유통기한 임박 경고 기준 (일)
+
+  const todayMs = new Date().getTime();
+  const alerts = [];
+  const processedIds = new Set(); // product_id 중복 방지
+
+  // ── 1단계: vendor_inventory + products 조인 ───────────────
+  //   last_updated(입고일 프록시) + expiry_days = 예상 만료일
+  const { data: vendorInv, error: viErr } = await supabase
+    .from('vendor_inventory')
+    .select('product_id, current_stock, last_updated, products(id, stock, expiry_days, name)');
+
+  if (viErr) throw viErr;
+
+  for (const vi of vendorInv || []) {
+    const product      = vi.products;
+    if (!product) continue;
+
+    const currentStock = Number(vi.current_stock || 0);
+    const expiryDays   = Number(product.expiry_days || 0);
+
+    // 유통기한임박 탐지
+    if (expiryDays > 0 && vi.last_updated && currentStock > 0) {
+      const expiryDate = new Date(new Date(vi.last_updated).getTime() + expiryDays * 86400000);
+      const daysLeft   = Math.ceil((expiryDate.getTime() - todayMs) / 86400000);
+
+      if (daysLeft >= 0 && daysLeft <= EXPIRY_WARNING_DAYS) {
+        const discountRate = daysLeft <= 1 ? 50 : daysLeft <= 2 ? 40 : 30;
+        alerts.push({
+          product_id:                vi.product_id,
+          alert_type:                '유통기한임박',
+          current_stock:             currentStock,
+          expiry_date:               expiryDate.toISOString().split('T')[0],
+          recommended_discount_rate: discountRate,
+          status:                    '대기',
+        });
+        processedIds.add(vi.product_id);
+      }
+    }
+
+    // 과다재고 탐지 (vendor_inventory.current_stock 기준)
+    if (currentStock > OVERSTOCK_THRESHOLD) {
+      const discountRate = currentStock >= 200 ? 30 : currentStock >= 150 ? 20 : 10;
+      alerts.push({
+        product_id:                vi.product_id,
+        alert_type:                '과다재고',
+        current_stock:             currentStock,
+        expiry_date:               null,
+        recommended_discount_rate: discountRate,
+        status:                    '대기',
+      });
+      processedIds.add(vi.product_id);
+    }
+  }
+
+  // ── 2단계: products.stock 기반 과다재고 보완 ─────────────
+  //   vendor_inventory에 없는 상품만 대상
+  const { data: products, error: prodErr } = await supabase
+    .from('products')
+    .select('id, stock, expiry_days')
+    .eq('is_active', true)
+    .gt('stock', OVERSTOCK_THRESHOLD);
+
+  if (prodErr) throw prodErr;
+
+  for (const p of products || []) {
+    if (processedIds.has(p.id)) continue;
+
+    const stock = Number(p.stock);
+    const discountRate = stock >= 200 ? 30 : stock >= 150 ? 20 : 10;
+    alerts.push({
+      product_id:                p.id,
+      alert_type:                '과다재고',
+      current_stock:             stock,
+      expiry_date:               null,
+      recommended_discount_rate: discountRate,
+      status:                    '대기',
+    });
+  }
+
+  if (alerts.length === 0) {
+    return { detected: 0, expiry: 0, overstock: 0, data: [] };
+  }
+
+  const { data: inserted, error: insErr } = await supabase
+    .from('inventory_alerts')
+    .insert(alerts)
+    .select();
+
+  if (insErr) throw insErr;
+
+  return {
+    detected:  inserted.length,
+    expiry:    inserted.filter(a => a.alert_type === '유통기한임박').length,
+    overstock: inserted.filter(a => a.alert_type === '과다재고').length,
+    data:      inserted,
+  };
+}
+
+module.exports = { calculateCustomerGrade, detectInventoryAlerts };
