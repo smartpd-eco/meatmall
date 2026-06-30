@@ -15,6 +15,7 @@ const KAKAO = {
     PAYMENT_FAIL:    'TM_PAYMENT_FAIL',
     SUBSCRIBE_FAIL:  'TM_SUBSCRIBE_FAIL',
     CS_ANSWER:       'TM_CS_ANSWER',
+    ADMIN_NEW_ORDER: 'TM_ADMIN_ORDER',
   }
 };
 
@@ -124,6 +125,29 @@ async function notifyCSAnswer({ phone, name, ticketId, answer }) {
 }
 
 // ════════════════════════════════════════════════════
+// 관리자 신규 주문 알림 (결제 완료 시 내부 발송)
+// ════════════════════════════════════════════════════
+async function notifyAdminNewOrder({ orderId, amount, recipient, items, paymentMethod }) {
+  const adminPhone = process.env.ADMIN_PHONE;
+  if (!adminPhone) {
+    console.log(`[알림톡 DEV] 관리자알림 (ADMIN_PHONE 미설정) orderId:${orderId} amount:${amount} recipient:${recipient}`);
+    return { ok: true, dev: true };
+  }
+  return sendAlimtalk({
+    to: adminPhone,
+    templateCode: KAKAO.templates.ADMIN_NEW_ORDER,
+    params: {
+      '#{주문번호}':  orderId,
+      '#{상품명}':   items,
+      '#{결제금액}': Number(amount).toLocaleString('ko-KR') + '원',
+      '#{결제수단}': paymentMethod || '카드',
+      '#{수령인}':   recipient,
+    },
+    failover: false,
+  });
+}
+
+// ════════════════════════════════════════════════════
 // POST /api/notify/order-complete — 결제 완료 알림 발송
 // ════════════════════════════════════════════════════
 router.post('/order-complete', async (req, res) => {
@@ -181,3 +205,4 @@ module.exports.notifyOrderComplete  = notifyOrderComplete;
 module.exports.notifyShippingStart  = notifyShippingStart;
 module.exports.notifyPaymentFail    = notifyPaymentFail;
 module.exports.notifyCSAnswer       = notifyCSAnswer;
+module.exports.notifyAdminNewOrder  = notifyAdminNewOrder;

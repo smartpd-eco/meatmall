@@ -4,6 +4,7 @@ const fetch    = require('node-fetch');
 const { v4: uuidv4 } = require('uuid');
 const supabase = require('../../lib/supabase');
 const { requireAuth, requireAdmin } = require('../../middleware/auth');
+const { notifyOrderComplete, notifyAdminNewOrder } = require('../notify/index');
 
 // ══════════════════════════════════════════════════
 // 나이스페이먼츠 설정 — 키값만 Vercel 환경변수에 등록하면 됨
@@ -153,7 +154,7 @@ router.post('/confirm', requireAuth, async (req, res) => {
       return res.status(400).json({ error:'결제 정보가 올바르지 않습니다' });
 
     const { data: order } = await supabase
-      .from('orders').select('id,final_amount,payment_status,user_id')
+      .from('orders').select('id,final_amount,payment_status,user_id,phone,recipient,payment_method')
       .eq('order_number', orderId).single();
 
     if (!order)            return res.status(404).json({ error:'주문을 찾을 수 없습니다' });
@@ -186,6 +187,25 @@ router.post('/confirm', requireAuth, async (req, res) => {
       });
     }
 
+    // ── 소비자 결제완료 알림 + 관리자 신규주문 알림 (비동기, 결제 응답에 영향 없음)
+    if (order.phone) {
+      notifyOrderComplete({
+        phone:        order.phone,
+        name:         order.recipient || '고객',
+        orderId,
+        amount:       order.final_amount,
+        items:        '주문 상품',
+        deliveryDate: '3~5 영업일 이내',
+      }).catch(e => console.error('[결제완료 알림 오류]', e));
+    }
+    notifyAdminNewOrder({
+      orderId,
+      amount:        order.final_amount,
+      recipient:     order.recipient || '-',
+      items:         '주문 상품',
+      paymentMethod: order.payment_method || '카드',
+    }).catch(e => console.error('[관리자 알림 오류]', e));
+
     res.json({ ok:true, orderId, amount:Number(amount), pointEarned:pt, message:'결제 완료' });
   } catch(err) {
     console.error('[payment/confirm]', err);
@@ -200,7 +220,7 @@ router.post('/vbank-confirm', requireAdmin, async (req, res) => {
   try {
     const { orderId, depositorName, depositAmount } = req.body;
     const { data:order } = await supabase
-      .from('orders').select('id,final_amount,payment_status,user_id')
+      .from('orders').select('id,final_amount,payment_status,user_id,phone,recipient,payment_method')
       .eq('order_number', orderId).single();
 
     if (!order) return res.status(404).json({ error:'주문 없음' });
@@ -218,6 +238,25 @@ router.post('/vbank-confirm', requireAdmin, async (req, res) => {
       user_id:order.user_id, amount:pt,
       reason:`주문 ${orderId} 무통장 입금 적립`, order_id:order.id,
     });
+
+    // ── 무통장 입금 확인 시 소비자·관리자 알림
+    if (order.phone) {
+      notifyOrderComplete({
+        phone:        order.phone,
+        name:         order.recipient || '고객',
+        orderId,
+        amount:       order.final_amount,
+        items:        '주문 상품',
+        deliveryDate: '3~5 영업일 이내',
+      }).catch(e => console.error('[입금확인 알림 오류]', e));
+    }
+    notifyAdminNewOrder({
+      orderId,
+      amount:        order.final_amount,
+      recipient:     order.recipient || '-',
+      items:         '주문 상품',
+      paymentMethod: '무통장입금',
+    }).catch(e => console.error('[관리자 알림 오류]', e));
 
     res.json({ ok:true, message:'입금 확인 완료. 준비중으로 변경됐습니다.', orderId, pointEarned:pt });
   } catch(err) {

@@ -2,6 +2,7 @@ const express  = require('express');
 const router   = express.Router();
 const supabase = require('../../lib/supabase');
 const { requireAdmin } = require('../../middleware/auth');
+const { notifyShippingStart } = require('../notify/index');
 
 // 모든 관리자 라우터에 인증 적용
 router.use(requireAdmin);
@@ -143,9 +144,15 @@ router.patch('/orders/:id', async (req, res) => {
 
     if (error) throw error;
 
-    // 배송 시작 시 알림톡 발송 (notify 모듈 연동)
+    // 배송 시작 시 소비자 알림톡 발송
     if (status === 'shipping' && order.users?.phone) {
-      // 알림톡은 별도 모듈에서 처리
+      notifyShippingStart({
+        phone:          order.users.phone,
+        name:           order.users.name || order.recipient || '고객',
+        orderId:        order.order_number,
+        carrier:        carrier || order.carrier || 'CJ대한통운',
+        trackingNumber: tracking_number || order.tracking_number || '-',
+      }).catch(e => console.error('[배송시작 알림 오류]', e));
     }
 
     res.json({ ok: true, order });
