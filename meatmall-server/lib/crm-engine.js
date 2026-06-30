@@ -15,11 +15,12 @@ const GRADE_SILVER =   100_000;
 // ════════════════════════════════════════════════════
 async function calculateCustomerGrade(userId) {
   // 해당 유저의 완료 주문 전체 조회 (오름차순 — 주기 계산용)
+  // 완료 상태 주문: 스키마 기준 'delivered' + 한글 표기 혼용 대비
   const { data: orders, error } = await supabase
     .from('orders')
-    .select('total_amount, created_at')
+    .select('final_amount, created_at')
     .eq('user_id', userId)
-    .eq('status', 'delivered')
+    .in('status', ['delivered', '배송완료', 'completed', '완료'])
     .order('created_at', { ascending: true });
 
   if (error) throw error;
@@ -46,7 +47,7 @@ async function calculateCustomerGrade(userId) {
   }
 
   // 총 결제액 / 주문 수
-  const total_spent = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const total_spent = orders.reduce((sum, o) => sum + Number(o.final_amount || 0), 0);
   const order_count = orders.length;
 
   // 마지막 주문일
