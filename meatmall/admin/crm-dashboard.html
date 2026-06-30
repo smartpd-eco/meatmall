@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CRM 관리자 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0F0F0F;color:#F0F2F5;font-family:'Noto Sans KR',sans-serif;font-size:14px;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+
+.adm{display:flex;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+.adm-hdr{height:54px;background:#0F0F0F;border-bottom:2px solid #C9A84C;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200;flex-shrink:0}
+.adm-brand{font-size:1.1rem;font-weight:800;color:#C9A84C;letter-spacing:.04em}
+.adm-brand small{font-size:.65rem;color:rgba(201,168,76,.5);font-weight:400;margin-left:8px;letter-spacing:.1em}
+.adm-hright{display:flex;align-items:center;gap:14px;font-size:.82rem;color:#9CA3AF}
+.adm-logout{border:1px solid rgba(201,168,76,.4);color:#C9A84C;background:transparent;padding:5px 14px;border-radius:5px;font-size:.8rem;font-weight:600;transition:background .15s}
+.adm-logout:hover{background:rgba(201,168,76,.08)}
+.adm-back{color:#9CA3AF;font-size:.8rem;text-decoration:none}
+.adm-back:hover{color:#C9A84C}
+
+/* TABS */
+.adm-tabs{display:flex;background:#111;border-bottom:2px solid #C9A84C;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+.adm-tabs::-webkit-scrollbar{display:none}
+.adm-tab{flex-shrink:0;padding:13px 22px;font-size:.85rem;font-weight:600;color:rgba(201,168,76,.4);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:color .15s,border-color .15s}
+.adm-tab:hover{color:rgba(201,168,76,.7)}
+.adm-tab.on{color:#C9A84C;border-bottom-color:#C9A84C}
+
+/* BODY */
+.adm-body{flex:1;padding:24px 28px;overflow-x:auto}
+
+/* STAT GRID */
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+@media(max-width:900px){.stat-row{grid-template-columns:repeat(3,1fr)}}
+.stat-card{background:#1A1A1A;border:1px solid #262626;border-radius:10px;padding:18px}
+.stat-lbl{font-size:.75rem;color:#9CA3AF;margin-bottom:6px}
+.stat-val{font-size:1.6rem;font-weight:800;color:#C9A84C;line-height:1}
+.stat-sub{font-size:.73rem;color:#6B7280;margin-top:4px}
+
+/* CARD */
+.card{background:#1A1A1A;border:1px solid #262626;border-radius:10px;padding:20px;margin-bottom:20px}
+.card:last-child{margin-bottom:0}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.card-title{font-size:.95rem;font-weight:700;color:#F0F2F5}
+.card-sub{font-size:.78rem;color:#9CA3AF;margin-top:3px}
+.card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:#141414;color:#9CA3AF;font-size:.75rem;font-weight:600;padding:10px 14px;text-align:left;border-bottom:1px solid #1E1E1E;white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid #1E1E1E;font-size:.84rem;color:#D1D5DB;vertical-align:middle}
+tbody tr:hover td{background:#1C1C1C}
+tbody tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.bdg{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.71rem;font-weight:700;white-space:nowrap}
+.bdg-vip{background:rgba(201,168,76,.2);color:#E8C97A;border:1px solid rgba(201,168,76,.3)}
+.bdg-gold{background:rgba(234,179,8,.15);color:#EAB308}
+.bdg-silver{background:rgba(148,163,184,.15);color:#94A3B8}
+.bdg-normal{background:rgba(100,116,139,.12);color:#64748B}
+.bdg-churn{background:rgba(239,68,68,.12);color:#EF4444}
+.bdg-ok{background:rgba(34,197,94,.12);color:#22C55E}
+.bdg-wait{background:rgba(234,179,8,.12);color:#EAB308}
+.bdg-reject{background:rgba(239,68,68,.12);color:#EF4444}
+.bdg-done{background:rgba(34,197,94,.12);color:#22C55E}
+.bdg-fail{background:rgba(239,68,68,.12);color:#EF4444}
+.bdg-expiry{background:rgba(249,115,22,.15);color:#F97316}
+.bdg-over{background:rgba(168,85,247,.15);color:#A855F7}
+
+/* RISK BAR */
+.risk-bar{display:flex;align-items:center;gap:8px}
+.risk-track{flex:1;height:5px;background:#262626;border-radius:3px;overflow:hidden;max-width:80px}
+.risk-fill{height:100%;border-radius:3px;transition:width .3s}
+
+/* BUTTONS */
+.btn{padding:7px 16px;border-radius:6px;border:none;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F}
+.btn-outline{background:transparent;border:1px solid #C9A84C;color:#C9A84C}
+.btn-danger{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.3)}
+.btn-success{background:rgba(34,197,94,.12);color:#22C55E;border:1px solid rgba(34,197,94,.3)}
+.btn-info{background:rgba(59,130,246,.12);color:#3B82F6;border:1px solid rgba(59,130,246,.3)}
+.btn-sm{padding:4px 11px;font-size:.76rem}
+
+/* FILTER BAR */
+.fbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.fin-sm{background:#141414;border:1px solid #2A2A2A;color:#F0F2F5;padding:7px 11px;border-radius:6px;font-size:.82rem;outline:none}
+.fin-sm:focus{border-color:#C9A84C}
+
+/* FORMS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+.form-row.c1{grid-template-columns:1fr}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr}
+.fgrp{display:flex;flex-direction:column;gap:5px}
+.flbl{font-size:.79rem;color:#9CA3AF}
+.finput{background:#141414;border:1px solid #2A2A2A;color:#F0F2F5;padding:9px 12px;border-radius:6px;font-size:.88rem;outline:none;width:100%}
+.finput:focus{border-color:#C9A84C}
+.fselect{background:#141414;border:1px solid #2A2A2A;color:#F0F2F5;padding:9px 12px;border-radius:6px;font-size:.88rem;outline:none;width:100%;cursor:pointer;appearance:none}
+.fselect:focus{border-color:#C9A84C}
+textarea.finput{resize:vertical;min-height:90px}
+
+/* CHECKBOX GROUP */
+.chk-group{display:flex;gap:12px;flex-wrap:wrap;padding:4px 0}
+.chk-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.84rem;color:#D1D5DB}
+.chk-item input{accent-color:#C9A84C;width:15px;height:15px;cursor:pointer}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;display:none}
+.overlay.show{display:flex;align-items:center;justify-content:center}
+.modal{background:#1A1A1A;border:1px solid #333;border-radius:12px;padding:28px 28px 22px;width:540px;max-width:94vw;max-height:88vh;overflow-y:auto;z-index:901}
+.modal-title{font-size:1rem;font-weight:700;color:#F0F2F5;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #262626}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid #262626}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);background:#1C1C1C;border:1px solid #C9A84C;color:#F0F2F5;padding:10px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:#EF4444;color:#EF4444}
+
+/* EMPTY / SPINNER */
+.empty{text-align:center;padding:50px;color:#6B7280;font-size:.88rem}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(201,168,76,.2);border-top-color:#C9A84C;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SECTION DIVIDER */
+.sec-divider{height:1px;background:#1E1E1E;margin:16px 0}
+
+/* AI CARD */
+.ai-card{background:#141414;border:1px solid #262626;border-radius:8px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.ai-card:last-child{margin-bottom:0}
+.ai-name{font-weight:600;color:#F0F2F5;flex:1;min-width:120px}
+.ai-meta{font-size:.79rem;color:#9CA3AF;display:flex;gap:14px;flex-wrap:wrap}
+.ai-discount{font-size:1.1rem;font-weight:800;color:#C9A84C}
+</style>
+<script>window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()})</script>
+</head>
+<body>
+<div class="adm">
+
+  <!-- HEADER -->
+  <header class="adm-hdr">
+    <div class="adm-brand">정육본가 <small>CRM DASHBOARD</small></div>
+    <div class="adm-hright">
+      <span id="adm-user">로딩 중...</span>
+      <a class="adm-back" href="dashboard.html">← 메인 대시보드</a>
+      <button class="adm-logout" onclick="logout()">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="adm-tabs">
+    <div class="adm-tab on"  data-tab="segments"   onclick="switchTab('segments',this)">👥 고객세분화</div>
+    <div class="adm-tab"     data-tab="churn"       onclick="switchTab('churn',this)">😴 휴면고객</div>
+    <div class="adm-tab"     data-tab="templates"   onclick="switchTab('templates',this)">📝 템플릿</div>
+    <div class="adm-tab"     data-tab="campaigns"   onclick="switchTab('campaigns',this)">📣 캠페인</div>
+    <div class="adm-tab"     data-tab="sendlogs"    onclick="switchTab('sendlogs',this)">📨 발송로그</div>
+    <div class="adm-tab"     data-tab="inventoryai" onclick="switchTab('inventoryai',this)">🤖 재고AI</div>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="adm-body" id="adm-body">
+    <div class="empty"><span class="spinner"></span> 불러오는 중...</div>
+  </main>
+</div>
+
+<!-- MODAL OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-title"></div>
+    <div id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">닫기</button>
+      <button class="btn btn-gold" id="modal-ok" style="display:none">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://meatmall-server.vercel.app/api';
+let TOKEN = '';
+let _modalOkFn = null;
+let _tplCache = []; // 템플릿 캐시 (캠페인 드롭다운용)
+
+/* ── UTILS ── */
+function fmt(n){ return Number(n||0).toLocaleString('ko-KR'); }
+function fmtDate(d){ return d ? new Date(d).toLocaleDateString('ko-KR') : '–'; }
+function fmtDT(d){ return d ? new Date(d).toLocaleString('ko-KR') : '–'; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg, isErr){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = 'toast', 2800);
+}
+
+function hdrs(){ return { Authorization: 'Bearer '+TOKEN, 'Content-Type': 'application/json' }; }
+
+async function api(path, opts={}){
+  const r = await fetch(API+path, { headers: hdrs(), ...opts });
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(d.error || d.message || 'API 오류 '+r.status);
+  return d;
+}
+
+function setBody(html){ document.getElementById('adm-body').innerHTML = html; }
+
+function openModal(title, bodyHtml, okLabel, okFn){
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  const okBtn = document.getElementById('modal-ok');
+  if (okFn){
+    okBtn.textContent = okLabel || '저장';
+    okBtn.style.display = '';
+    okBtn.onclick = okFn;
+  } else {
+    okBtn.style.display = 'none';
+  }
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(e){
+  if (e && e.target !== document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('show');
+}
+function closeModalDirect(){ document.getElementById('overlay').classList.remove('show'); }
+
+/* ── AUTH ── */
+async function init(){
+  TOKEN = localStorage.getItem('mm_access_token') || '';
+  if (!TOKEN){ location.href='../login.html'; return; }
+  try {
+    const d = await api('/auth/me');
+    if (!d.user?.is_admin){ location.href='../login.html'; return; }
+    document.getElementById('adm-user').textContent = d.user.name || d.user.email || '관리자';
+  } catch(e){ location.href='../login.html'; return; }
+  switchTab('segments');
+}
+
+function logout(){
+  if (!confirm('로그아웃 하시겠습니까?')) return;
+  ['mm_access_token','mm_user_cache'].forEach(k=>localStorage.removeItem(k));
+  location.href = '../login.html';
+}
+
+/* ── TAB SWITCH ── */
+const TABS = { segments:tabSegments, churn:tabChurn, templates:tabTemplates, campaigns:tabCampaigns, sendlogs:tabSendLogs, inventoryai:tabInventoryAI };
+function switchTab(name, el){
+  document.querySelectorAll('.adm-tab[data-tab]').forEach(t=>t.classList.remove('on'));
+  const tabEl = el || document.querySelector(`.adm-tab[data-tab="${name}"]`);
+  if (tabEl) tabEl.classList.add('on');
+  setBody('<div class="empty"><span class="spinner"></span> 불러오는 중...</div>');
+  (TABS[name] || (()=>{}))();
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB 1 — 고객 세분화
+═══════════════════════════════════════════════════════ */
+let _segFilter = '';
+let _segData   = [];
+
+async function tabSegments(){
+  try {
+    const url = _segFilter ? `/crm/segments?grade=${encodeURIComponent(_segFilter)}` : '/crm/segments';
+    const d = await api(url);
+    _segData = d.data || [];
+    renderSegments();
+  } catch(e){ setBody(`<div class="empty">오류: ${esc(e.message)}</div>`); }
+}
+
+function renderSegments(){
+  const grades = ['','VIP','GOLD','SILVER','일반','휴면'];
+  const gradeBadge = { VIP:'bdg-vip', GOLD:'bdg-gold', SILVER:'bdg-silver', '일반':'bdg-normal', '휴면':'bdg-churn' };
+
+  // 통계
+  const counts = {};
+  grades.slice(1).forEach(g => counts[g] = _segData.filter(r=>r.grade===g).length);
+
+  const statsHtml = grades.slice(1).map(g=>`
+    <div class="stat-card">
+      <div class="stat-lbl">${g}</div>
+      <div class="stat-val">${counts[g]}</div>
+      <div class="stat-sub">명</div>
+    </div>`).join('');
+
+  const rows = _segData.map(r=>{
+    const u = r.users || {};
+    const risk = Number(r.churn_risk_score||0);
+    const riskColor = risk >= .7 ? '#EF4444' : risk >= .4 ? '#EAB308' : '#22C55E';
+    return `<tr>
+      <td>${esc(u.name||'–')}</td>
+      <td style="color:#9CA3AF;font-size:.8rem">${esc(u.email||'–')}</td>
+      <td><span class="bdg ${gradeBadge[r.grade]||'bdg-normal'}">${esc(r.grade)}</span></td>
+      <td style="font-variant-numeric:tabular-nums">${fmt(r.total_spent)}원</td>
+      <td>
+        <div class="risk-bar">
+          <div class="risk-track"><div class="risk-fill" style="width:${Math.round(risk*100)}%;background:${riskColor}"></div></div>
+          <span style="font-size:.78rem;color:${riskColor}">${Math.round(risk*100)}%</span>
+        </div>
+      </td>
+      <td style="font-size:.8rem;color:#9CA3AF">${fmtDate(r.last_order_at)}</td>
+      <td style="font-size:.79rem;color:#6B7280">${r.order_count||0}건</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" class="empty">데이터 없음</td></tr>';
+
+  setBody(`
+    <div class="stat-row" style="grid-template-columns:repeat(5,1fr)">${statsHtml}</div>
+    <div class="card">
+      <div class="card-head">
+        <div><div class="card-title">고객 등급 현황</div></div>
+        <div class="card-actions">
+          <select class="fin-sm" onchange="_segFilter=this.value;tabSegments()">
+            ${grades.map(g=>`<option value="${g}" ${_segFilter===g?'selected':''}>${g||'전체 등급'}</option>`).join('')}
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="recalcSegments(this)">⟳ 전체 재계산</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>이름</th><th>이메일</th><th>등급</th><th>총구매액</th><th>이탈위험도</th><th>마지막주문</th><th>주문수</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`);
+}
+
+async function recalcSegments(btn){
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 계산 중...';
+  try {
+    const d = await api('/crm/segments/recalculate', { method:'POST' });
+    toast(`재계산 완료 — 전체 ${d.total}명 / 오류 ${d.errors}건`);
+    tabSegments();
+  } catch(e){ toast('재계산 실패: '+e.message, true); }
+  finally { btn.disabled=false; btn.innerHTML='⟳ 전체 재계산'; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB 2 — 휴면고객
+═══════════════════════════════════════════════════════ */
+async function tabChurn(){
+  try {
+    const d = await api('/crm/churn?risk=all');
+    const rows = (d.data||[]).sort((a,b)=>b.churn_risk_score-a.churn_risk_score)
+      .map(r=>{
+        const u = r.users || {};
+        const risk = Number(r.churn_risk_score||0);
+        const riskColor = risk>=.7?'#EF4444':risk>=.4?'#EAB308':'#22C55E';
+        return `<tr>
+          <td>${esc(u.name||'–')}</td>
+          <td style="color:#9CA3AF;font-size:.8rem">${esc(u.email||'–')}</td>
+          <td><span class="bdg ${r.grade==='휴면'?'bdg-churn':'bdg-wait'}">${esc(r.grade)}</span></td>
+          <td>
+            <div class="risk-bar">
+              <div class="risk-track"><div class="risk-fill" style="width:${Math.round(risk*100)}%;background:${riskColor}"></div></div>
+              <span style="font-size:.8rem;color:${riskColor};font-weight:700">${Math.round(risk*100)}%</span>
+            </div>
+          </td>
+          <td style="font-variant-numeric:tabular-nums">${fmt(r.total_spent)}원</td>
+          <td style="font-size:.8rem;color:#9CA3AF">${fmtDate(r.last_order_at)}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="6" class="empty">휴면·이탈위험 고객 없음</td></tr>';
+
+    setBody(`<div class="card">
+      <div class="card-head"><div class="card-title">휴면 / 이탈위험 고객</div>
+        <div style="font-size:.8rem;color:#9CA3AF">이탈위험도 높은 순 정렬</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>이름</th><th>이메일</th><th>등급</th><th>이탈위험도</th><th>총구매액</th><th>마지막주문</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`);
+  } catch(e){ setBody(`<div class="empty">오류: ${esc(e.message)}</div>`); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB 3 — 템플릿 관리
+═══════════════════════════════════════════════════════ */
+let _tplFilter = '';
+let _tplList   = [];
+
+async function tabTemplates(){
+  try {
+    const url = _tplFilter ? `/crm/templates?type=${encodeURIComponent(_tplFilter)}` : '/crm/templates';
+    const d = await api(url);
+    _tplList = d.data || [];
+    _tplCache = _tplList; // 캠페인 드롭다운용 캐시
+    renderTemplates();
+  } catch(e){ setBody(`<div class="empty">오류: ${esc(e.message)}</div>`); }
+}
+
+const TPL_STAT = { '대기':'bdg-wait', '승인':'bdg-done', '반려':'bdg-reject' };
+
+function renderTemplates(){
+  const rows = _tplList.map(t=>`<tr>
+    <td style="font-size:.79rem;color:#9CA3AF">${esc(t.template_code)}</td>
+    <td style="font-weight:600">${esc(t.title)}</td>
+    <td><span class="bdg ${t.template_type==='알림톡'?'bdg-wait':'bdg-vip'}">${esc(t.template_type)}</span></td>
+    <td style="font-size:.79rem;color:#9CA3AF;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.content||'')}</td>
+    <td><span class="bdg ${TPL_STAT[t.status]||'bdg-normal'}">${esc(t.status)}</span></td>
+    <td style="font-size:.78rem;color:#6B7280">${fmtDate(t.created_at)}</td>
+    <td>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="openTplModal(${t.id})">수정</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTpl(${t.id},'${esc(t.title)}')">삭제</button>
+      </div>
+    </td>
+  </tr>`).join('') || '<tr><td colspan="7" class="empty">템플릿 없음</td></tr>';
+
+  setBody(`<div class="card">
+    <div class="card-head">
+      <div class="card-title">알림톡 / 친구톡 템플릿</div>
+      <div class="card-actions">
+        <select class="fin-sm" onchange="_tplFilter=this.value;tabTemplates()">
+          <option value="" ${!_tplFilter?'selected':''}>전체 타입</option>
+          <option value="알림톡" ${_tplFilter==='알림톡'?'selected':''}>알림톡</option>
+          <option value="친구톡" ${_tplFilter==='친구톡'?'selected':''}>친구톡</option>
+        </select>
+        <button class="btn btn-gold btn-sm" onclick="openTplModal(null)">+ 새 템플릿</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>템플릿코드</th><th>제목</th><th>타입</th><th>내용</th><th>상태</th><th>등록일</th><th>관리</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`);
+}
+
+function openTplModal(id){
+  const t = id ? _tplList.find(x=>x.id===id) : null;
+  const statusOpts = ['대기','승인','반려'].map(s=>`<option value="${s}" ${t?.status===s?'selected':''}>${s}</option>`).join('');
+  openModal(t ? '템플릿 수정' : '새 템플릿 등록', `
+    <div class="form-row">
+      <div class="fgrp"><label class="flbl">템플릿 코드 *</label>
+        <input id="t-code" class="finput" value="${esc(t?.template_code||'')}" placeholder="TM_ORDER_COMPLETE" ${t?'readonly style="opacity:.5"':''}></div>
+      <div class="fgrp"><label class="flbl">타입 *</label>
+        <select id="t-type" class="fselect">
+          <option value="알림톡" ${t?.template_type==='알림톡'?'selected':''}>알림톡</option>
+          <option value="친구톡" ${t?.template_type==='친구톡'?'selected':''}>친구톡</option>
+        </select></div>
+    </div>
+    <div class="form-row c1">
+      <div class="fgrp"><label class="flbl">제목 *</label>
+        <input id="t-title" class="finput" value="${esc(t?.title||'')}" placeholder="주문 완료 알림"></div>
+    </div>
+    <div class="form-row c1">
+      <div class="fgrp"><label class="flbl">내용 *</label>
+        <textarea id="t-content" class="finput">${esc(t?.content||'')}</textarea></div>
+    </div>
+    ${t ? `<div class="form-row c1"><div class="fgrp"><label class="flbl">상태</label>
+      <select id="t-status" class="fselect">${statusOpts}</select></div></div>` : ''}
+  `, t ? '수정 저장' : '등록', async ()=>{
+    const body = {
+      template_code: document.getElementById('t-code').value.trim(),
+      template_type: document.getElementById('t-type').value,
+      title:         document.getElementById('t-title').value.trim(),
+      content:       document.getElementById('t-content').value.trim(),
+      ...(t && { status: document.getElementById('t-status').value }),
+    };
+    if (!body.title || !body.content || (!t && !body.template_code))
+      return toast('필수 항목을 입력해주세요', true);
+    try {
+      if (t) await api(`/crm/templates/${id}`, { method:'PUT', body:JSON.stringify(body) });
+      else    await api('/crm/templates',      { method:'POST', body:JSON.stringify(body) });
+      closeModalDirect();
+      toast(t ? '템플릿이 수정됐습니다' : '템플릿이 등록됐습니다');
+      tabTemplates();
+    } catch(e){ toast('저장 실패: '+e.message, true); }
+  });
+}
+
+async function deleteTpl(id, title){
+  if (!confirm(`"${title}" 템플릿을 삭제하시겠습니까?`)) return;
+  try {
+    await api(`/crm/templates/${id}`, { method:'DELETE' });
+    toast('템플릿이 삭제됐습니다');
+    tabTemplates();
+  } catch(e){ toast('삭제 실패: '+e.message, true); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB 4 — 캠페인 관리
+═══════════════════════════════════════════════════════ */
+let _campList = [];
+
+async function tabCampaigns(){
+  try {
+    const [cd, td] = await Promise.all([
+      api('/crm/campaigns'),
+      _tplCache.length ? Promise.resolve({data:_tplCache}) : api('/crm/templates'),
+    ]);
+    _campList = cd.data || [];
+    _tplCache = td.data || [];
+    renderCampaigns();
+  } catch(e){ setBody(`<div class="empty">오류: ${esc(e.message)}</div>`); }
+}
+
+const CAMP_STAT = { '예약':'bdg-wait', '발송중':'bdg-vip', '완료':'bdg-done', '실패':'bdg-reject' };
+
+function renderCampaigns(){
+  const rows = _campList.map(c=>{
+    const tpl = _tplCache.find(t=>t.id===c.template_id);
+    const seg = c.target_segment ? JSON.stringify(c.target_segment) : '전체';
+    const canSend = c.status==='예약';
+    return `<tr>
+      <td style="font-weight:600">${esc(c.campaign_name)}</td>
+      <td style="font-size:.79rem;color:#9CA3AF">${esc(tpl?.title||c.template_id||'–')}</td>
+      <td style="font-size:.78rem;color:#6B7280;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(seg)}</td>
+      <td><span class="bdg ${CAMP_STAT[c.status]||'bdg-normal'}">${esc(c.status)}</span></td>
+      <td style="font-variant-numeric:tabular-nums;font-size:.82rem">${c.sent_count||0} / <span style="color:#22C55E">${c.success_count||0}</span> / <span style="color:#EF4444">${c.fail_count||0}</span></td>
+      <td style="font-size:.78rem;color:#6B7280">${fmtDate(c.created_at)}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${canSend ? `<button class="btn btn-success btn-sm" onclick="sendCampaign(${c.id},this)">▶ 즉시발송</button>` : ''}
+          <button class="btn btn-danger btn-sm" onclick="deleteCampaign(${c.id},'${esc(c.campaign_name)}')">삭제</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" class="empty">캠페인 없음</td></tr>';
+
+  setBody(`<div class="card">
+    <div class="card-head">
+      <div class="card-title">캠페인 목록</div>
+      <button class="btn btn-gold btn-sm" onclick="openCampModal()">+ 새 캠페인</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>캠페인명</th><th>템플릿</th><th>대상</th><th>상태</th><th>발송/성공/실패</th><th>생성일</th><th>관리</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`);
+}
+
+function openCampModal(){
+  const tplOpts = _tplCache.filter(t=>t.status==='승인')
+    .map(t=>`<option value="${t.id}">${esc(t.title)} (${esc(t.template_type)})</option>`).join('');
+
+  openModal('새 캠페인 생성', `
+    <div class="form-row c1">
+      <div class="fgrp"><label class="flbl">캠페인명 *</label>
+        <input id="c-name" class="finput" placeholder="6월 VIP 재구매 캠페인"></div>
+    </div>
+    <div class="form-row c1">
+      <div class="fgrp"><label class="flbl">템플릿 선택 * <span style="font-size:.73rem;color:#6B7280">(승인된 템플릿만 표시)</span></label>
+        <select id="c-tpl" class="fselect">
+          <option value="">-- 선택 --</option>
+          ${tplOpts || '<option disabled>승인된 템플릿 없음</option>'}
+        </select></div>
+    </div>
+    <div class="fgrp" style="margin-bottom:14px">
+      <label class="flbl">대상 등급 <span style="font-size:.73rem;color:#6B7280">(미선택 시 전체)</span></label>
+      <div class="chk-group">
+        ${['VIP','GOLD','SILVER','일반','휴면'].map(g=>`
+          <label class="chk-item"><input type="checkbox" class="c-grade" value="${g}"> ${g}</label>`).join('')}
+      </div>
+    </div>
+    <div class="form-row c1">
+      <div class="fgrp"><label class="flbl">예약 발송일시 <span style="font-size:.73rem;color:#6B7280">(미입력 시 즉시)</span></label>
+        <input id="c-sched" type="datetime-local" class="finput"></div>
+    </div>
+  `, '캠페인 생성', async ()=>{
+    const name   = document.getElementById('c-name').value.trim();
+    const tplId  = Number(document.getElementById('c-tpl').value);
+    const grades = [...document.querySelectorAll('.c-grade:checked')].map(x=>x.value);
+    const sched  = document.getElementById('c-sched').value;
+    if (!name || !tplId) return toast('캠페인명과 템플릿을 선택해주세요', true);
+    const seg = grades.length ? { grade: grades } : null;
+    try {
+      await api('/crm/campaigns', { method:'POST', body:JSON.stringify({
+        campaign_name: name,
+        template_id:   tplId,
+        target_segment: seg,
+        scheduled_at:  sched || null,
+      })});
+      closeModalDirect();
+      toast('캠페인이 생성됐습니다');
+      tabCampaigns();
+    } catch(e){ toast('생성 실패: '+e.message, true); }
+  });
+}
+
+async function sendCampaign(id, btn){
+  if (!confirm('즉시 발송하시겠습니까?')) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const d = await api(`/crm/campaigns/${id}/send`, { method:'POST' });
+    toast(`발송 완료 — 전송 ${d.sent}건 / 성공 ${d.success}건 / 실패 ${d.fail}건`);
+    tabCampaigns();
+  } catch(e){ toast('발송 실패: '+e.message, true); btn.disabled=false; btn.innerHTML='▶ 즉시발송'; }
+}
+
+async function deleteCampaign(id, name){
+  if (!confirm(`"${name}" 캠페인을 삭제하시겠습니까?`)) return;
+  try {
+    await api(`/crm/campaigns/${id}`, { method:'DELETE' });
+    toast('삭제됐습니다');
+    tabCampaigns();
+  } catch(e){ toast('삭제 실패: '+e.message, true); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB 5 — 발송 로그
+═══════════════════════════════════════════════════════ */
+let _logCampFilter = '';
+let _logStatFilter = '';
+
+async function tabSendLogs(){
+  try {
+    let url = '/crm/send-logs?limit=100';
+    if (_logCampFilter) url += `&campaign_id=${_logCampFilter}`;
+    if (_logStatFilter) url += `&status=${encodeURIComponent(_logStatFilter)}`;
+    const [ld, cd] = await Promise.all([
+      api(url),
+      api('/crm/campaigns?limit=100'),
+    ]);
+    const logs  = ld.data || [];
+    const camps = cd.data || [];
+    renderSendLogs(logs, camps);
+  } catch(e){ setBody(`<div class="empty">오류: ${esc(e.message)}</div>`); }
+}
+
+function renderSendLogs(logs, camps){
+  const campOpts = camps.map(c=>`<option value="${c.id}" ${_logCampFilter==c.id?'selected':''}>${esc(c.campaign_name)}</option>`).join('');
+  const LOG_STAT = { '성공':'bdg-done', '실패':'bdg-reject', '대기':'bdg-wait' };
+
+  const rows = logs.map(l=>`<tr>
+    <td style="font-size:.79rem;color:#9CA3AF">${esc(l.kakao_campaigns?.campaign_name||'–')}</td>
+    <td style="font-size:.79rem">${esc(l.phone_number||'–')}</td>
+    <td style="font-size:.78rem;color:#9CA3AF">${esc(l.kakao_templates?.template_code||'–')}</td>
+    <td><span class="bdg ${LOG_STAT[l.status]||'bdg-normal'}">${esc(l.status)}</span></td>
+    <td style="font-size:.78rem;color:#6B7280">${fmtDT(l.sent_at)}</td>
+    <td style="font-size:.78rem;color:#EF4444;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.error_message||'–')}</td>
+    <td style="font-size:.78rem;color:#9CA3AF">${l.retry_count||0}회</td>
+    <td>${l.status==='실패' && (l.retry_count||0)<3
+      ? `<button class="btn btn-info btn-sm" onclick="retryLog(${l.id},this)">재발송</button>`
+      : '–'
+    }</td>
+  </tr>`).join('') || '<tr><td colspan="8" class="empty">발송 로그 없음</td></tr>';
+
+  setBody(`<div class="card">
+    <div class="card-head">
+      <div class="card-title">발송 로그</div>
+      <div class="card-actions">
+        <select class="fin-sm" onchange="_logCampFilter=this.value;tabSendLogs()">
+          <option value="">전체 캠페인</option>${campOpts}
+        </select>
+        <select class="fin-sm" onchange="_logStatFilter=this.value;tabSendLogs()">
+          <option value="" ${!_logStatFilter?'selected':''}>전체 상태</option>
+          <option value="성공" ${_logStatFilter==='성공'?'selected':''}>성공</option>
+          <option value="실패" ${_logStatFilter==='실패'?'selected':''}>실패</option>
+          <option value="대기" ${_logStatFilter==='대기'?'selected':''}>대기</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="tabSendLogs()">↺ 새로고침</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>캠페인</th><th>수신번호</th><th>템플릿코드</th><th>상태</th><th>발송일시</th><th>오류메시지</th><th>재시도</th><th>관리</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`);
+}
+
+async function retryLog(id, btn){
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const d = await api(`/crm/send-logs/${id}/retry`, { method:'POST' });
+    toast(`재발송 ${d.status} — 재시도 ${d.retry_count}회`);
+    tabSendLogs();
+  } catch(e){ toast('재발송 실패: '+e.message, true); btn.disabled=false; btn.innerHTML='재발송'; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB 6 — 재고 AI
+═══════════════════════════════════════════════════════ */
+let _aiData = [];
+
+async function tabInventoryAI(){
+  try {
+    const d = await api('/crm/inventory-ai');
+    _aiData = d.data || [];
+    renderInventoryAI();
+  } catch(e){ setBody(`<div class="empty">오류: ${esc(e.message)}</div>`); }
+}
+
+function renderInventoryAI(){
+  const expiry   = _aiData.filter(a=>a.alert_type==='유통기한임박');
+  const overstock = _aiData.filter(a=>a.alert_type==='과다재고');
+  const statColor = { '대기':'bdg-wait','적용됨':'bdg-done','무시됨':'bdg-normal' };
+
+  function alertCard(a){
+    const p = a.products || {};
+    return `<div class="ai-card">
+      <div>
+        <span class="bdg ${a.alert_type==='유통기한임박'?'bdg-expiry':'bdg-over'}" style="margin-bottom:6px;display:inline-block">${esc(a.alert_type)}</span>
+        <div class="ai-name">${esc(p.name||'상품 ID '+a.product_id)}</div>
+        <div class="ai-meta">
+          <span>현재재고 ${fmt(a.current_stock)}개</span>
+          ${a.expiry_date ? `<span>유통기한 ${esc(a.expiry_date)}</span>` : ''}
+          ${p.price ? `<span>단가 ${fmt(p.price)}원</span>` : ''}
+        </div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:.73rem;color:#9CA3AF;margin-bottom:2px">추천 할인율</div>
+        <div class="ai-discount">${a.recommended_discount_rate}%</div>
+      </div>
+      <div>
+        <select class="fin-sm" onchange="updateAIStatus(${a.id},this.value,this)" style="min-width:90px">
+          ${['대기','적용됨','무시됨'].map(s=>`<option value="${s}" ${a.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <span class="bdg ${statColor[a.status]||'bdg-normal'}">${esc(a.status)}</span>
+    </div>`;
+  }
+
+  setBody(`<div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">재고 AI 알림</div>
+        <div class="card-sub">총 ${_aiData.length}건 탐지</div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="runAI(this)">⟳ 탐지 재실행</button>
+    </div>
+
+    <div style="margin-bottom:6px;font-size:.82rem;font-weight:700;color:#F97316">🔥 유통기한 임박 (${expiry.length}건)</div>
+    ${expiry.length ? expiry.map(alertCard).join('') : '<div class="empty" style="padding:20px">유통기한 임박 상품 없음</div>'}
+
+    <div class="sec-divider"></div>
+
+    <div style="margin-bottom:6px;font-size:.82rem;font-weight:700;color:#A855F7">📦 과다재고 (${overstock.length}건)</div>
+    ${overstock.length ? overstock.map(alertCard).join('') : '<div class="empty" style="padding:20px">과다재고 상품 없음</div>'}
+  </div>`);
+}
+
+async function runAI(btn){
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 탐지 중...';
+  try {
+    const d = await api('/crm/inventory-ai/run', { method:'POST' });
+    toast(`탐지 완료 — 유통기한 ${d.expiry}건 / 과다재고 ${d.overstock}건`);
+    tabInventoryAI();
+  } catch(e){ toast('탐지 실패: '+e.message, true); }
+  finally { btn.disabled=false; btn.innerHTML='⟳ 탐지 재실행'; }
+}
+
+async function updateAIStatus(id, status, sel){
+  try {
+    await api(`/crm/inventory-ai/${id}`, { method:'PUT', body:JSON.stringify({ status }) });
+    toast(`상태가 "${status}"로 변경됐습니다`);
+    const item = _aiData.find(a=>a.id===id);
+    if (item) item.status = status;
+  } catch(e){
+    toast('상태 변경 실패: '+e.message, true);
+    sel.value = _aiData.find(a=>a.id===id)?.status || '대기';
+  }
+}
+
+/* ── BOOT ── */
+init();
+</script>
+</body>
+</html>
