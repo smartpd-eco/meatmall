@@ -4,7 +4,8 @@ const supabase = require('../../lib/supabase');
 const { requireAdmin } = require('../../middleware/auth');
 
 // ════════════════════════════════════════════════════
-// GET /api/crm/templates — 템플릿 목록
+// GET /api/crm/templates
+//   ?type=알림톡|친구톡   ?status=대기|승인|반려
 // ════════════════════════════════════════════════════
 router.get('/', requireAdmin, async (req, res) => {
   try {
@@ -30,6 +31,7 @@ router.get('/', requireAdmin, async (req, res) => {
 
 // ════════════════════════════════════════════════════
 // POST /api/crm/templates — 템플릿 생성
+// body: { template_code, template_type, title, content, button_config? }
 // ════════════════════════════════════════════════════
 router.post('/', requireAdmin, async (req, res) => {
   try {
@@ -44,7 +46,14 @@ router.post('/', requireAdmin, async (req, res) => {
 
     const { data, error } = await supabase
       .from('kakao_templates')
-      .insert({ template_code, template_type, title, content, button_config: button_config || null, status: '대기' })
+      .insert({
+        template_code,
+        template_type,
+        title,
+        content,
+        button_config: button_config || null,
+        status: '대기',
+      })
       .select()
       .single();
 
@@ -61,6 +70,7 @@ router.post('/', requireAdmin, async (req, res) => {
 
 // ════════════════════════════════════════════════════
 // PUT /api/crm/templates/:id — 템플릿 수정
+// body: { title?, content?, button_config?, status? }
 // ════════════════════════════════════════════════════
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
@@ -71,7 +81,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
     if (title         !== undefined) updates.title         = title;
     if (content       !== undefined) updates.content       = content;
     if (button_config !== undefined) updates.button_config = button_config;
-    if (status        !== undefined) {
+    if (status !== undefined) {
       if (!['대기', '승인', '반려'].includes(status)) {
         return res.status(400).json({ error: 'status 는 대기/승인/반려 만 허용됩니다' });
       }
