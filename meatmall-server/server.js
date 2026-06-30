@@ -136,6 +136,14 @@ app.use('/api/admin/vendor-inventory', require('./api/admin/vendor-inventory'));
 app.use('/api/admin', require('./api/admin/index'));
 app.use('/api/notify', require('./api/notify/index'));
 app.use('/api/upload', require('./api/upload/index'));
+app.use('/api/crm/segments',     require('./api/crm/segments'));
+app.use('/api/crm/insights',     require('./api/crm/insights'));
+app.use('/api/crm/churn',        require('./api/crm/churn'));
+app.use('/api/crm/templates',    require('./api/crm/templates'));
+app.use('/api/crm/campaigns',    require('./api/crm/campaigns'));
+app.use('/api/crm/send-logs',    require('./api/crm/send-logs'));
+app.use('/api/crm/inventory-ai', require('./api/crm/inventory-ai'));
+app.use('/api/crm/coupon-rules', require('./api/crm/coupon-rules'));
 
 // ====================================================
 // 헬스체크
