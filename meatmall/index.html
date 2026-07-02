@@ -36,12 +36,6 @@
 .cat-tabs::-webkit-scrollbar{display:none}
 .cat-tab{flex-shrink:0;padding:12px 15px;font-size:.8rem;font-weight:600;color:#9CA3AF;cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s;white-space:nowrap}
 .cat-tab.on{color:var(--gold);border-bottom-color:var(--gold);font-weight:800}
-/* 주인장 배너 */
-.owner-banner{margin:8px 14px;background:linear-gradient(135deg,#1a1208,#0f0f0f);border:1px solid rgba(201,168,76,.25);border-radius:var(--r-md);padding:16px;position:relative;overflow:hidden}
-.owner-banner::before{content:'';position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.12),transparent 70%)}
-.owner-tag{font-size:.66rem;font-weight:700;color:var(--gold);letter-spacing:.1em;margin-bottom:7px}
-.owner-msg{font-family:var(--serif);font-size:.9rem;color:var(--white);line-height:1.65}
-.owner-sig{margin-top:10px;font-size:.72rem;color:#9CA3AF;text-align:right;letter-spacing:.08em}
 /* 상품 그리드 */
 .prd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 14px 10px}
 /* 솔드아웃 */
@@ -92,12 +86,6 @@
 
   <div class="cat-tabs" id="cat-tabs">
     <div class="cat-tab on" onclick="selCat('',this)">전체</div>
-  </div>
-
-  <div class="owner-banner">
-    <div class="owner-tag">✦ 이번 주 주인장 추천</div>
-    <div class="owner-msg">이번 주 지리산 흑돼지 삼겹살은<br>지방층이 유난히 고릅니다. 자신 있게 추천드립니다.</div>
-    <div class="owner-sig">— 정육본가 주인장</div>
   </div>
 
   <div style="display:flex;align-items:baseline;justify-content:space-between;padding:16px 14px 8px">
