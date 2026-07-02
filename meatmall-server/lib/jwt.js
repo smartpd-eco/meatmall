@@ -63,4 +63,18 @@ async function revokeAllTokens(userId) {
   await supabase.from('refresh_tokens').delete().eq('user_id', userId);
 }
 
-module.exports = { signAccessToken, signRefreshToken, verifyAccessToken, rotateRefreshToken, revokeAllTokens };
+// ── 계정 연동용 단기 토큰 (10분) — 소셜 로그인 시 이메일이 겹치는 기존 계정 재인증 플로우에 사용
+function signLinkToken(payload) {
+  return jwt.sign({ ...payload, purpose: 'link_account' }, SECRET, { expiresIn: '10m' });
+}
+
+function verifyLinkToken(token) {
+  try {
+    const decoded = jwt.verify(token, SECRET);
+    return decoded.purpose === 'link_account' ? decoded : null;
+  } catch {
+    return null;
+  }
+}
+
+module.exports = { signAccessToken, signRefreshToken, verifyAccessToken, rotateRefreshToken, revokeAllTokens, signLinkToken, verifyLinkToken };

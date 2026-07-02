@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>계정 연동 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.app-wrap{background:var(--black);display:flex;flex-direction:column;min-height:100vh}
+.link-hero{background:linear-gradient(160deg,#0a0a0a,#1a1208);border-bottom:2px solid var(--gold);padding:36px 20px 28px;text-align:center}
+.link-icon{font-size:2.6rem;margin-bottom:14px}
+.link-title{font-family:var(--serif);font-size:1.1rem;font-weight:700;color:var(--gold)}
+.link-box{background:var(--light-bg);padding:24px 20px 28px;flex:1}
+.link-msg{font-size:.88rem;color:var(--dark-txt);line-height:1.7;text-align:center;margin-bottom:22px}
+.link-msg strong{color:var(--gold-dk)}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <div class="link-hero">
+    <div class="link-icon">🔗</div>
+    <div class="link-title">계정 연동 안내</div>
+  </div>
+  <div class="link-box">
+    <div class="link-msg" id="link-msg">확인 중...</div>
+    <div id="link-action"></div>
+    <div style="text-align:center;margin-top:18px">
+      <a href="../login.html" style="color:var(--gray-txt);font-size:.82rem;text-decoration:underline">취소하고 로그인으로 돌아가기</a>
+    </div>
+  </div>
+</div>
+<script>
+const API = 'https://meatmall-server.vercel.app/api';
+const PROVIDER_LABEL = { kakao: '카카오', naver: '네이버', google: '구글', password: '이메일' };
+
+const params = new URLSearchParams(location.search);
+const token = params.get('token');
+const email = params.get('email') || '';
+const reauthMethod = params.get('reauthMethod');
+const newProvider = params.get('newProvider');
+
+const msgEl = document.getElementById('link-msg');
+const actionEl = document.getElementById('link-action');
+
+if (!token || !reauthMethod || !newProvider) {
+  msgEl.textContent = '잘못된 접근입니다. 로그인 화면에서 다시 시도해주세요.';
+} else {
+  msgEl.innerHTML =
+    `<strong>${email}</strong>은(는) 이미 <strong>${PROVIDER_LABEL[reauthMethod] || reauthMethod}</strong>(으)로 가입된 이메일입니다.<br>` +
+    `본인 확인 후 <strong>${PROVIDER_LABEL[newProvider] || newProvider}</strong> 계정을 연동하시겠습니까?`;
+
+  if (reauthMethod === 'password') {
+    actionEl.innerHTML = `
+      <div class="lf-group"><label class="lf-label">비밀번호</label><input class="lt-input" id="pw" type="password" placeholder="기존 계정 비밀번호"></div>
+      <div id="link-err" style="color:#DC2626;font-size:.8rem;margin-bottom:10px;display:none"></div>
+      <button class="btn-gold" id="link-btn">연동하기</button>`;
+
+    document.getElementById('link-btn').onclick = async () => {
+      const pw = document.getElementById('pw').value;
+      const err = document.getElementById('link-err');
+      const btn = document.getElementById('link-btn');
+      if (!pw) { err.textContent = '비밀번호를 입력해주세요'; err.style.display = 'block'; return; }
+      btn.disabled = true; btn.textContent = '확인 중...';
+      try {
+        const r = await fetch(API + '/auth/relink/verify-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ token, password: pw })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || '연동에 실패했습니다');
+        localStorage.setItem('mm_access_token', d.accessToken);
+        localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
+        location.href = '../index.html';
+      } catch (e) {
+        err.textContent = '❌ ' + e.message;
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '연동하기';
+      }
+    };
+  } else {
+    actionEl.innerHTML = `<button class="btn-gold" id="link-btn">${PROVIDER_LABEL[reauthMethod] || reauthMethod}로 재인증하기</button>`;
+    document.getElementById('link-btn').onclick = () => {
+      location.href = `${API}/auth/${reauthMethod}?relink=${encodeURIComponent(token)}`;
+    };
+  }
+}
+</script>
+</body></html>

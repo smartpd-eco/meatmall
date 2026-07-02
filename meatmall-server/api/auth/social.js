@@ -1,13 +1,16 @@
 const express  = require('express');
 const fetch    = require('node-fetch');
+const bcrypt   = require('bcryptjs');
 const router   = express.Router();
 const supabase = require('../../lib/supabase');
-const { signAccessToken, signRefreshToken } = require('../../lib/jwt');
+const { signAccessToken, signRefreshToken, signLinkToken, verifyLinkToken } = require('../../lib/jwt');
 
 const FRONTEND = 'https://smartpd-eco.github.io/meatmall';
 
-async function handleSocialUser({ provider, providerId, email, name }) {
-  // 1. 기존 소셜 계정 확인
+// ── 소셜 로그인 사용자 확인/생성
+// 반환: { status: 'ok', user }  또는  { status: 'link_required', linkToken, existingEmail, reauthMethod }
+async function resolveSocialUser({ provider, providerId, email, name }) {
+  // 1. 이미 이 소셜 계정으로 연동된 유저가 있으면 정상 로그인
   const { data: existing } = await supabase
     .from('social_accounts')
     .select('user_id, users(id, email, name, grade, point, is_admin, is_active)')
@@ -17,50 +20,72 @@ async function handleSocialUser({ provider, providerId, email, name }) {
 
   if (existing?.users) {
     if (!existing.users.is_active) throw new Error('INACTIVE');
-    return existing.users;
+    return { status: 'ok', user: existing.users };
   }
 
-  // 2. 이메일로 기존 계정 연결 (이메일 있을 때만)
-  let userId;
+  // 2. 이메일로 기존 계정이 있는지 확인 (이메일이 제공된 경우만 — 카카오 등 이메일 미동의 시 스킵)
   if (email) {
     const { data: byEmail } = await supabase
-      .from('users').select('id').eq('email', email).single();
-    if (byEmail) userId = byEmail.id;
+      .from('users')
+      .select('id, email, password_hash, is_active')
+      .eq('email', email)
+      .single();
+
+    if (byEmail) {
+      if (!byEmail.is_active) throw new Error('INACTIVE');
+
+      const { data: linkedAccounts } = await supabase
+        .from('social_accounts')
+        .select('provider, provider_id')
+        .eq('user_id', byEmail.id);
+
+      let reauthMethod = null, reauthProviderId = null;
+      if (byEmail.password_hash) {
+        reauthMethod = 'password';
+      } else if (linkedAccounts && linkedAccounts.length) {
+        reauthMethod = linkedAccounts[0].provider;
+        reauthProviderId = linkedAccounts[0].provider_id;
+      }
+
+      // 재인증 가능한 기존 가입수단이 있으면 즉시 연동하지 않고 확인 절차로 유도
+      if (reauthMethod) {
+        const linkToken = signLinkToken({
+          existingUserId: byEmail.id,
+          newProvider: provider,
+          newProviderId: String(providerId),
+          reauthMethod,
+          reauthProviderId
+        });
+        return { status: 'link_required', linkToken, existingEmail: byEmail.email, reauthMethod };
+      }
+      // reauthMethod가 없는(가입수단이 전혀 없는) 예외 상황은 안전하게 신규 계정 생성으로 폴백
+    }
   }
 
   // 3. 신규 사용자 생성
-  if (!userId) {
-    const { data: newUser, error } = await supabase
-      .from('users')
-      .insert({
-        name: name || '회원',
-        email: email || null,  // 이메일 없어도 OK
-        point: 1000
-      })
-      .select('id')
-      .single();
-    if (error) throw error;
-    userId = newUser.id;
+  const { data: newUser, error } = await supabase
+    .from('users')
+    .insert({ name: name || '회원', email: email || null, point: 1000 })
+    .select('id')
+    .single();
+  if (error) throw error;
+  const userId = newUser.id;
 
-    // 가입 포인트
-    await supabase.from('point_logs').insert({
-      user_id: userId, amount: 1000, reason: '소셜 가입 축하 포인트'
-    });
-  }
+  await supabase.from('point_logs').insert({
+    user_id: userId, amount: 1000, reason: '소셜 가입 축하 포인트'
+  });
 
-  // 4. 소셜 계정 연결
   await supabase.from('social_accounts').upsert({
     user_id: userId, provider, provider_id: String(providerId)
   }, { onConflict: 'provider,provider_id' });
 
-  // 5. 최신 유저 정보 반환
   const { data: user } = await supabase
     .from('users')
     .select('id, email, name, grade, point, is_admin, is_active')
     .eq('id', userId)
     .single();
 
-  return user;
+  return { status: 'ok', user };
 }
 
 async function finishSocialLogin(res, user) {
@@ -84,20 +109,108 @@ async function finishSocialLogin(res, user) {
   res.redirect(`${FRONTEND}/pages/social-callback.html?${params}`);
 }
 
+function redirectToLinkPage(res, result, newProvider) {
+  const params = new URLSearchParams({
+    token: result.linkToken,
+    email: result.existingEmail || '',
+    reauthMethod: result.reauthMethod,
+    newProvider
+  });
+  res.redirect(`${FRONTEND}/pages/link-account.html?${params}`);
+}
+
+// ── 재인증(relink) 콜백 공통 처리: 기존 가입수단으로 재인증 성공 시 새 소셜 계정을 연결
+async function handleRelinkCallback(res, linkToken, reauthProvider, reauthProviderIdFromCallback) {
+  const payload = verifyLinkToken(linkToken);
+  if (!payload || payload.reauthMethod !== reauthProvider) {
+    return res.redirect(`${FRONTEND}/login.html?error=relink_invalid`);
+  }
+  if (String(payload.reauthProviderId) !== String(reauthProviderIdFromCallback)) {
+    // 기존에 연동된 그 계정이 아니라 같은 제공자의 다른 계정으로 재인증한 경우 — 연동 거부
+    return res.redirect(`${FRONTEND}/login.html?error=relink_mismatch`);
+  }
+
+  await supabase.from('social_accounts').upsert({
+    user_id: payload.existingUserId,
+    provider: payload.newProvider,
+    provider_id: payload.newProviderId
+  }, { onConflict: 'provider,provider_id' });
+
+  const { data: user } = await supabase
+    .from('users')
+    .select('id, email, name, grade, point, is_admin, is_active')
+    .eq('id', payload.existingUserId)
+    .single();
+
+  if (!user || !user.is_active) return res.redirect(`${FRONTEND}/login.html?error=inactive`);
+  await finishSocialLogin(res, user);
+}
+
+// ── 비밀번호 재인증으로 계정 연동 (이메일/비밀번호로 가입했던 계정용)
+router.post('/relink/verify-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password)
+      return res.status(400).json({ error: '토큰과 비밀번호가 필요합니다' });
+
+    const payload = verifyLinkToken(token);
+    if (!payload || payload.reauthMethod !== 'password')
+      return res.status(400).json({ error: '유효하지 않거나 만료된 요청입니다' });
+
+    const { data: user } = await supabase
+      .from('users')
+      .select('id, email, name, password_hash, grade, point, is_admin, is_active')
+      .eq('id', payload.existingUserId)
+      .single();
+
+    if (!user || !user.password_hash)
+      return res.status(401).json({ error: '비밀번호가 올바르지 않습니다' });
+    if (!user.is_active)
+      return res.status(403).json({ error: '비활성화된 계정입니다. 고객센터에 문의해주세요' });
+
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) return res.status(401).json({ error: '비밀번호가 올바르지 않습니다' });
+
+    await supabase.from('social_accounts').upsert({
+      user_id: payload.existingUserId,
+      provider: payload.newProvider,
+      provider_id: payload.newProviderId
+    }, { onConflict: 'provider,provider_id' });
+
+    const accessToken = signAccessToken(user);
+    const { token: refreshToken, expiresAt } = await signRefreshToken(user.id);
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      expires: expiresAt,
+      path: '/api/auth'
+    });
+
+    const { password_hash: _, ...safeUser } = user;
+    res.json({ ok: true, user: safeUser, accessToken });
+  } catch (err) {
+    console.error('[relink/verify-password]', err);
+    res.status(500).json({ error: '서버 오류가 발생했습니다' });
+  }
+});
+
 // ── 카카오 ──────────────────────────────────────────────
 router.get('/kakao', (req, res) => {
+  const { relink } = req.query;
   const params = new URLSearchParams({
     client_id:     process.env.KAKAO_CLIENT_ID,
     redirect_uri:  'https://meatmall-server.vercel.app/api/auth/kakao/callback',
     response_type: 'code',
     scope:         'profile_nickname'  // 이메일 제거 (비즈앱 아니면 불가)
   });
+  if (relink) params.set('state', 'relink:' + relink);
   res.redirect(`https://kauth.kakao.com/oauth/authorize?${params}`);
 });
 
 router.get('/kakao/callback', async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code, state } = req.query;
     if (!code) return res.redirect(`${FRONTEND}/login.html?error=kakao_failed`);
 
     // 1. Access Token
@@ -123,11 +236,16 @@ router.get('/kakao/callback', async (req, res) => {
 
     const kakaoId = profile.id;
     const name    = profile.kakao_account?.profile?.nickname || '카카오 회원';
-    // 이메일: 비즈앱 아니면 null
+    // 이메일: 비즈앱 아니면 null → 자동 연동 불가, 신규 계정으로 생성 (추후 마이페이지에서 수동 연동 가능하도록 social_accounts 구조는 이미 지원)
     const email   = profile.kakao_account?.email || null;
 
-    const user = await handleSocialUser({ provider: 'kakao', providerId: kakaoId, email, name });
-    await finishSocialLogin(res, user);
+    if (state && state.startsWith('relink:')) {
+      return await handleRelinkCallback(res, state.slice(7), 'kakao', String(kakaoId));
+    }
+
+    const result = await resolveSocialUser({ provider: 'kakao', providerId: kakaoId, email, name });
+    if (result.status === 'link_required') return redirectToLinkPage(res, result, 'kakao');
+    await finishSocialLogin(res, result.user);
   } catch (err) {
     console.error('[kakao/callback]', err);
     if (err.message === 'INACTIVE')
@@ -138,7 +256,8 @@ router.get('/kakao/callback', async (req, res) => {
 
 // ── 네이버 ──────────────────────────────────────────────
 router.get('/naver', (req, res) => {
-  const state = Math.random().toString(36).slice(2);
+  const { relink } = req.query;
+  const state = relink ? ('relink:' + relink) : Math.random().toString(36).slice(2);
   const params = new URLSearchParams({
     response_type: 'code',
     client_id:     process.env.NAVER_CLIENT_ID,
@@ -172,21 +291,29 @@ router.get('/naver/callback', async (req, res) => {
     const profileData = await profileRes.json();
     const profile = profileData.response;
 
-    const user = await handleSocialUser({
+    if (state && state.startsWith('relink:')) {
+      return await handleRelinkCallback(res, state.slice(7), 'naver', String(profile.id));
+    }
+
+    const result = await resolveSocialUser({
       provider: 'naver',
       providerId: profile.id,
       email: profile.email || null,
       name:  profile.name || profile.nickname || '네이버 회원'
     });
-    await finishSocialLogin(res, user);
+    if (result.status === 'link_required') return redirectToLinkPage(res, result, 'naver');
+    await finishSocialLogin(res, result.user);
   } catch (err) {
     console.error('[naver/callback]', err);
+    if (err.message === 'INACTIVE')
+      return res.redirect(`${FRONTEND}/login.html?error=inactive`);
     res.redirect(`${FRONTEND}/login.html?error=naver_failed`);
   }
 });
 
 // ── 구글 ────────────────────────────────────────────────
 router.get('/google', (req, res) => {
+  const { relink } = req.query;
   const params = new URLSearchParams({
     client_id:     process.env.GOOGLE_CLIENT_ID,
     redirect_uri:  'https://meatmall-server.vercel.app/api/auth/google/callback',
@@ -194,18 +321,18 @@ router.get('/google', (req, res) => {
     scope:         'openid email profile',
     access_type:   'offline'
   });
+  if (relink) params.set('state', 'relink:' + relink);
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
 });
 
 router.get('/google/callback', async (req, res) => {
   try {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    console.log('[google] CLIENT_SECRET 존재여부:', !!clientSecret);
     if (!clientSecret) {
       return res.redirect(`${FRONTEND}/pages/login.html?error=google_config`);
     }
 
-    const { code } = req.query;
+    const { code, state } = req.query;
     if (!code) return res.redirect(`${FRONTEND}/login.html?error=google_failed`);
 
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -227,15 +354,22 @@ router.get('/google/callback', async (req, res) => {
     });
     const profile = await profileRes.json();
 
-    const user = await handleSocialUser({
+    if (state && state.startsWith('relink:')) {
+      return await handleRelinkCallback(res, state.slice(7), 'google', String(profile.id));
+    }
+
+    const result = await resolveSocialUser({
       provider: 'google',
       providerId: profile.id,
       email: profile.email || null,
       name:  profile.name  || '구글 회원'
     });
-    await finishSocialLogin(res, user);
+    if (result.status === 'link_required') return redirectToLinkPage(res, result, 'google');
+    await finishSocialLogin(res, result.user);
   } catch (err) {
     console.error('[google/callback] 상세에러:', err.message, err.stack);
+    if (err.message === 'INACTIVE')
+      return res.redirect(`${FRONTEND}/login.html?error=inactive`);
     res.redirect(`${FRONTEND}/login.html?error=google_failed`);
   }
 });
