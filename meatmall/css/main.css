@@ -244,11 +244,13 @@ img{max-width:100%;display:block}
 .legal-tbl th{background:var(--offwhite);color:var(--dark-txt);font-weight:700;white-space:nowrap}
 
 /* ── 사업자정보 푸터 (공통, js/footer.js 로 주입) ── */
-.biz-footer{padding:16px 16px 14px;background:#151515;border-top:1px solid rgba(201,168,76,.25);text-align:left;font-size:11px;line-height:1.7;color:#999}
+.biz-footer{padding:16px 16px 14px;border-top:1px solid #e5e0d8;text-align:left;font-size:11px;line-height:1.7;color:#666}
 .biz-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;font-size:12px}
-.biz-footer-links a{color:#aaa;text-decoration:none}
-.biz-footer-links a:nth-child(3){color:#ccc;font-weight:700}
-.biz-footer-links span{color:#555}
-.biz-footer-info a{color:#999;text-decoration:underline}
-.biz-footer-disclaimer{margin-top:10px;color:#888}
-.biz-footer-copy{margin-top:10px;color:#777}
+.biz-footer-links a{color:#887365;text-decoration:none}
+.biz-footer-links a:nth-child(3){font-weight:700;text-decoration:underline}
+.biz-footer-links a:last-child{text-decoration:underline}
+.biz-footer-links span{color:#ccc}
+.biz-footer-info{color:#666}
+.biz-footer-info a{color:#887365;text-decoration:underline}
+.biz-footer-disclaimer{margin-top:10px;color:#999}
+.biz-footer-copy{margin-top:10px;color:#999}
