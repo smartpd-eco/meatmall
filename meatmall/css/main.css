@@ -230,3 +230,25 @@ img{max-width:100%;display:block}
 .section-more{font-size:.76rem;color:var(--gold);cursor:pointer;font-weight:600}
 .dark-card,.dk-card-compat{background:var(--black2);border:1.5px solid var(--gold-bdr);border-radius:var(--r-md);overflow:hidden}
 .light-card,.lt-card-compat{background:var(--white);border:1.5px solid var(--line-lt);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--shadow-gold)}
+
+/* ── 이용약관/개인정보처리방침 본문 ── */
+.legal-meta{font-size:.76rem;color:var(--gray-txt);padding:14px 16px 0}
+.legal-sec{padding:0 16px 4px;font-size:.86rem;color:var(--mid-txt);line-height:1.85}
+.legal-sec h3{font-size:.92rem;font-weight:700;color:var(--dark-txt);margin:20px 0 8px}
+.legal-sec h3:first-child{margin-top:16px}
+.legal-sec p{margin-bottom:8px}
+.legal-sec ul{margin:6px 0 10px 18px}
+.legal-sec li{margin-bottom:4px}
+.legal-tbl{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:.82rem}
+.legal-tbl th,.legal-tbl td{border:1px solid rgba(201,168,76,.25);padding:8px 10px;text-align:left;vertical-align:top}
+.legal-tbl th{background:var(--offwhite);color:var(--dark-txt);font-weight:700;white-space:nowrap}
+
+/* ── 사업자정보 푸터 (공통, js/footer.js 로 주입) ── */
+.biz-footer{padding:16px 16px 14px;background:#151515;border-top:1px solid rgba(201,168,76,.25);text-align:left;font-size:11px;line-height:1.7;color:#999}
+.biz-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;font-size:12px}
+.biz-footer-links a{color:#aaa;text-decoration:none}
+.biz-footer-links a:nth-child(3){color:#ccc;font-weight:700}
+.biz-footer-links span{color:#555}
+.biz-footer-info a{color:#999;text-decoration:underline}
+.biz-footer-disclaimer{margin-top:10px;color:#888}
+.biz-footer-copy{margin-top:10px;color:#777}

@@ -39,6 +39,7 @@
   </div>
 
   <div id="step-content" style="padding:0 0 20px"></div>
+  <div id="biz-footer"></div>
   <div style="height:70px"></div>
 
   <nav class="nav-lt">
@@ -51,6 +52,7 @@
 </div>
 <div id="toast-wrap" class="toast"></div>
 <script src="../js/app.js"></script>
+<script src="../js/footer.js"></script>
 <script>
 const API='https://meatmall-server.vercel.app/api';
 function go(u){window.location.href=u}
@@ -66,8 +68,8 @@ function renderStep(){
     <div class="terms-box">정육본가 이용약관\n\n제1조 목적\n본 약관은 정육본가가 운영하는 쇼핑몰의 서비스 이용 조건을 규정합니다.\n\n제2조 서비스\n국내산 돈육 판매 서비스를 제공합니다.</div>
     <div style="background:var(--offwhite);border:1.5px solid rgba(201,168,76,.25);border-radius:10px;padding:12px;margin-top:8px">
       <div class="ag-row"><input type="checkbox" id="ag-all" onchange="toggleAll(this)"><strong>전체 동의</strong></div>
-      <div class="ag-row"><input type="checkbox" id="ag1">이용약관 동의 (필수)</div>
-      <div class="ag-row"><input type="checkbox" id="ag2">개인정보 처리방침 동의 (필수)</div>
+      <div class="ag-row" style="justify-content:space-between"><span style="display:flex;align-items:center;gap:10px"><input type="checkbox" id="ag1">이용약관 동의 (필수)</span><a href="terms.html" target="_blank" style="color:var(--gold);font-size:.78rem;text-decoration:underline;flex-shrink:0">보기</a></div>
+      <div class="ag-row" style="justify-content:space-between"><span style="display:flex;align-items:center;gap:10px"><input type="checkbox" id="ag2">개인정보 처리방침 동의 (필수)</span><a href="privacy.html" target="_blank" style="color:var(--gold);font-size:.78rem;text-decoration:underline;flex-shrink:0">보기</a></div>
       <div class="ag-row"><input type="checkbox" id="ag3">마케팅 정보 수신 동의 (선택)</div>
     </div>
     <button class="btn-gold" onclick="step1Next()">다음</button>
