@@ -144,6 +144,42 @@ router.post('/logout', requireAuth, async (req, res) => {
 });
 
 // ════════════════════════════════════════════
+// POST /api/auth/phone — 전화번호 등록 (소셜 로그인 후 전화번호 필수 등록 플로우)
+// ════════════════════════════════════════════
+const PHONE_RE = /^010-\d{4}-\d{4}$/;
+
+// TODO: PASS 본인인증 API 연동 필요 - 다날 또는 KG이니시스 계약 후 여기에 연동.
+// 계약 전까지는 형식 검증만 통과하면 인증된 것으로 간주하는 임시 처리.
+async function verifyPhoneWithPASS(phone) {
+  return { verified: true };
+}
+
+router.post('/phone', requireAuth, async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone || !PHONE_RE.test(phone))
+      return res.status(400).json({ error: '전화번호 형식이 올바르지 않습니다 (010-0000-0000)' });
+
+    const passResult = await verifyPhoneWithPASS(phone);
+    if (!passResult.verified)
+      return res.status(400).json({ error: '본인인증에 실패했습니다' });
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .update({ phone, updated_at: new Date().toISOString() })
+      .eq('id', req.user.sub)
+      .select('id, email, name, phone, grade, point, is_admin')
+      .single();
+
+    if (error) throw error;
+    res.json({ ok: true, user });
+  } catch (err) {
+    console.error('[phone]', err);
+    res.status(500).json({ error: '서버 오류가 발생했습니다' });
+  }
+});
+
+// ════════════════════════════════════════════
 // GET /api/auth/me — 내 정보 조회
 // ════════════════════════════════════════════
 router.get('/me', requireAuth, async (req, res) => {

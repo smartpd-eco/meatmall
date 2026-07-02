@@ -61,7 +61,14 @@ router.post('/ready', requireAuth, async (req, res) => {
     if (!recipient || !phone || !zipCode || !address1)
       return res.status(400).json({ error:'배송지 정보를 입력해주세요' });
 
-    const userId       = req.user.sub;
+    const userId = req.user.sub;
+
+    // 계정에 전화번호 등록이 안 된 경우 주문 자체를 막음 (프론트 우회 방지, 서버측 필수 검증)
+    const { data: acctUser } = await supabase.from('users').select('phone').eq('id', userId).single();
+    if (!acctUser?.phone) {
+      return res.status(403).json({ error: '전화번호 등록이 필요합니다. 마이페이지에서 전화번호를 등록해주세요', code: 'PHONE_REQUIRED' });
+    }
+
     const productTotal = items.reduce((s,i) => s + i.price * i.qty, 0);
     const deliveryFee  = productTotal >= 50000 ? 0 : 3500;
     const couponDisc   = 0; // 쿠폰 추후 적용

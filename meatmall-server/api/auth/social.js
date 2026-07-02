@@ -13,7 +13,7 @@ async function resolveSocialUser({ provider, providerId, email, name }) {
   // 1. 이미 이 소셜 계정으로 연동된 유저가 있으면 정상 로그인
   const { data: existing } = await supabase
     .from('social_accounts')
-    .select('user_id, users(id, email, name, grade, point, is_admin, is_active)')
+    .select('user_id, users(id, email, name, phone, grade, point, is_admin, is_active)')
     .eq('provider', provider)
     .eq('provider_id', String(providerId))
     .single();
@@ -81,7 +81,7 @@ async function resolveSocialUser({ provider, providerId, email, name }) {
 
   const { data: user } = await supabase
     .from('users')
-    .select('id, email, name, grade, point, is_admin, is_active')
+    .select('id, email, name, phone, grade, point, is_admin, is_active')
     .eq('id', userId)
     .single();
 
@@ -104,7 +104,8 @@ async function finishSocialLogin(res, user) {
     accessToken,
     name:  user.name  || '',
     grade: user.grade || 'BASIC',
-    point: String(user.point || 0)
+    point: String(user.point || 0),
+    needsPhone: (!user.phone) ? 'true' : 'false'
   });
   res.redirect(`${FRONTEND}/pages/social-callback.html?${params}`);
 }
@@ -138,7 +139,7 @@ async function handleRelinkCallback(res, linkToken, reauthProvider, reauthProvid
 
   const { data: user } = await supabase
     .from('users')
-    .select('id, email, name, grade, point, is_admin, is_active')
+    .select('id, email, name, phone, grade, point, is_admin, is_active')
     .eq('id', payload.existingUserId)
     .single();
 
@@ -159,7 +160,7 @@ router.post('/relink/verify-password', async (req, res) => {
 
     const { data: user } = await supabase
       .from('users')
-      .select('id, email, name, password_hash, grade, point, is_admin, is_active')
+      .select('id, email, name, phone, password_hash, grade, point, is_admin, is_active')
       .eq('id', payload.existingUserId)
       .single();
 

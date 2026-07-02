@@ -73,7 +73,7 @@ if (!token || !reauthMethod || !newProvider) {
         if (!r.ok) throw new Error(d.error || '연동에 실패했습니다');
         localStorage.setItem('mm_access_token', d.accessToken);
         localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
-        location.href = '../index.html';
+        location.href = d.user?.phone ? '../index.html' : 'phone-verify.html';
       } catch (e) {
         err.textContent = '❌ ' + e.message;
         err.style.display = 'block';

@@ -26,6 +26,7 @@ body{background:#0F0F0F;display:flex;align-items:center;justify-content:center;m
   var params       = new URLSearchParams(window.location.search);
   var accessToken  = params.get('accessToken');
   var refreshToken = params.get('refreshToken');
+  var needsPhone   = params.get('needsPhone');
   var error        = params.get('error');
 
   if (error || !accessToken) {
@@ -34,7 +35,9 @@ body{background:#0F0F0F;display:flex;align-items:center;justify-content:center;m
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('mm_access_token', accessToken);  // 앱 전체 호환
     if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
-    window.location.href = '/meatmall/index.html';
+    window.location.href = (needsPhone === 'true')
+      ? '/meatmall/pages/phone-verify.html'
+      : '/meatmall/index.html';
   }
 })();
 </script>

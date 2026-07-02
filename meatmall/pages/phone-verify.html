@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>전화번호 등록 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.app-wrap{background:var(--black);display:flex;flex-direction:column;min-height:100vh}
+.pv-hero{background:linear-gradient(160deg,#0a0a0a,#1a1208);border-bottom:2px solid var(--gold);padding:36px 20px 28px;text-align:center}
+.pv-icon{font-size:2.6rem;margin-bottom:14px}
+.pv-title{font-family:var(--serif);font-size:1.1rem;font-weight:700;color:var(--gold)}
+.pv-box{background:var(--light-bg);padding:24px 20px 28px;flex:1}
+.pv-msg{font-size:.86rem;color:var(--mid-txt);line-height:1.7;text-align:center;margin-bottom:22px}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <div class="pv-hero">
+    <div class="pv-icon">📱</div>
+    <div class="pv-title">전화번호 등록</div>
+  </div>
+  <div class="pv-box">
+    <div class="pv-msg">
+      주문·배송 안내를 받으시려면 전화번호 등록이 필요합니다.<br>
+      등록 전에는 상품 주문을 진행하실 수 없습니다.
+    </div>
+    <div class="lf-group">
+      <label class="lf-label">전화번호</label>
+      <input class="lt-input" id="phone" type="tel" placeholder="010-0000-0000" maxlength="13">
+    </div>
+    <div id="pv-err" style="color:#DC2626;font-size:.8rem;margin-bottom:10px;display:none"></div>
+    <button class="btn-gold" id="pv-btn">인증하기</button>
+    <div style="text-align:center;margin-top:16px">
+      <a href="javascript:void(0)" id="pv-logout" style="color:var(--gray-txt);font-size:.8rem;text-decoration:underline">로그아웃</a>
+    </div>
+  </div>
+</div>
+<div id="toast-wrap" class="toast"></div>
+<script>
+const API = 'https://meatmall-server.vercel.app/api';
+function toast(m){const t=document.getElementById('toast-wrap');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
+
+// 로그인 안 된 상태로 접근하면 로그인 화면으로
+const token = localStorage.getItem('mm_access_token');
+if (!token) location.href = '../login.html';
+
+document.getElementById('phone').addEventListener('input', function(e){
+  let v = e.target.value.replace(/\D/g,'');
+  if (v.length > 3 && v.length <= 7) v = v.slice(0,3)+'-'+v.slice(3);
+  else if (v.length > 7) v = v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);
+  e.target.value = v;
+});
+
+document.getElementById('pv-btn').addEventListener('click', async () => {
+  const phone = document.getElementById('phone').value.trim();
+  const err = document.getElementById('pv-err');
+  const btn = document.getElementById('pv-btn');
+  err.style.display = 'none';
+
+  if (!/^010-\d{4}-\d{4}$/.test(phone)) {
+    err.textContent = '전화번호 형식이 올바르지 않습니다 (010-0000-0000)';
+    err.style.display = 'block';
+    return;
+  }
+
+  // TODO: PASS 본인인증 API 연동 필요 - 다날 또는 KG이니시스 계약 후 이 자리에서
+  // 실제 본인인증 팝업/리다이렉트를 띄우고, 인증 성공 콜백을 받은 뒤 아래 저장 요청으로 이어지도록 변경.
+  // 현재는 계약 전이라 전화번호 형식 검증만 통과하면 서버에 바로 저장함.
+
+  btn.disabled = true; btn.textContent = '확인 중...';
+  try {
+    const r = await fetch(API + '/auth/phone', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ phone })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || '전화번호 등록에 실패했습니다');
+
+    localStorage.setItem('mm_user_cache', JSON.stringify(d.user));
+    toast('전화번호가 등록됐습니다');
+    location.href = '../index.html';
+  } catch (e) {
+    err.textContent = '❌ ' + e.message;
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '인증하기';
+  }
+});
+
+document.getElementById('pv-logout').addEventListener('click', () => {
+  localStorage.removeItem('mm_access_token');
+  localStorage.removeItem('mm_user_cache');
+  location.href = '../login.html';
+});
+</script>
+</body></html>
