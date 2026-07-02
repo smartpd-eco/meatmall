@@ -9,7 +9,7 @@
 <style>
 .app-wrap{background:var(--black)}
 .login-hero{background:linear-gradient(160deg,#0a0a0a,#1a1208);border-bottom:2px solid var(--gold);padding:36px 20px 28px;text-align:center}
-.login-emblem{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a1208,#2a1a08);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 14px;box-shadow:0 0 0 4px rgba(201,168,76,.12)}
+.login-emblem{width:108px;height:108px;border-radius:50%;background:linear-gradient(135deg,#1a1208,#2a1a08);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 22px;box-shadow:0 0 0 4px rgba(201,168,76,.12)}
 .login-name{font-family:var(--serif);font-size:1.3rem;font-weight:700;color:var(--gold);letter-spacing:.06em;margin-bottom:4px}
 .login-sub{font-size:.72rem;color:rgba(255,255,255,.35);letter-spacing:.12em}
 .login-box{background:var(--light-bg);border-radius:0 0 var(--r-lg) var(--r-lg);padding:24px 20px 28px;flex:1}
@@ -34,15 +34,14 @@
   <div class="login-hero">
     <div class="login-emblem"><img src="images/icon-192.png" alt="정육본가" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>
     <div class="login-name">정육본가</div>
-    <div class="login-sub">JEONG YUK BONGA · VVIP</div>
   </div>
 
   <div class="login-box">
     <div style="font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--dark-txt);margin-bottom:18px">🔐 로그인</div>
-    <button class="social-btn s-google" onclick="doSocial('google')">🔵 구글로 로그인</button>
-    <button class="social-btn s-kakao" onclick="doSocial('kakao')">💬 카카오로 로그인</button>
-    <button class="social-btn s-naver" onclick="doSocial('naver')"><strong>N</strong> 네이버로 로그인</button>
-    <button class="social-btn s-apple" style="opacity:0.4;cursor:not-allowed" disabled>🍎 Apple로 로그인</button>
+    <button class="social-btn s-google" onclick="doSocial('google')"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.33 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.67 14.62 48 24 48z"/></svg> 구글로 로그인</button>
+    <button class="social-btn s-kakao" onclick="doSocial('kakao')"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#3C1E1E" d="M12 3C6.48 3 2 6.48 2 10.8c0 2.7 1.6 5.1 4 6.6l-1 3.6 4.2-2.8c.9.2 1.8.3 2.8.3 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg> 카카오로 로그인</button>
+    <button class="social-btn s-naver" onclick="doSocial('naver')"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#FFFFFF" d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg> 네이버로 로그인</button>
+    <button class="social-btn s-apple" style="opacity:0.4;cursor:not-allowed" disabled><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#FFFFFF" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg> Apple로 로그인</button>
 
     <div class="divider-txt">또는 이메일로 로그인</div>
     <div class="lf-group">
@@ -58,6 +57,25 @@
 
     <div style="text-align:center;margin-top:16px;font-size:.82rem;color:var(--gray-txt)">
       아직 회원이 아니신가요? <a href="pages/signup.html" style="color:var(--gold);font-weight:700">회원가입</a>
+    </div>
+
+    <div style="margin-top:26px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);text-align:left;font-size:11px;line-height:1.7;color:#999">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;font-size:12px">
+        <a href="#" style="color:#aaa;text-decoration:none">이용약관</a>
+        <span style="color:#555">|</span>
+        <a href="#" style="color:#ccc;font-weight:700;text-decoration:none">개인정보처리방침</a>
+        <span style="color:#555">|</span>
+        <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=3248800980" target="_blank" rel="noopener" style="color:#aaa;text-decoration:none">사업자정보확인</a>
+      </div>
+      <div>
+        상호명 : 주식회사 좋은축산유통&nbsp;&nbsp;&nbsp;대표자 : 지창용<br>
+        사업자등록번호 : 324-88-00980 <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=3248800980" target="_blank" rel="noopener" style="color:#999;text-decoration:underline">[사업자정보확인]</a><br>
+        통신판매업신고번호 : 제2020-경기시흥-0703호<br>
+        사업장 소재지 : 경기도 시흥시 군자로387번길 21-1(거모동)<br>
+        고객센터 : 031-431-5717&nbsp;&nbsp;&nbsp;운영시간 : 09:00~18:00&nbsp;&nbsp;&nbsp;이메일 : ji5717@hanmail.net
+      </div>
+      <div style="margin-top:10px;color:#888">정육본가는 통신판매중개자가 아닌 통신판매의 당사자로서 상품 판매 및 배송, 환불 등에 대한 책임을 집니다.</div>
+      <div style="margin-top:10px;color:#777">Copyright © 정육본가. All Rights Reserved.</div>
     </div>
   </div>
   <div style="height:70px"></div>
