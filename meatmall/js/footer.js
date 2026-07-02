@@ -4,7 +4,7 @@
   if(!el) return;
   var scriptEl = document.currentScript;
   var base = scriptEl ? scriptEl.src.replace(/js\/footer\.js.*$/,'') : '';
-  el.className = 'biz-footer';
+  el.classList.add('biz-footer');
   el.innerHTML =
     '<div class="biz-footer-links">' +
       '<a href="'+base+'pages/terms.html">이용약관</a><span>|</span>' +
