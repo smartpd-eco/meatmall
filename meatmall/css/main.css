@@ -247,13 +247,14 @@ img{max-width:100%;display:block}
 
 /* ── 사업자정보 푸터 (공통, js/footer.js 로 주입) — 로그인/메인/마이페이지 전용 ── */
 /* 기본값 = 라이트 테마 (로그인, 마이페이지) */
-.biz-footer{padding:16px 16px 14px;border-top:1px solid #e5e0d8;text-align:left;font-size:12px;line-height:1.7;color:#555555}
-.biz-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px}
+.biz-footer{padding:16px 16px 14px;border-top:1px solid #e5e0d8;text-align:left;font-size:.82rem;line-height:1.7;color:#555555;word-break:keep-all;overflow-wrap:normal}
+.biz-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:18px}
 .biz-footer-links a{color:#7a7a7a;text-decoration:underline}
 .biz-footer-links span{color:#999}
+.biz-footer-info{line-height:1.8}
 .biz-footer-info a{color:#7a7a7a;text-decoration:underline}
-.biz-footer-disclaimer{margin-top:10px}
-.biz-footer-copy{margin-top:10px}
+.biz-footer-disclaimer{margin-top:18px}
+.biz-footer-copy{margin-top:18px}
 
 /* 다크 테마 (메인) — mount div에 class="dark" 추가 */
 .biz-footer.dark{border-top-color:rgba(255,255,255,.15);color:#C0C0C0}
