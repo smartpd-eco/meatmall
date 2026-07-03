@@ -3,18 +3,20 @@ const router  = express.Router();
 const { SolapiMessageService } = require('solapi');
 
 // ── Solapi 설정 ──────────────────────────────────────
-// SOLAPI_SENDER_KEY: 카카오 채널 pfId (미설정 시 DEV 모드로 폴백)
+// SOLAPI_PFID: 카카오 비즈니스 채널 pfId (미설정 시 DEV 모드로 폴백)
 const SOLAPI = {
   apiKey:    process.env.SOLAPI_API_KEY    || '',
   apiSecret: process.env.SOLAPI_API_SECRET || '',
-  senderKey: process.env.SOLAPI_SENDER_KEY || '',
+  pfId:      process.env.SOLAPI_PFID       || '',
   senderNo:  process.env.ALIMTALK_SENDER_NO || '15880000',
 };
 
 // 알림톡 템플릿 코드 (Solapi 콘솔 / 카카오 비즈니스 채널 등록 기준)
+// 주문완료·배송시작은 카카오 템플릿 심사 승인 후 실제 템플릿ID를 환경변수에 입력해서 사용
+// (SOLAPI_TEMPLATE_ORDER_COMPLETE / SOLAPI_TEMPLATE_SHIPPING_START — 승인 전엔 빈 값)
 const TEMPLATES = {
-  ORDER_COMPLETE:  'TM_ORDER_COMPLETE',
-  SHIPPING_START:  'TM_SHIPPING_START',
+  ORDER_COMPLETE:  process.env.SOLAPI_TEMPLATE_ORDER_COMPLETE || '',
+  SHIPPING_START:  process.env.SOLAPI_TEMPLATE_SHIPPING_START || '',
   DELIVERY_DONE:   'TM_DELIVERY_DONE',
   PAYMENT_FAIL:    'TM_PAYMENT_FAIL',
   SUBSCRIBE_FAIL:  'TM_SUBSCRIBE_FAIL',
@@ -23,11 +25,17 @@ const TEMPLATES = {
 };
 
 // ── 알림톡 발송 공통 함수 ────────────────────────────────
-// DEV 폴백 조건: SOLAPI_SENDER_KEY 미설정 (채널 미연동) 또는 API 키 미설정
+// DEV 폴백 조건: SOLAPI_PFID 미설정(채널 미연동) 또는 API 키 미설정
+// 템플릿ID가 비어있으면(카카오 심사 승인 전) 발송 자체를 시도하지 않고 건너뜀
 async function sendAlimtalk({ to, templateCode, params }) {
-  if (!SOLAPI.apiKey || !SOLAPI.apiSecret || !SOLAPI.senderKey) {
+  if (!SOLAPI.apiKey || !SOLAPI.apiSecret || !SOLAPI.pfId) {
     console.log(`[알림톡 DEV] to:${to} template:${templateCode}`, params);
     return { ok: true, dev: true };
+  }
+
+  if (!templateCode) {
+    console.log(`[알림톡] 템플릿 미승인 - 발송 건너뜀 (to:${to})`);
+    return { ok: true, skipped: true };
   }
 
   try {
@@ -36,7 +44,7 @@ async function sendAlimtalk({ to, templateCode, params }) {
       to:   to.replace(/-/g, ''),
       from: SOLAPI.senderNo,
       kakaoOptions: {
-        pfId:       SOLAPI.senderKey,
+        pfId:       SOLAPI.pfId,
         templateId: templateCode,
         variables:  params,
       },
