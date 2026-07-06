@@ -18,7 +18,7 @@
       '사업자등록번호 : 324-88-00980<br>' +
       '통신판매업신고번호 : 제2020-경기시흥-0703호<br>' +
       '사업장 소재지 : 경기도 시흥시 군자로387번길 21-1(거모동)<br>' +
-      '고객센터 : 031-431-5717&nbsp;&nbsp;&nbsp;운영시간 : 09:00~18:00&nbsp;&nbsp;&nbsp;이메일 : ji5717@hanmail.net' +
+      '<span class="biz-footer-contact">고객센터 : 031-431-5717&nbsp;&nbsp; 운영시간 : 09:00~18:00&nbsp;&nbsp; 이메일 : ji5717@hanmail.net</span>' +
     '</div>' +
     '<div class="biz-footer-disclaimer">정육본가는 통신판매중개자가 아닌 통신판매의 당사자로서 상품 판매 및 배송, 환불 등에 대한 책임을 집니다.</div>' +
     '<div class="biz-footer-copy">Copyright &copy; 정육본가. All Rights Reserved.</div>';
