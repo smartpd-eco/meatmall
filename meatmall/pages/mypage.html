@@ -7,17 +7,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-.app-wrap{background:var(--light-bg)}
-.profile-hero{background:linear-gradient(160deg,#0f0f0f,#1a1208);border-bottom:2px solid var(--gold);padding:28px 20px 22px;text-align:center}
+body{font-size:.9375rem}.app-wrap{background:var(--light-bg)}
+.profile-hero{background:linear-gradient(160deg,#0f0f0f,#1a1208);border-bottom:2px solid var(--gold);padding:28px 18px 22px;text-align:center}
 .p-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a1208,#2a1a08);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 12px;box-shadow:0 0 0 4px rgba(201,168,76,.12)}
-.p-name{font-family:var(--serif);font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:3px}
-.p-email{font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:10px}
-.grade-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:999px;padding:4px 14px;font-size:.74rem;font-weight:700;color:var(--gold)}
-.pt-card{background:var(--white);border:1.5px solid var(--gold);border-radius:var(--r-md);padding:14px 16px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(201,168,76,.12)}
-.pt-label{font-size:.74rem;color:var(--gray-txt);margin-bottom:3px}
-.pt-val{font-size:1.5rem;font-weight:900;color:var(--gold)}
+.p-name{font-family:var(--serif);font-size:1.0625rem;font-weight:700;color:#fff;margin-bottom:3px}
+.p-email{font-size:.8125rem;color:rgba(255,255,255,.4);margin-bottom:10px}
+.grade-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:999px;padding:4px 14px;font-size:.75rem;font-weight:700;color:var(--gold)}
+.pt-card{background:var(--white);border:1.5px solid var(--gold);border-radius:var(--r-md);padding:18px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(201,168,76,.12)}
+.pt-label{font-size:.8125rem;color:var(--gray-txt);margin-bottom:3px}
+.pt-val{font-size:1.3125rem;font-weight:900;color:var(--gold)}
 .menu-sec{padding:4px 0}
-.menu-sec-label{font-size:.68rem;font-weight:700;color:var(--gray-txt);letter-spacing:.12em;padding:14px 16px 4px;text-transform:uppercase}
+.menu-sec-label{font-size:.8125rem;font-weight:700;color:var(--gray-txt);letter-spacing:0;padding:14px 18px 4px;text-transform:uppercase}
+.lt-menu{padding:18px}
+.lt-menu-name{font-size:.9375rem}
+.lt-menu-sub{font-size:.8125rem}
+.lt-menu:active,.btn-danger:active{opacity:.9;transform:scale(.98)}
 </style>
 <script>window.addEventListener("pageshow",function(e){if(e.persisted)window.location.reload()})</script>
 </head>
@@ -37,7 +41,7 @@
     <div class="grade-badge">👑 <span id="u-grade">VVIP</span> 회원</div>
     <div class="pt-card">
       <div><div class="pt-label">보유 포인트</div><div class="pt-val" id="u-point">0P</div></div>
-      <div style="font-size:.76rem;color:var(--gray-txt)">구매금액 1% 적립</div>
+      <div style="font-size:.8125rem;color:var(--gray-txt)">구매금액 1% 적립</div>
     </div>
   </div>
 
@@ -72,11 +76,10 @@
     </div>
   </div>
 
-  <div style="padding:16px 14px">
+  <div style="padding:18px 14px">
     <button class="btn-danger" onclick="doLogout()">로그아웃</button>
   </div>
-  <div id="biz-footer"></div>
-  <div style="height:70px"></div>
+  <div style="height:64px"></div>
 
   <nav class="nav-lt">
     <div class="nav-i" onclick="go('../index.html')"><div class="nav-ico">🏠</div><div class="nav-lbl">홈</div></div>
@@ -88,7 +91,6 @@
 </div>
 <div id="toast-wrap" class="toast"></div>
 <script src="../js/app.js"></script>
-<script src="../js/footer.js"></script>
 <script>
 const API='https://meatmall-server.vercel.app/api';
 function go(u){window.location.href=u}

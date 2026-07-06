@@ -7,24 +7,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
 <style>
-.app-wrap{background:var(--light-bg)}
+body{font-size:.9375rem}.app-wrap{background:var(--light-bg)}
 .filter-bar{display:flex;gap:6px;padding:11px 14px;overflow-x:auto;scrollbar-width:none;background:var(--white);border-bottom:1px solid rgba(201,168,76,.2)}
 .filter-bar::-webkit-scrollbar{display:none}
-.fpill{flex-shrink:0;padding:6px 14px;border:1.5px solid #ddd;border-radius:999px;font-size:.8rem;font-weight:600;color:var(--gray-txt);cursor:pointer;background:var(--white);transition:all .15s;white-space:nowrap}
+.fpill{flex-shrink:0;padding:6px 14px;border:1.5px solid #ddd;border-radius:999px;font-size:.8125rem;font-weight:600;color:var(--gray-txt);cursor:pointer;background:var(--white);transition:all .15s;white-space:nowrap}
 .fpill.on{border-color:var(--gold);background:#FFFBF2;color:var(--gold);font-weight:800}
+.fpill:active,.oabtn:active{opacity:.9;transform:scale(.98)}
 .ord-card{background:var(--white);border:1.5px solid var(--gold);border-radius:var(--r-md);margin:8px 14px;overflow:hidden;box-shadow:0 2px 12px rgba(201,168,76,.1)}
-.ord-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:linear-gradient(135deg,#FFFBF2,#FFF6E0);border-bottom:1px solid rgba(201,168,76,.2)}
-.ord-num{font-size:.72rem;font-weight:700;color:var(--gold)}
-.ord-date{font-size:.72rem;color:var(--gray-txt);margin-top:2px}
-.ord-item-row{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(201,168,76,.1)}
+.ord-head{display:flex;align-items:center;justify-content:space-between;padding:18px;background:linear-gradient(135deg,#FFFBF2,#FFF6E0);border-bottom:1px solid rgba(201,168,76,.2)}
+.ord-num{font-size:.8125rem;font-weight:700;color:var(--gold)}
+.ord-date{font-size:.8125rem;color:var(--gray-txt);margin-top:2px}
+.ord-item-row{display:flex;gap:10px;padding:18px;border-bottom:1px solid rgba(201,168,76,.1)}
 .ord-thumb{width:54px;height:54px;border-radius:10px;background:linear-gradient(135deg,#FFF7ED,#FEF3C7);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0}
-.ord-item-name{font-size:.88rem;font-weight:600;color:var(--dark-txt);margin-bottom:3px}
-.ord-item-meta{font-size:.76rem;color:var(--gray-txt)}
-.ord-item-price{font-size:.9rem;font-weight:800;color:var(--gold);flex-shrink:0}
-.vb-notice{background:#FFFBF2;border-left:3px solid var(--gold);padding:10px 14px;font-size:.8rem;color:#78350F;line-height:1.75}
-.dep-badge{background:rgba(201,168,76,.15);color:var(--gold);font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--gold-bdr);display:inline-flex;align-items:center;gap:3px}
-.ord-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#FAFAF7;flex-wrap:wrap;gap:8px}
-.oabtn{font-size:.76rem;font-weight:700;padding:6px 11px;border-radius:8px;cursor:pointer;border:none;transition:all .15s}
+.ord-item-name{font-size:.9375rem;font-weight:600;color:var(--dark-txt);margin-bottom:3px}
+.ord-item-meta{font-size:.8125rem;color:var(--gray-txt)}
+.ord-item-price{font-size:1.3125rem;font-weight:800;color:var(--gold);flex-shrink:0}
+.vb-notice{background:#FFFBF2;border-left:3px solid var(--gold);padding:10px 18px;font-size:.8125rem;color:#78350F;line-height:1.75}
+.dep-badge{background:rgba(201,168,76,.15);color:var(--gold);font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--gold-bdr);display:inline-flex;align-items:center;gap:3px}
+.ord-foot{display:flex;align-items:center;justify-content:space-between;padding:18px;background:#FAFAF7;flex-wrap:wrap;gap:8px}
+.oabtn{font-size:.9375rem;font-weight:700;padding:6px 11px;border-radius:16px;cursor:pointer;border:none;transition:opacity .15s,transform .15s}
 .oabtn-g{background:var(--gold);color:var(--black)}
 .oabtn-o{background:var(--white);color:var(--gold);border:1.5px solid var(--gold)!important}
 .oabtn-gray{background:var(--white);color:var(--gray-txt);border:1.5px solid #ddd!important}
@@ -52,7 +53,7 @@
   <div id="ord-list" style="padding:4px 0 8px">
     <div style="text-align:center;padding:40px;color:var(--gray-txt)">🔄 불러오는 중...</div>
   </div>
-  <div style="height:70px"></div>
+  <div style="height:64px"></div>
 
   <nav class="nav-lt">
     <div class="nav-i" onclick="go('../index.html')"><div class="nav-ico">🏠</div><div class="nav-lbl">홈</div></div>
@@ -95,11 +96,11 @@ async function load(){
       orders=d.orders||[];
     }
     render(orders);
-  }catch(e){document.getElementById('ord-list').innerHTML=`<div class="empty-box"><div style="font-size:2.5rem;margin-bottom:12px">😢</div><div>${e.message}</div><button onclick="load()" style="margin-top:14px;padding:8px 20px;background:var(--gold);color:var(--black);border:none;border-radius:8px;font-weight:700;cursor:pointer">다시 시도</button></div>`}
+  }catch(e){document.getElementById('ord-list').innerHTML=`<div class="empty-box"><div style="font-size:2.5rem;margin-bottom:12px">😢</div><div>${e.message}</div><button onclick="load()" style="margin-top:14px;padding:8px 20px;background:var(--gold);color:var(--black);border:none;border-radius:16px;font-size:.9375rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .15s">다시 시도</button></div>`}
 }
 function render(orders){
   const list=document.getElementById('ord-list');
-  if(!orders.length){list.innerHTML=`<div class="empty-box"><div style="font-size:3rem;margin-bottom:14px">📦</div><div style="margin-bottom:18px">${cur==='preparing'?'준비중인 주문이 없습니다':'아직 주문 내역이 없습니다'}</div><button onclick="go('../index.html')" style="padding:10px 24px;background:var(--gold);color:var(--black);border:none;border-radius:8px;font-weight:700;cursor:pointer">쇼핑하러 가기</button></div>`;return}
+  if(!orders.length){list.innerHTML=`<div class="empty-box"><div style="font-size:3rem;margin-bottom:14px">📦</div><div style="margin-bottom:18px">${cur==='preparing'?'준비중인 주문이 없습니다':'아직 주문 내역이 없습니다'}</div><button onclick="go('../index.html')" style="padding:10px 24px;background:var(--gold);color:var(--black);border:none;border-radius:16px;font-size:.9375rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .15s">쇼핑하러 가기</button></div>`;return}
   list.innerHTML=orders.map(o=>{
     const d=new Date(o.created_at),ds=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
     const isVW=o.payment_method==='VBANK'&&(o.payment_status==='awaiting_deposit'||o.status==='pending_deposit');
@@ -116,7 +117,7 @@ function render(orders){
     ${isVW?`<div class="vb-notice">입금계좌 <strong>${o.bank_name||'기업은행'} · (주)정육본가</strong> · 입금자명 <strong>${o.depositor_name||'미등록'}</strong><br>입금금액 <strong style="color:var(--gold)">${fmt(o.final_amount)}원</strong>${o.deposit_deadline?` · 기한 <strong style="color:#DC2626">${new Date(o.deposit_deadline).toLocaleDateString('ko-KR')}</strong>`:''}</div>`:''}
     ${first?`<div class="ord-item-row"><div class="ord-thumb">🥩</div><div style="flex:1;min-width:0"><div class="ord-item-name">${first.name}${more>0?` 외 ${more}건`:''}</div><div class="ord-item-meta">수량 ${first.qty}개${first.option?' · '+first.option:''}</div></div><div class="ord-item-price">${fmt(first.subtotal||first.price*first.qty)}원</div></div>`:''}
     <div class="ord-foot">
-      <div style="font-size:.88rem;font-weight:700;color:var(--dark-txt)">총 <strong style="color:var(--gold)">${fmt(o.final_amount)}원</strong> <span style="font-size:.74rem;color:var(--gray-txt);font-weight:400">${PL[o.payment_method]||''}</span></div>
+      <div style="font-size:.9375rem;font-weight:700;color:var(--dark-txt)">총 <strong style="color:var(--gold);font-size:1.3125rem">${fmt(o.final_amount)}원</strong> <span style="font-size:.8125rem;color:var(--gray-txt);font-weight:400">${PL[o.payment_method]||''}</span></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         ${isSh?`<button class="oabtn oabtn-g" onclick="toast('운송장: ${o.tracking_number||'등록 전'}')">📦 배송조회</button>`:''}
         ${isDone?`<button class="oabtn oabtn-o" onclick="toast('리뷰 준비 중')">⭐ 리뷰</button>`:''}
