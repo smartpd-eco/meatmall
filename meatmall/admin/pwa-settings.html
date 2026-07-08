@@ -136,6 +136,14 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
 
       <div class="set-row">
         <div>
+          <div class="set-lbl">공유 버튼 사용</div>
+          <div class="set-sub">설치 버튼 위에 공유하기 버튼 표시 (모바일: 공유시트 / PC: 링크복사)</div>
+        </div>
+        <label class="tgl"><input type="checkbox" id="set-share"><span class="tgl-track"></span></label>
+      </div>
+
+      <div class="set-row">
+        <div>
           <div class="set-lbl">버튼 위치</div>
           <div class="set-sub">모바일은 하단 네비게이션 위에 표시됩니다</div>
         </div>
@@ -171,7 +179,7 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
     <div class="card-head"><div class="card-title">👁️ 미리보기</div></div>
     <div class="card-body" style="text-align:center;padding:26px">
       <div class="preview-fab" id="preview">
-        <img src="../images/icon-192.png" alt="정육본가">
+        <img src="../images/install-icon.png" alt="정육본가" onerror="this.onerror=null;this.src='../images/icon-192.png'">
         <span>앱 설치</span>
       </div>
       <div class="set-sub" style="margin-top:12px">로그인 페이지와 동일한 공식 앱 아이콘을 사용합니다 (모바일은 아이콘만 표시)</div>
@@ -191,9 +199,10 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
         <div class="stat-box"><div class="stat-num" id="st-month">–</div><div class="stat-lbl">월간 설치</div></div>
         <div class="stat-box"><div class="stat-num" id="st-rate">–</div><div class="stat-lbl">설치 성공률</div></div>
       </div>
-      <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-grid">
         <div class="stat-box"><div class="stat-num" id="st-clicks" style="color:#F0F2F5">–</div><div class="stat-lbl">월간 클릭</div></div>
         <div class="stat-box"><div class="stat-num" id="st-cancels" style="color:#F0F2F5">–</div><div class="stat-lbl">월간 취소</div></div>
+        <div class="stat-box"><div class="stat-num" id="st-shares" style="color:#F0F2F5">–</div><div class="stat-lbl">월간 공유</div></div>
         <div class="stat-box"><div class="stat-num" id="st-device" style="color:#F0F2F5;font-size:1rem;padding-top:6px">–</div><div class="stat-lbl">모바일 / PC</div></div>
       </div>
 
@@ -237,6 +246,7 @@ async function loadSettings(){
     const d = await r.json();
     const s = d.settings || {};
     document.getElementById('set-enabled').checked  = s.enabled !== false;
+    document.getElementById('set-share').checked    = s.show_share !== false;
     document.getElementById('set-toast').checked    = s.show_toast !== false;
     document.getElementById('set-position').value   = s.position || 'bottom-right';
     document.getElementById('set-opacity').value    = Math.round((s.opacity ?? 0.6) * 100);
@@ -247,6 +257,7 @@ async function saveSettings(){
   try{
     const body = {
       enabled:    document.getElementById('set-enabled').checked,
+      show_share: document.getElementById('set-share').checked,
       show_toast: document.getElementById('set-toast').checked,
       position:   document.getElementById('set-position').value,
       opacity:    Number(document.getElementById('set-opacity').value) / 100
@@ -282,6 +293,7 @@ async function loadStats(){
     document.getElementById('st-rate').textContent    = s.success_rate + '%';
     document.getElementById('st-clicks').textContent  = s.month.clicks;
     document.getElementById('st-cancels').textContent = s.month.cancels;
+    document.getElementById('st-shares').textContent  = s.month.shares ?? 0;
     const dev = {}; (s.devices || []).forEach(x => dev[x.name] = x.count);
     document.getElementById('st-device').textContent  = (dev.mobile || 0) + ' / ' + (dev.desktop || 0);
     renderBreakdown('tb-browser', s.browsers);

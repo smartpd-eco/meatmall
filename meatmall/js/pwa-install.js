@@ -13,14 +13,18 @@
   /* PWA API는 git 연동 Vercel 프로젝트(meatmall) 사용 — push 시 자동 배포됨
      (meatmall-server 프로젝트는 CLI 배포 전용이라 /api/pwa 미반영) */
   var PWA_API = 'https://meatmall.vercel.app/api/pwa';
-  var ICON = (location.pathname.indexOf('/pages/') > -1 || location.pathname.indexOf('/admin/') > -1)
-    ? '../images/icon-192.png' : 'images/icon-192.png';
+  var BASE = (location.pathname.indexOf('/pages/') > -1 || location.pathname.indexOf('/admin/') > -1)
+    ? '../images/' : 'images/';
+  var ICON = BASE + 'install-icon.png';          /* 새 공식 설치 아이콘 */
+  var ICON_FALLBACK = BASE + 'icon-192.png';     /* 이미지 없을 때 기존 아이콘 */
+  var SHARE_IMG = BASE + 'share-btn.png';        /* 공유하기 버튼 이미지 */
+  var SHARE_URL = 'https://smartpd-eco.github.io/meatmall/';
   var LS_INSTALLED = 'mm-pwa-installed';
   var LS_TOAST     = 'mm-pwa-toast-v1';
   var LS_SETTINGS  = 'mm-pwa-settings';
   var SETTINGS_TTL = 10 * 60 * 1000; // 10분 캐시
 
-  var DEFAULTS = { enabled: true, position: 'bottom-right', opacity: 0.6, show_toast: true };
+  var DEFAULTS = { enabled: true, position: 'bottom-right', opacity: 0.8, show_toast: true, show_share: true };
 
   /* ── 이미 설치(standalone) 상태면 아무것도 하지 않음 ── */
   function isStandalone() {
@@ -28,7 +32,7 @@
       (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   }
   if (isStandalone()) { try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {} return; }
-  if (localStorage.getItem(LS_INSTALLED)) return;
+  var IS_INSTALLED = !!localStorage.getItem(LS_INSTALLED);   /* 설치됨 → 설치버튼만 숨김(공유는 유지) */
 
   /* ── 환경 감지 ── */
   var ua = navigator.userAgent;
@@ -104,7 +108,12 @@
   /* ── 스타일 주입 ── */
   function injectCSS(op) {
     var css = [
-      '#mm-pwa-fab{position:fixed;z-index:900;display:flex;align-items:center;gap:8px;',
+      '#mm-pwa-stack{position:fixed;z-index:900;display:flex;flex-direction:column;align-items:flex-end;gap:10px}',
+      '#mm-pwa-share{background:none;border:none;padding:0;cursor:pointer;opacity:' + op + ';transition:opacity .2s,transform .2s;-webkit-tap-highlight-color:transparent}',
+      '#mm-pwa-share:hover,#mm-pwa-share:focus-visible{opacity:1;transform:scale(1.05);outline:none}',
+      '#mm-pwa-share img{height:46px;display:block;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.45)}',
+      '#mm-pwa-share .mm-share-txt{display:inline-flex;align-items:center;gap:6px;background:#0F0F0F;border:1px solid rgba(201,168,76,.45);border-radius:999px;color:#C9A84C;font-size:.8rem;font-weight:700;padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,.45)}',
+      '#mm-pwa-fab{display:flex;align-items:center;gap:8px;',
       'background:#0F0F0F;border:1px solid rgba(201,168,76,.45);border-radius:999px;',
       'padding:6px;cursor:pointer;opacity:' + op + ';box-shadow:0 4px 18px rgba(0,0,0,.55);',
       'transition:opacity .2s,transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}',
@@ -148,24 +157,60 @@
     btn.style.bottom = isMobile ? bottomMobile : '24px';
   }
 
-  /* ── 버튼 생성 ── */
-  var fab = null;
+  /* ── 플로팅 스택 생성: [공유하기] 위 + [앱 설치] 아래 ── */
+  var fab = null, stack = null, shareBtn = null;
   function createButton(settings) {
-    fab = document.createElement('button');
-    fab.id = 'mm-pwa-fab';
-    fab.type = 'button';
-    fab.setAttribute('aria-label', '정육본가 앱 설치');
-    fab.innerHTML =
-      '<img src="' + ICON + '" alt="" aria-hidden="true">' +
-      '<span class="mm-pwa-lbl">앱 설치</span>';
-    applyPosition(fab, settings.position);
-    fab.addEventListener('click', onInstallClick);
-    document.body.appendChild(fab);
+    stack = document.createElement('div');
+    stack.id = 'mm-pwa-stack';
+    applyPosition(stack, settings.position);
+
+    if (settings.show_share !== false) {
+      shareBtn = document.createElement('button');
+      shareBtn.id = 'mm-pwa-share';
+      shareBtn.type = 'button';
+      shareBtn.setAttribute('aria-label', '정육본가 공유하기');
+      var im = document.createElement('img');
+      im.src = SHARE_IMG; im.alt = '공유하기';
+      im.onerror = function () {   /* 이미지 없으면 텍스트 버튼으로 대체 */
+        shareBtn.innerHTML = '<span class="mm-share-txt">🔗 공유하기</span>';
+      };
+      shareBtn.appendChild(im);
+      shareBtn.addEventListener('click', onShareClick);
+      stack.appendChild(shareBtn);
+    }
+
+    if (!IS_INSTALLED) {
+      fab = document.createElement('button');
+      fab.id = 'mm-pwa-fab';
+      fab.type = 'button';
+      fab.setAttribute('aria-label', '정육본가 앱 설치');
+      var ic = document.createElement('img');
+      ic.src = ICON; ic.alt = ''; ic.setAttribute('aria-hidden', 'true');
+      ic.onerror = function () { ic.onerror = null; ic.src = ICON_FALLBACK; };
+      var lb = document.createElement('span');
+      lb.className = 'mm-pwa-lbl'; lb.textContent = '앱 설치';
+      fab.appendChild(ic); fab.appendChild(lb);
+      fab.addEventListener('click', onInstallClick);
+      stack.appendChild(fab);
+    }
+
+    if (stack.childNodes.length) document.body.appendChild(stack);
   }
 
   function hideButton() {
     if (fab && fab.parentNode) fab.parentNode.removeChild(fab);
     fab = null;
+    if (stack && !shareBtn) { if (stack.parentNode) stack.parentNode.removeChild(stack); stack = null; }
+  }
+
+  /* ── 공유하기: 모바일=네이티브 공유시트 / PC=링크 복사 ── */
+  function onShareClick() {
+    track('share_click');
+    if (navigator.share) {
+      navigator.share({ title: '정육본가 — 프리미엄 정육', text: '주인장이 직접 고른 프리미엄 정육, 정육본가', url: SHARE_URL }).catch(function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(SHARE_URL).then(function () { showMiniToast('🔗 링크가 복사되었습니다'); }).catch(function () {});
+    }
   }
 
   /* ── 네이티브 설치 다이얼로그 실행 ── */

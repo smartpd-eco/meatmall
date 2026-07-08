@@ -11,11 +11,12 @@ const SETTINGS_TTL = 60 * 1000;
 const DEFAULT_SETTINGS = {
   enabled: true,
   position: 'bottom-right',
-  opacity: 0.6,
-  show_toast: true
+  opacity: 0.8,
+  show_toast: true,
+  show_share: true
 };
 
-const VALID_EVENTS = ['install_click', 'install_success', 'install_cancel'];
+const VALID_EVENTS = ['install_click', 'install_success', 'install_cancel', 'share_click'];
 
 // ════════════════════════════════════════════════════
 // GET /api/pwa/settings — 플로팅 버튼 설정 (공개)
@@ -27,7 +28,7 @@ router.get('/settings', async (req, res) => {
     }
     const { data, error } = await supabase
       .from('pwa_settings')
-      .select('enabled, position, opacity, show_toast')
+      .select('enabled, position, opacity, show_toast, show_share')
       .eq('id', 1)
       .maybeSingle();
     if (error) throw error;
@@ -36,7 +37,8 @@ router.get('/settings', async (req, res) => {
       enabled: data.enabled,
       position: data.position || DEFAULT_SETTINGS.position,
       opacity: Number(data.opacity ?? DEFAULT_SETTINGS.opacity),
-      show_toast: data.show_toast
+      show_toast: data.show_toast,
+      show_share: data.show_share !== false
     } : DEFAULT_SETTINGS;
 
     _settingsCache = settings;
@@ -55,11 +57,12 @@ router.get('/settings', async (req, res) => {
 // ════════════════════════════════════════════════════
 router.put('/settings', requireAdmin, async (req, res) => {
   try {
-    const { enabled, position, opacity, show_toast } = req.body;
+    const { enabled, position, opacity, show_toast, show_share } = req.body;
 
     const patch = { id: 1, updated_at: new Date().toISOString() };
     if (typeof enabled === 'boolean') patch.enabled = enabled;
     if (typeof show_toast === 'boolean') patch.show_toast = show_toast;
+    if (typeof show_share === 'boolean') patch.show_share = show_share;
     if (position && ['bottom-right', 'bottom-left'].includes(position)) patch.position = position;
     if (opacity !== undefined) {
       const op = Number(opacity);
@@ -150,7 +153,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
       stats: {
         today:  { clicks: count(today, 'install_click'), installs: count(today, 'install_success'), cancels: count(today, 'install_cancel') },
         week:   { clicks: count(week, 'install_click'),  installs: count(week, 'install_success'),  cancels: count(week, 'install_cancel') },
-        month:  { clicks, installs: successes, cancels: count(rows, 'install_cancel') },
+        month:  { clicks, installs: successes, cancels: count(rows, 'install_cancel'), shares: count(rows, 'share_click') },
         success_rate: clicks > 0 ? Math.round((successes / clicks) * 100) : 0,
         browsers: breakdown('browser'),
         os: breakdown('os'),
