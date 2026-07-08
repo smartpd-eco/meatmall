@@ -186,6 +186,82 @@ router.post('/cs-answer', async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════════════════
+//  Solapi 알림톡 신규 API (order / vendor / admin / test)
+//  발송·로그·중복방지는 lib/solapi.js 에서 처리
+// ════════════════════════════════════════════════════
+const solapi = require('../../lib/solapi');
+
+const TPL = {
+  ORDER:  process.env.SOLAPI_ORDER_TEMPLATE  || '',
+  VENDOR: process.env.SOLAPI_VENDOR_TEMPLATE || '',
+  ADMIN:  process.env.SOLAPI_ADMIN_TEMPLATE  || '',
+};
+
+// 1) 고객 주문 접수 알림
+router.post('/order', async (req, res) => {
+  try {
+    const { phone, customerName, orderNo, amount } = req.body || {};
+    if (!phone || !orderNo) {
+      return res.status(400).json({ ok: false, error: 'phone, orderNo는 필수입니다' });
+    }
+    const result = await solapi.sendAlimtalk({
+      type: 'order', phone, name: customerName, templateCode: TPL.ORDER,
+      variables: { '#{고객명}': customerName || '', '#{주문번호}': orderNo, '#{결제금액}': amount || '' },
+      dedupeKey: orderNo,
+    });
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// 2) 거래처 발주 알림
+router.post('/vendor', async (req, res) => {
+  try {
+    const { phone, vendorName, poNo, productName, qty, deliveryDate } = req.body || {};
+    if (!phone || !poNo) {
+      return res.status(400).json({ ok: false, error: 'phone, poNo는 필수입니다' });
+    }
+    const result = await solapi.sendAlimtalk({
+      type: 'vendor', phone, name: vendorName, templateCode: TPL.VENDOR,
+      variables: { '#{발주번호}': poNo, '#{상품명}': productName || '', '#{수량}': qty || '', '#{납품요청일}': deliveryDate || '' },
+      dedupeKey: poNo,
+    });
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// 3) 관리자 신규 주문 알림
+router.post('/admin', async (req, res) => {
+  try {
+    const { phone, orderNo, customerName, area, amount } = req.body || {};
+    if (!phone || !orderNo) {
+      return res.status(400).json({ ok: false, error: 'phone, orderNo는 필수입니다' });
+    }
+    const result = await solapi.sendAlimtalk({
+      type: 'admin', phone, name: customerName, templateCode: TPL.ADMIN,
+      variables: { '#{주문번호}': orderNo, '#{주문자}': customerName || '', '#{지역}': area || '', '#{금액}': amount || '' },
+      dedupeKey: 'admin-' + orderNo,
+    });
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// 4) 테스트 발송 — body: { phone, template:'order'|'vendor'|'admin', variables?:{} }
+router.post('/test', async (req, res) => {
+  try {
+    const { phone, template, variables } = req.body || {};
+    const map = { order: TPL.ORDER, vendor: TPL.VENDOR, admin: TPL.ADMIN };
+    const templateCode = map[template];
+    if (!phone || !templateCode) {
+      return res.status(400).json({ ok: false, error: 'phone, template(order|vendor|admin) 필요' });
+    }
+    const result = await solapi.sendAlimtalk({
+      type: 'test', phone, name: '테스트', templateCode, variables: variables || {},
+    });
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
 module.exports = router;
 module.exports.notifyOrderComplete  = notifyOrderComplete;
 module.exports.notifyShippingStart  = notifyShippingStart;
