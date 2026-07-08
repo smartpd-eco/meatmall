@@ -10,7 +10,24 @@
   "background_color": "#0F0F0F",
   "theme_color": "#0F0F0F",
   "icons": [
-    { "src": "/meatmall/images/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/meatmall/images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ]
+    {
+      "src": "/meatmall/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/meatmall/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://smartpd-eco.github.io/meatmall/manifest.json"
+    }
+  ],
+  "prefer_related_applications": false
 }

@@ -168,23 +168,32 @@
     fab = null;
   }
 
-  /* ── 클릭 → 설치 시도 또는 안내 ── */
+  /* ── 네이티브 설치 다이얼로그 실행 ── */
+  function promptInstall() {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function (choice) {
+      if (choice.outcome !== 'accepted') track('install_cancel');
+      /* accepted 성공 카운트는 appinstalled 이벤트에서 기록 */
+      deferredPrompt = null;
+    });
+  }
+
+  /* ── 클릭 → 즉시 설치 (이벤트 지연 시 최대 2.5초 대기 후 안내로 폴백) ── */
   function onInstallClick() {
     if (!fab) return;
     fab.classList.add('mm-bounce');
     setTimeout(function () { fab && fab.classList.remove('mm-bounce'); }, 200);
     track('install_click');
 
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function (choice) {
-        if (choice.outcome !== 'accepted') track('install_cancel');
-        /* accepted 성공 카운트는 appinstalled 이벤트에서 기록 */
-        deferredPrompt = null;
-      });
-      return;
-    }
-    showGuide();
+    if (deferredPrompt) { promptInstall(); return; }
+
+    /* beforeinstallprompt가 아직 안 온 경우(접속 직후 클릭) 잠시 대기 */
+    var waited = 0;
+    var iv = setInterval(function () {
+      waited += 250;
+      if (deferredPrompt) { clearInterval(iv); promptInstall(); }
+      else if (waited >= 2500) { clearInterval(iv); showGuide(); }
+    }, 250);
   }
 
   /* ── 설치 방법 안내 (beforeinstallprompt 미지원 환경) ── */
@@ -238,6 +247,16 @@
       if (settings.enabled === false) return;   /* 관리자 OFF */
       injectCSS(typeof settings.opacity === 'number' ? settings.opacity : 0.6);
       createButton(settings);
+
+      /* 이미 이 기기에 설치되어 있으면 버튼 숨김 (지원 브라우저 한정) */
+      if (navigator.getInstalledRelatedApps) {
+        navigator.getInstalledRelatedApps().then(function (apps) {
+          if (apps && apps.length) {
+            try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {}
+            hideButton();
+          }
+        }).catch(function () {});
+      }
 
       /* 첫 방문 5초 후 스마트 안내 토스트 (1회) */
       if (settings.show_toast !== false && !localStorage.getItem(LS_TOAST)) {
