@@ -40,6 +40,11 @@
   var isAndroid = /Android/.test(ua);
   var isMobile  = isIOS || isAndroid;
 
+  /* 인앱 브라우저 감지 (카카오/네이버/라인/인스타/페북 등 — beforeinstallprompt 미지원) */
+  function isInApp() {
+    return /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|; wv\)/i.test(ua);
+  }
+
   function detectBrowser() {
     if (/Edg\//.test(ua)) return 'Edge';
     if (/SamsungBrowser/.test(ua)) return 'Samsung';
@@ -130,6 +135,8 @@
       '@media(min-width:641px){#mm-pwa-guide .mm-sheet{border-radius:14px}}',
       '#mm-pwa-guide .mm-sheet h3{color:#C9A84C;font-size:.95rem;margin:0 0 10px;display:flex;align-items:center;gap:8px}',
       '#mm-pwa-guide .mm-sheet ol{margin:0 0 14px;padding-left:20px;color:#D1D5DB}',
+      '#mm-pwa-guide .mm-go{width:100%;height:46px;background:linear-gradient(135deg,#C9A84C,#E8C97A);border:none;',
+      'color:#111;border-radius:8px;font-size:.9rem;font-weight:800;cursor:pointer;margin-bottom:8px}',
       '#mm-pwa-guide .mm-close{width:100%;height:42px;background:transparent;border:1px solid rgba(201,168,76,.4);',
       'color:#C9A84C;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer}',
       /* 미니 토스트 */
@@ -215,7 +222,7 @@
     });
   }
 
-  /* ── 클릭 → 즉시 설치 (이벤트 지연 시 최대 2.5초 대기 후 안내로 폴백) ── */
+  /* ── 클릭 → 즉시 설치 (이벤트 지연 시 최대 3초 대기 후 안내로 폴백) ── */
   function onInstallClick() {
     if (!fab) return;
     fab.classList.add('mm-bounce');
@@ -229,14 +236,22 @@
     var iv = setInterval(function () {
       waited += 250;
       if (deferredPrompt) { clearInterval(iv); promptInstall(); }
-      else if (waited >= 2500) { clearInterval(iv); showGuide(); }
+      else if (waited >= 3000) { clearInterval(iv); showGuide(); }
     }, 250);
   }
 
   /* ── 설치 방법 안내 (beforeinstallprompt 미지원 환경) ── */
   function showGuide() {
-    var steps;
-    if (isIOS) {
+    var steps, primaryBtn = '', openChrome = false;
+
+    if (isInApp()) {
+      /* 카카오/네이버 등 인앱 브라우저 → 여기선 설치 불가. Chrome으로 열기 유도 */
+      steps = '<h3>📲 앱 설치하기</h3>' +
+        '<p style="margin:0 0 4px">지금은 <strong>다른 앱 안의 브라우저</strong>로 열려 있어요.<br>' +
+        'Chrome 등 기본 브라우저로 열면 <strong>버튼 한 번</strong>으로 설치됩니다.</p>';
+      primaryBtn = '<button class="mm-go" type="button">Chrome으로 열기</button>';
+      openChrome = true;
+    } else if (isIOS) {
       steps = '<h3>📲 아이폰 설치 방법</h3><ol>' +
         '<li>Safari 하단의 <strong>공유 버튼</strong>(□↑)을 탭</li>' +
         '<li><strong>홈 화면에 추가</strong> 선택</li>' +
@@ -247,21 +262,50 @@
         '<li><strong>앱 설치</strong> 또는 <strong>홈 화면에 추가</strong> 선택</li></ol>';
     } else {
       steps = '<h3>📲 PC 설치 방법</h3><ol>' +
-        '<li>Chrome/Edge 주소창 우측의 <strong>설치 아이콘</strong>(⊕) 클릭</li>' +
+        '<li>주소창 우측의 <strong>설치 아이콘</strong>(⊕) 클릭</li>' +
         '<li><strong>설치</strong> 버튼 클릭</li></ol>';
     }
+
     var wrap = document.createElement('div');
     wrap.id = 'mm-pwa-guide';
     wrap.setAttribute('role', 'dialog');
     wrap.setAttribute('aria-modal', 'true');
     wrap.setAttribute('aria-label', '앱 설치 안내');
-    wrap.innerHTML = '<div class="mm-sheet">' + steps +
+    wrap.innerHTML = '<div class="mm-sheet">' + steps + primaryBtn +
       '<button class="mm-close" type="button">확인</button></div>';
+
+    function close() { if (wrap.parentNode) wrap.remove(); }
+
+    /* 안내창이 떠 있는 동안에도 설치 이벤트가 도착하면 즉시 설치 실행 */
+    var poll = setInterval(function () {
+      if (deferredPrompt) { clearInterval(poll); close(); promptInstall(); }
+    }, 400);
+    setTimeout(function () { clearInterval(poll); }, 8000);
+
     wrap.addEventListener('click', function (e) {
-      if (e.target === wrap || e.target.className === 'mm-close') wrap.remove();
+      var cls = e.target.className || '';
+      if (openChrome && cls === 'mm-go') {
+        clearInterval(poll);
+        /* 안드로이드: Chrome 인텐트로 강제 오픈 (인앱 → Chrome 탈출) */
+        if (isAndroid) {
+          var host = location.host, path = location.pathname + location.search;
+          location.href = 'intent://' + host + path + '#Intent;scheme=https;package=com.android.chrome;end';
+        } else {
+          window.open(SHARE_URL, '_blank');
+        }
+        return;
+      }
+      if (e.target === wrap || cls === 'mm-close') {
+        clearInterval(poll);
+        /* 확인 시점에 설치 이벤트가 있으면 바로 설치, 없으면 닫기 */
+        if (deferredPrompt) { close(); promptInstall(); }
+        else close();
+      }
     });
+
     document.body.appendChild(wrap);
-    wrap.querySelector('.mm-close').focus();
+    var pf = wrap.querySelector('.mm-go') || wrap.querySelector('.mm-close');
+    if (pf) pf.focus();
   }
 
   /* ── 미니 토스트 ── */
