@@ -10,7 +10,9 @@
 (function () {
   'use strict';
 
-  var PWA_API = 'https://meatmall-server.vercel.app/api/pwa';
+  /* PWA API는 git 연동 Vercel 프로젝트(meatmall) 사용 — push 시 자동 배포됨
+     (meatmall-server 프로젝트는 CLI 배포 전용이라 /api/pwa 미반영) */
+  var PWA_API = 'https://meatmall.vercel.app/api/pwa';
   var ICON = (location.pathname.indexOf('/pages/') > -1 || location.pathname.indexOf('/admin/') > -1)
     ? '../images/icon-192.png' : 'images/icon-192.png';
   var LS_INSTALLED = 'mm-pwa-installed';

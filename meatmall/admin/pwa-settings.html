@@ -213,7 +213,8 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'https://meatmall-server.vercel.app/api';
+const API = 'https://meatmall-server.vercel.app/api';           // 인증(/auth/me)용 — 기존 로그인 토큰과 동일 서버
+const PWA_API = 'https://meatmall.vercel.app/api';              // PWA 설정·통계용 — git 연동 프로젝트(push 자동배포)
 function go(u){ location.href = u; }
 function toast(msg){
   const el = document.getElementById('toast');
@@ -232,7 +233,7 @@ function onOpacity(){
 /* ─── 설정 로드/저장 ─── */
 async function loadSettings(){
   try{
-    const r = await fetch(API + '/pwa/settings');
+    const r = await fetch(PWA_API + '/pwa/settings');
     const d = await r.json();
     const s = d.settings || {};
     document.getElementById('set-enabled').checked  = s.enabled !== false;
@@ -250,7 +251,7 @@ async function saveSettings(){
       position:   document.getElementById('set-position').value,
       opacity:    Number(document.getElementById('set-opacity').value) / 100
     };
-    const r = await fetch(API + '/pwa/settings', { method:'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+    const r = await fetch(PWA_API + '/pwa/settings', { method:'PUT', headers: authHeaders(), body: JSON.stringify(body) });
     const d = await r.json();
     if (!r.ok || !d.success) throw new Error(d.message || 'HTTP ' + r.status);
     toast('✅ 저장되었습니다');
@@ -271,7 +272,7 @@ function renderBreakdown(elId, list){
 }
 async function loadStats(){
   try{
-    const r = await fetch(API + '/pwa/stats', { headers: authHeaders() });
+    const r = await fetch(PWA_API + '/pwa/stats', { headers: authHeaders() });
     const d = await r.json();
     if (!r.ok || !d.success) throw new Error(d.message || 'HTTP ' + r.status);
     const s = d.stats;
