@@ -24,15 +24,15 @@
   var LS_SETTINGS  = 'mm-pwa-settings';
   var SETTINGS_TTL = 10 * 60 * 1000; // 10분 캐시
 
-  var DEFAULTS = { enabled: true, position: 'bottom-right', opacity: 0.8, show_toast: true, show_share: true };
+  var DEFAULTS = { enabled: true, position: 'bottom-right', opacity: 0.6, show_toast: true, show_share: true };
 
   /* ── 이미 설치(standalone) 상태면 아무것도 하지 않음 ── */
   function isStandalone() {
     return window.navigator.standalone === true ||
       (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   }
-  if (isStandalone()) { try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {} return; }
-  var IS_INSTALLED = !!localStorage.getItem(LS_INSTALLED);   /* 설치됨 → 설치버튼만 숨김(공유는 유지) */
+  if (isStandalone()) { try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {} }
+  var IS_INSTALLED = isStandalone() || !!localStorage.getItem(LS_INSTALLED);   /* 설치됨/앱 실행 → 설치버튼만 숨김(공유는 유지) */
 
   /* ── 환경 감지 ── */
   var ua = navigator.userAgent;
@@ -109,23 +109,19 @@
   function injectCSS(op) {
     var css = [
       '#mm-pwa-stack{position:fixed;z-index:900;display:flex;flex-direction:column;align-items:flex-end;gap:10px}',
-      '#mm-pwa-share{background:none;border:none;padding:0;cursor:pointer;opacity:' + op + ';transition:opacity .2s,transform .2s;-webkit-tap-highlight-color:transparent}',
-      '#mm-pwa-share:hover,#mm-pwa-share:focus-visible{opacity:1;transform:scale(1.05);outline:none}',
-      '#mm-pwa-share img{height:46px;display:block;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.45)}',
-      '#mm-pwa-share .mm-share-txt{display:inline-flex;align-items:center;gap:6px;background:#0F0F0F;border:1px solid rgba(201,168,76,.45);border-radius:999px;color:#C9A84C;font-size:.8rem;font-weight:700;padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,.45)}',
-      '#mm-pwa-fab{display:flex;align-items:center;gap:8px;',
-      'background:#0F0F0F;border:1px solid rgba(201,168,76,.45);border-radius:999px;',
-      'padding:6px;cursor:pointer;opacity:' + op + ';box-shadow:0 4px 18px rgba(0,0,0,.55);',
-      'transition:opacity .2s,transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}',
-      '#mm-pwa-fab:hover,#mm-pwa-fab:focus-visible{opacity:1;transform:scale(1.05);',
-      'box-shadow:0 6px 24px rgba(201,168,76,.35);outline:none}',
-      '#mm-pwa-fab:focus-visible{border-color:#C9A84C}',
-      '#mm-pwa-fab:active{opacity:.95}',
-      '#mm-pwa-fab.mm-bounce{animation:mmPwaBounce .15s ease}',
+      '.mm-pwa-btn{position:relative;background:none;border:none;padding:0;cursor:pointer;opacity:' + op + ';',
+      'border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.45);',
+      'transition:opacity .2s,transform .2s;-webkit-tap-highlight-color:transparent}',
+      '.mm-pwa-btn img{width:56px;height:56px;display:block;object-fit:cover}',
+      '.mm-pwa-btn .mm-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;',
+      'color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.02em;background:rgba(15,15,15,.55);',
+      'opacity:0;transition:opacity .2s;pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,.7)}',
+      '.mm-pwa-btn:hover,.mm-pwa-btn:focus-visible{opacity:1;transform:scale(1.05);outline:none}',
+      '.mm-pwa-btn:hover .mm-lbl,.mm-pwa-btn:focus-visible .mm-lbl{opacity:1}',
+      '.mm-pwa-btn:active{opacity:1}',
+      '.mm-pwa-btn.mm-bounce{animation:mmPwaBounce .15s ease}',
       '@keyframes mmPwaBounce{0%{transform:scale(1)}50%{transform:scale(.92)}100%{transform:scale(1.05)}}',
-      '#mm-pwa-fab img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block}',
-      '#mm-pwa-fab .mm-pwa-lbl{color:#C9A84C;font-size:.82rem;font-weight:700;padding-right:12px;white-space:nowrap}',
-      '@media(max-width:640px){#mm-pwa-fab img{width:40px;height:40px}#mm-pwa-fab .mm-pwa-lbl{display:none}#mm-pwa-fab{padding:4px}}',
+      '@media(max-width:640px){.mm-pwa-btn img{width:48px;height:48px}.mm-pwa-btn{border-radius:14px}}',
       /* 설치 안내 모달 */
       '#mm-pwa-guide{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.66);display:flex;align-items:flex-end;justify-content:center}',
       '@media(min-width:641px){#mm-pwa-guide{align-items:center}}',
@@ -164,33 +160,29 @@
     stack.id = 'mm-pwa-stack';
     applyPosition(stack, settings.position);
 
-    if (settings.show_share !== false) {
-      shareBtn = document.createElement('button');
-      shareBtn.id = 'mm-pwa-share';
-      shareBtn.type = 'button';
-      shareBtn.setAttribute('aria-label', '정육본가 공유하기');
+    function mkBtn(id, src, fallback, label, onClick) {
+      var b = document.createElement('button');
+      b.id = id; b.type = 'button';
+      b.className = 'mm-pwa-btn';
+      b.setAttribute('aria-label', '정육본가 ' + label);
       var im = document.createElement('img');
-      im.src = SHARE_IMG; im.alt = '공유하기';
-      im.onerror = function () {   /* 이미지 없으면 텍스트 버튼으로 대체 */
-        shareBtn.innerHTML = '<span class="mm-share-txt">🔗 공유하기</span>';
-      };
-      shareBtn.appendChild(im);
-      shareBtn.addEventListener('click', onShareClick);
+      im.src = src; im.alt = '';
+      im.setAttribute('aria-hidden', 'true');
+      if (fallback) im.onerror = function () { im.onerror = null; im.src = fallback; };
+      var lb = document.createElement('span');
+      lb.className = 'mm-lbl'; lb.textContent = label;   /* 마우스 오버 시 중앙 표시 */
+      b.appendChild(im); b.appendChild(lb);
+      b.addEventListener('click', onClick);
+      return b;
+    }
+
+    if (settings.show_share !== false) {
+      shareBtn = mkBtn('mm-pwa-share', SHARE_IMG, ICON_FALLBACK, '공유하기', onShareClick);
       stack.appendChild(shareBtn);
     }
 
     if (!IS_INSTALLED) {
-      fab = document.createElement('button');
-      fab.id = 'mm-pwa-fab';
-      fab.type = 'button';
-      fab.setAttribute('aria-label', '정육본가 앱 설치');
-      var ic = document.createElement('img');
-      ic.src = ICON; ic.alt = ''; ic.setAttribute('aria-hidden', 'true');
-      ic.onerror = function () { ic.onerror = null; ic.src = ICON_FALLBACK; };
-      var lb = document.createElement('span');
-      lb.className = 'mm-pwa-lbl'; lb.textContent = '앱 설치';
-      fab.appendChild(ic); fab.appendChild(lb);
-      fab.addEventListener('click', onInstallClick);
+      fab = mkBtn('mm-pwa-fab', ICON, ICON_FALLBACK, '설치하기', onInstallClick);
       stack.appendChild(fab);
     }
 

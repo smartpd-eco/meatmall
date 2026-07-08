@@ -11,7 +11,7 @@ const SETTINGS_TTL = 60 * 1000;
 const DEFAULT_SETTINGS = {
   enabled: true,
   position: 'bottom-right',
-  opacity: 0.8,
+  opacity: 0.6,
   show_toast: true,
   show_share: true
 };
