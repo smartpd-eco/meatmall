@@ -117,21 +117,9 @@
     <div class="nav-i" onclick="go('pages/mypage.html')"><div class="nav-ico">👤</div><div class="nav-lbl">마이</div></div>
   </nav>
 </div>
-<!-- PWA 홈화면 설치 안내 배너 -->
-<div id="pwa-banner" style="display:none;position:fixed;bottom:66px;left:14px;right:14px;z-index:500;background:#1A1A1A;border:1px solid rgba(201,168,76,.4);border-radius:10px;padding:13px 14px;box-shadow:0 4px 24px rgba(0,0,0,.6);align-items:center;gap:12px">
-  <div style="font-size:1.5rem;flex-shrink:0">📲</div>
-  <div style="flex:1;min-width:0">
-    <div style="font-size:.82rem;font-weight:700;color:#C9A84C;margin-bottom:3px">홈 화면에 추가하기</div>
-    <div style="font-size:.72rem;color:#9CA3AF;line-height:1.55">앱처럼 빠르게 정육본가를 이용하세요<br>
-      <span id="pwa-ios-hint" style="display:none">아이폰: 하단 공유 버튼 → 홈 화면에 추가</span>
-      <span id="pwa-android-hint" style="display:none">아이콘을 탭해 홈 화면에 추가하세요</span>
-    </div>
-  </div>
-  <button onclick="dismissPwaBanner()" aria-label="닫기" style="background:none;border:none;color:#6B7280;font-size:1.1rem;padding:4px 6px;cursor:pointer;flex-shrink:0;line-height:1">✕</button>
-</div>
-
 <div id="toast-wrap" class="toast"></div>
 <script src="js/app.js"></script>
+<script src="js/pwa-install.js" defer></script>
 <script src="js/footer.js"></script>
 <script>
 const API='https://meatmall-server.vercel.app/api';
@@ -199,32 +187,7 @@ async function loadCats(){
 Promise.all([loadPrds(''),loadCats()]);
 </script>
 <script>
-/* ── PWA: 홈화면 추가 배너 ── */
-(function(){
-  var BANNER_KEY = 'pwa-banner-v1';
-  var banner = document.getElementById('pwa-banner');
-  if (!banner) return;
-  if (localStorage.getItem(BANNER_KEY)) return;               /* 이미 닫음 */
-  if (window.navigator.standalone === true) return;           /* iOS PWA 실행 중 */
-  if (window.matchMedia('(display-mode: standalone)').matches) return; /* 설치된 PWA */
-  if (window.innerWidth > 640) return;                        /* 데스크탑 제외 */
-
-  var ua = navigator.userAgent;
-  var isIOS     = /iP(hone|ad|od)/.test(ua);
-  var isAndroid = /Android/.test(ua);
-  if (!isIOS && !isAndroid) return;
-
-  if (isIOS)     document.getElementById('pwa-ios-hint').style.display     = '';
-  if (isAndroid) document.getElementById('pwa-android-hint').style.display = '';
-
-  banner.style.display = 'flex';
-})();
-
-function dismissPwaBanner(){
-  localStorage.setItem('pwa-banner-v1', '1');
-  var b = document.getElementById('pwa-banner');
-  if (b) b.style.display = 'none';
-}
+/* ── PWA 설치 UI는 js/pwa-install.js(플로팅 버튼)로 이관 (MD_031) ── */
 
 /* ── Service Worker 등록 + 자동 업데이트 ── */
 if ('serviceWorker' in navigator) {

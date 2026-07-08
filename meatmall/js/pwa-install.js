@@ -1,0 +1,256 @@
+/* ════════════════════════════════════════════════════
+   PWA 앱 설치 플로팅 버튼 (MD_031)
+   - 로그인 페이지와 동일 아이콘(images/icon-192.png) 사용
+   - 기본 투명도 60% / Hover 100%
+   - 설치된 사용자 자동 숨김
+   - 관리자 설정(ON/OFF·위치·투명도) API 연동
+   - 설치 통계(install_click/success/cancel) 수집
+   자체 완결형 스크립트 — 다른 파일 의존 없음
+   ════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var PWA_API = 'https://meatmall-server.vercel.app/api/pwa';
+  var ICON = (location.pathname.indexOf('/pages/') > -1 || location.pathname.indexOf('/admin/') > -1)
+    ? '../images/icon-192.png' : 'images/icon-192.png';
+  var LS_INSTALLED = 'mm-pwa-installed';
+  var LS_TOAST     = 'mm-pwa-toast-v1';
+  var LS_SETTINGS  = 'mm-pwa-settings';
+  var SETTINGS_TTL = 10 * 60 * 1000; // 10분 캐시
+
+  var DEFAULTS = { enabled: true, position: 'bottom-right', opacity: 0.6, show_toast: true };
+
+  /* ── 이미 설치(standalone) 상태면 아무것도 하지 않음 ── */
+  function isStandalone() {
+    return window.navigator.standalone === true ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  }
+  if (isStandalone()) { try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {} return; }
+  if (localStorage.getItem(LS_INSTALLED)) return;
+
+  /* ── 환경 감지 ── */
+  var ua = navigator.userAgent;
+  var isIOS     = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+  var isAndroid = /Android/.test(ua);
+  var isMobile  = isIOS || isAndroid;
+
+  function detectBrowser() {
+    if (/Edg\//.test(ua)) return 'Edge';
+    if (/SamsungBrowser/.test(ua)) return 'Samsung';
+    if (/Whale/.test(ua)) return 'Whale';
+    if (/CriOS|Chrome/.test(ua)) return 'Chrome';
+    if (/FxiOS|Firefox/.test(ua)) return 'Firefox';
+    if (/Safari/.test(ua)) return 'Safari';
+    return 'Other';
+  }
+  function detectOS() {
+    if (isIOS) return 'iOS';
+    if (isAndroid) return 'Android';
+    if (/Windows/.test(ua)) return 'Windows';
+    if (/Macintosh/.test(ua)) return 'Mac';
+    if (/Linux/.test(ua)) return 'Linux';
+    return 'Other';
+  }
+
+  /* ── 통계 전송 (실패해도 무시) ── */
+  function track(event) {
+    try {
+      fetch(PWA_API + '/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_type: event,
+          browser: detectBrowser(),
+          os: detectOS(),
+          device_type: isMobile ? 'mobile' : 'desktop'
+        }),
+        keepalive: true
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  /* ── beforeinstallprompt 캡처 (스크립트 로드 즉시 등록) ── */
+  var deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  window.addEventListener('appinstalled', function () {
+    try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {}
+    track('install_success');
+    hideButton();
+    showMiniToast('🎉 설치가 완료되었습니다');
+  });
+
+  /* ── 관리자 설정 로드 (캐시 → API → 기본값) ── */
+  function loadSettings(cb) {
+    try {
+      var cached = JSON.parse(localStorage.getItem(LS_SETTINGS) || 'null');
+      if (cached && Date.now() - cached.t < SETTINGS_TTL) return cb(cached.v);
+    } catch (e) {}
+    fetch(PWA_API + '/settings')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        var v = (d && d.settings) ? d.settings : DEFAULTS;
+        try { localStorage.setItem(LS_SETTINGS, JSON.stringify({ t: Date.now(), v: v })); } catch (e) {}
+        cb(v);
+      })
+      .catch(function () { cb(DEFAULTS); });
+  }
+
+  /* ── 스타일 주입 ── */
+  function injectCSS(op) {
+    var css = [
+      '#mm-pwa-fab{position:fixed;z-index:900;display:flex;align-items:center;gap:8px;',
+      'background:#0F0F0F;border:1px solid rgba(201,168,76,.45);border-radius:999px;',
+      'padding:6px;cursor:pointer;opacity:' + op + ';box-shadow:0 4px 18px rgba(0,0,0,.55);',
+      'transition:opacity .2s,transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}',
+      '#mm-pwa-fab:hover,#mm-pwa-fab:focus-visible{opacity:1;transform:scale(1.05);',
+      'box-shadow:0 6px 24px rgba(201,168,76,.35);outline:none}',
+      '#mm-pwa-fab:focus-visible{border-color:#C9A84C}',
+      '#mm-pwa-fab:active{opacity:.95}',
+      '#mm-pwa-fab.mm-bounce{animation:mmPwaBounce .15s ease}',
+      '@keyframes mmPwaBounce{0%{transform:scale(1)}50%{transform:scale(.92)}100%{transform:scale(1.05)}}',
+      '#mm-pwa-fab img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block}',
+      '#mm-pwa-fab .mm-pwa-lbl{color:#C9A84C;font-size:.82rem;font-weight:700;padding-right:12px;white-space:nowrap}',
+      '@media(max-width:640px){#mm-pwa-fab img{width:40px;height:40px}#mm-pwa-fab .mm-pwa-lbl{display:none}#mm-pwa-fab{padding:4px}}',
+      /* 설치 안내 모달 */
+      '#mm-pwa-guide{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.66);display:flex;align-items:flex-end;justify-content:center}',
+      '@media(min-width:641px){#mm-pwa-guide{align-items:center}}',
+      '#mm-pwa-guide .mm-sheet{background:#1A1A1A;border:1px solid rgba(201,168,76,.4);border-radius:14px 14px 0 0;',
+      'max-width:420px;width:100%;padding:22px 20px 26px;color:#F0F2F5;font-size:.86rem;line-height:1.75}',
+      '@media(min-width:641px){#mm-pwa-guide .mm-sheet{border-radius:14px}}',
+      '#mm-pwa-guide .mm-sheet h3{color:#C9A84C;font-size:.95rem;margin:0 0 10px;display:flex;align-items:center;gap:8px}',
+      '#mm-pwa-guide .mm-sheet ol{margin:0 0 14px;padding-left:20px;color:#D1D5DB}',
+      '#mm-pwa-guide .mm-close{width:100%;height:42px;background:transparent;border:1px solid rgba(201,168,76,.4);',
+      'color:#C9A84C;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer}',
+      /* 미니 토스트 */
+      '#mm-pwa-toast{position:fixed;left:50%;transform:translateX(-50%) translateY(8px);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:1300;',
+      'background:#1A1A1A;border:1px solid rgba(201,168,76,.45);color:#E8C97A;font-size:.8rem;font-weight:600;',
+      'padding:10px 18px;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.5);opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;max-width:88vw;text-align:center}',
+      '#mm-pwa-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}'
+    ].join('');
+    var s = document.createElement('style');
+    s.id = 'mm-pwa-style';
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* ── 위치 계산 (모바일은 하단 네비 위로) ── */
+  function applyPosition(btn, pos) {
+    var hasNav = !!document.querySelector('.nav');
+    var bottomMobile = hasNav ? '78px' : '16px';
+    var side = (pos === 'bottom-left') ? 'left' : 'right';
+    btn.style[side] = isMobile ? '16px' : '24px';
+    btn.style.bottom = isMobile ? bottomMobile : '24px';
+  }
+
+  /* ── 버튼 생성 ── */
+  var fab = null;
+  function createButton(settings) {
+    fab = document.createElement('button');
+    fab.id = 'mm-pwa-fab';
+    fab.type = 'button';
+    fab.setAttribute('aria-label', '정육본가 앱 설치');
+    fab.innerHTML =
+      '<img src="' + ICON + '" alt="" aria-hidden="true">' +
+      '<span class="mm-pwa-lbl">앱 설치</span>';
+    applyPosition(fab, settings.position);
+    fab.addEventListener('click', onInstallClick);
+    document.body.appendChild(fab);
+  }
+
+  function hideButton() {
+    if (fab && fab.parentNode) fab.parentNode.removeChild(fab);
+    fab = null;
+  }
+
+  /* ── 클릭 → 설치 시도 또는 안내 ── */
+  function onInstallClick() {
+    if (!fab) return;
+    fab.classList.add('mm-bounce');
+    setTimeout(function () { fab && fab.classList.remove('mm-bounce'); }, 200);
+    track('install_click');
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function (choice) {
+        if (choice.outcome !== 'accepted') track('install_cancel');
+        /* accepted 성공 카운트는 appinstalled 이벤트에서 기록 */
+        deferredPrompt = null;
+      });
+      return;
+    }
+    showGuide();
+  }
+
+  /* ── 설치 방법 안내 (beforeinstallprompt 미지원 환경) ── */
+  function showGuide() {
+    var steps;
+    if (isIOS) {
+      steps = '<h3>📲 아이폰 설치 방법</h3><ol>' +
+        '<li>Safari 하단의 <strong>공유 버튼</strong>(□↑)을 탭</li>' +
+        '<li><strong>홈 화면에 추가</strong> 선택</li>' +
+        '<li>우측 상단 <strong>추가</strong> 탭</li></ol>';
+    } else if (isAndroid) {
+      steps = '<h3>📲 안드로이드 설치 방법</h3><ol>' +
+        '<li>Chrome 우측 상단 <strong>⋮ 메뉴</strong> 탭</li>' +
+        '<li><strong>앱 설치</strong> 또는 <strong>홈 화면에 추가</strong> 선택</li></ol>';
+    } else {
+      steps = '<h3>📲 PC 설치 방법</h3><ol>' +
+        '<li>Chrome/Edge 주소창 우측의 <strong>설치 아이콘</strong>(⊕) 클릭</li>' +
+        '<li><strong>설치</strong> 버튼 클릭</li></ol>';
+    }
+    var wrap = document.createElement('div');
+    wrap.id = 'mm-pwa-guide';
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.setAttribute('aria-label', '앱 설치 안내');
+    wrap.innerHTML = '<div class="mm-sheet">' + steps +
+      '<button class="mm-close" type="button">확인</button></div>';
+    wrap.addEventListener('click', function (e) {
+      if (e.target === wrap || e.target.className === 'mm-close') wrap.remove();
+    });
+    document.body.appendChild(wrap);
+    wrap.querySelector('.mm-close').focus();
+  }
+
+  /* ── 미니 토스트 ── */
+  function showMiniToast(msg) {
+    var t = document.getElementById('mm-pwa-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'mm-pwa-toast';
+      t.setAttribute('role', 'status');
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    setTimeout(function () { t.classList.remove('show'); }, 3500);
+  }
+
+  /* ── 초기화 ── */
+  function init() {
+    loadSettings(function (settings) {
+      if (settings.enabled === false) return;   /* 관리자 OFF */
+      injectCSS(typeof settings.opacity === 'number' ? settings.opacity : 0.6);
+      createButton(settings);
+
+      /* 첫 방문 5초 후 스마트 안내 토스트 (1회) */
+      if (settings.show_toast !== false && !localStorage.getItem(LS_TOAST)) {
+        setTimeout(function () {
+          if (!fab) return;
+          showMiniToast('📲 앱으로 설치하면 더 빠르게 이용할 수 있습니다');
+          try { localStorage.setItem(LS_TOAST, '1'); } catch (e) {}
+        }, 5000);
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

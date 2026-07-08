@@ -144,6 +144,7 @@ app.use('/api/crm/campaigns',    require('./api/crm/campaigns'));
 app.use('/api/crm/send-logs',    require('./api/crm/send-logs'));
 app.use('/api/crm/inventory-ai', require('./api/crm/inventory-ai'));
 app.use('/api/crm/coupon-rules', require('./api/crm/coupon-rules'));
+app.use('/api/pwa',              require('./api/pwa/index'));
 
 // ====================================================
 // 헬스체크

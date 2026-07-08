@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PWA 설정 · 정육본가 관리자</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0F0F0F;color:#F0F2F5;font-family:'Noto Sans KR',sans-serif;font-size:14px;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+
+/* HEADER */
+.hdr{height:54px;background:#0F0F0F;border-bottom:2px solid #C9A84C;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100}
+.hdr-brand{font-size:1.1rem;font-weight:800;color:#C9A84C;cursor:pointer}
+.hdr-brand small{font-size:.65rem;color:rgba(201,168,76,.5);font-weight:400;margin-left:8px}
+.hdr-btns{display:flex;gap:10px}
+.hdr-btn{background:transparent;border:1px solid rgba(201,168,76,.35);color:#C9A84C;padding:5px 14px;border-radius:5px;font-size:.8rem;font-weight:600;transition:background .15s}
+.hdr-btn:hover{background:rgba(201,168,76,.08)}
+
+/* SUB NAV */
+.subnav{display:flex;background:#111;border-bottom:2px solid #C9A84C;overflow-x:auto;scrollbar-width:none}
+.subnav::-webkit-scrollbar{display:none}
+.snav{flex-shrink:0;padding:12px 22px;font-size:.84rem;font-weight:600;color:rgba(201,168,76,.4);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+.snav:hover{color:rgba(201,168,76,.7)}
+.snav.on{color:#C9A84C;border-bottom-color:#C9A84C}
+
+/* PAGE */
+.page{max-width:900px;margin:0 auto;padding:28px 28px 60px}
+
+/* CARD */
+.card{background:#1A1A1A;border:1px solid #262626;border-radius:10px;overflow:hidden;margin-bottom:20px}
+.card-head{padding:16px 20px 12px;border-bottom:1px solid #1E1E1E;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.95rem;font-weight:700;color:#C9A84C}
+.card-body{padding:18px 20px}
+
+/* INFO */
+.info{border-radius:8px;padding:12px 16px;font-size:.84rem;line-height:1.7;margin-bottom:14px}
+.info-note{background:rgba(255,255,255,.04);border:1px solid #262626;color:#D1D5DB}
+.info-ok{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);color:#86EFAC}
+
+/* FORM */
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #1E1E1E;gap:16px}
+.set-row:last-child{border-bottom:none}
+.set-lbl{font-size:.86rem;font-weight:600;color:#F0F2F5}
+.set-sub{font-size:.74rem;color:#9CA3AF;margin-top:3px;line-height:1.5}
+select{height:38px;background:#141414;border:1.5px solid #2A2A2A;color:#F0F2F5;border-radius:6px;padding:0 10px;font-size:.84rem;outline:none;min-width:140px}
+select:focus{border-color:#C9A84C}
+input[type=range]{width:150px;accent-color:#C9A84C}
+.op-val{font-size:.82rem;font-weight:700;color:#C9A84C;min-width:42px;text-align:right}
+
+/* TOGGLE */
+.tgl{position:relative;width:46px;height:26px;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0}
+.tgl-track{position:absolute;inset:0;background:#2A2A2A;border-radius:999px;transition:background .2s;cursor:pointer}
+.tgl-track::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#9CA3AF;border-radius:50%;transition:all .2s}
+.tgl input:checked + .tgl-track{background:rgba(201,168,76,.85)}
+.tgl input:checked + .tgl-track::after{left:23px;background:#0F0F0F}
+
+/* BTN */
+.btn{height:42px;border-radius:8px;font-size:.86rem;font-weight:700;padding:0 22px;border:none;transition:opacity .15s}
+.btn-gold{background:#C9A84C;color:#0F0F0F}
+.btn-gold:hover{opacity:.88}
+.btn-outline{background:transparent;border:1px solid rgba(201,168,76,.4);color:#C9A84C}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:640px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-box{background:#141414;border:1px solid #262626;border-radius:8px;padding:14px;text-align:center}
+.stat-num{font-size:1.4rem;font-weight:800;color:#C9A84C}
+.stat-lbl{font-size:.72rem;color:#9CA3AF;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{text-align:left;color:#9CA3AF;font-weight:600;padding:8px 10px;border-bottom:1px solid #262626;font-size:.76rem}
+td{padding:9px 10px;border-bottom:1px solid #1A1A1A}
+.bar-wrap{background:#262626;border-radius:4px;height:8px;overflow:hidden}
+.bar{height:100%;background:#C9A84C;border-radius:4px}
+
+/* PREVIEW */
+.preview-fab{display:inline-flex;align-items:center;gap:8px;background:#0F0F0F;border:1px solid rgba(201,168,76,.45);border-radius:999px;padding:6px;box-shadow:0 4px 18px rgba(0,0,0,.55)}
+.preview-fab img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block}
+.preview-fab span{color:#C9A84C;font-size:.82rem;font-weight:700;padding-right:12px}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);background:#1C1C1C;border:1px solid #C9A84C;color:#F0F2F5;padding:10px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+<script>
+document.documentElement.style.visibility = 'hidden';
+window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
+</script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-brand" onclick="go('dashboard.html')">정육본가 <small>PWA 설정</small></div>
+  <div class="hdr-btns">
+    <button class="hdr-btn" onclick="go('dashboard.html')">🏠 대시보드</button>
+    <button class="hdr-btn" onclick="go('payment-settings.html')">💳 결제설정</button>
+    <button class="hdr-btn" onclick="window.open('../index.html','_blank')">🛍️ 쇼핑몰</button>
+  </div>
+</header>
+
+<!-- SUB NAV -->
+<nav class="subnav">
+  <div class="snav" onclick="go('dashboard.html')">📊 대시보드</div>
+  <div class="snav" onclick="go('products.html')">📦 상품관리</div>
+  <div class="snav" onclick="go('payment-settings.html')">💳 결제설정</div>
+  <div class="snav on">📲 PWA 설정</div>
+  <div class="snav" onclick="window.open('../index.html','_blank')">🛍️ 쇼핑몰 ↗</div>
+</nav>
+
+<div class="page">
+
+  <!-- 설치 버튼 설정 -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">📲 앱 설치 플로팅 버튼 설정</div>
+      <button class="btn btn-gold" style="height:34px;font-size:.8rem" onclick="saveSettings()">저장</button>
+    </div>
+    <div class="card-body">
+      <div class="info info-note">
+        홈페이지 우측 하단에 표시되는 앱 설치 버튼을 관리합니다.<br>
+        이미 앱을 설치한 사용자에게는 자동으로 숨겨집니다. 저장 후 최대 10분 내 적용됩니다(캐시).
+      </div>
+
+      <div class="set-row">
+        <div>
+          <div class="set-lbl">설치 버튼 사용</div>
+          <div class="set-sub">OFF 시 모든 사용자에게 버튼이 숨겨집니다</div>
+        </div>
+        <label class="tgl"><input type="checkbox" id="set-enabled"><span class="tgl-track"></span></label>
+      </div>
+
+      <div class="set-row">
+        <div>
+          <div class="set-lbl">버튼 위치</div>
+          <div class="set-sub">모바일은 하단 네비게이션 위에 표시됩니다</div>
+        </div>
+        <select id="set-position">
+          <option value="bottom-right">우측 하단</option>
+          <option value="bottom-left">좌측 하단</option>
+        </select>
+      </div>
+
+      <div class="set-row">
+        <div>
+          <div class="set-lbl">기본 투명도</div>
+          <div class="set-sub">Hover 시에는 항상 100%로 표시됩니다</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="set-opacity" min="20" max="100" step="5" oninput="onOpacity()">
+          <span class="op-val" id="op-val">60%</span>
+        </div>
+      </div>
+
+      <div class="set-row">
+        <div>
+          <div class="set-lbl">첫 방문 설치 안내 토스트</div>
+          <div class="set-sub">첫 방문 5초 후 "앱으로 설치하면 더 빠르게…" 안내 1회 표시</div>
+        </div>
+        <label class="tgl"><input type="checkbox" id="set-toast"><span class="tgl-track"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 미리보기 -->
+  <div class="card">
+    <div class="card-head"><div class="card-title">👁️ 미리보기</div></div>
+    <div class="card-body" style="text-align:center;padding:26px">
+      <div class="preview-fab" id="preview">
+        <img src="../images/icon-192.png" alt="정육본가">
+        <span>앱 설치</span>
+      </div>
+      <div class="set-sub" style="margin-top:12px">로그인 페이지와 동일한 공식 앱 아이콘을 사용합니다 (모바일은 아이콘만 표시)</div>
+    </div>
+  </div>
+
+  <!-- 설치 통계 -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">📊 설치 통계 (최근 30일)</div>
+      <button class="btn btn-outline" style="height:34px;font-size:.8rem" onclick="loadStats()">새로고침</button>
+    </div>
+    <div class="card-body">
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-num" id="st-today">–</div><div class="stat-lbl">오늘 설치</div></div>
+        <div class="stat-box"><div class="stat-num" id="st-week">–</div><div class="stat-lbl">주간 설치</div></div>
+        <div class="stat-box"><div class="stat-num" id="st-month">–</div><div class="stat-lbl">월간 설치</div></div>
+        <div class="stat-box"><div class="stat-num" id="st-rate">–</div><div class="stat-lbl">설치 성공률</div></div>
+      </div>
+      <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-box"><div class="stat-num" id="st-clicks" style="color:#F0F2F5">–</div><div class="stat-lbl">월간 클릭</div></div>
+        <div class="stat-box"><div class="stat-num" id="st-cancels" style="color:#F0F2F5">–</div><div class="stat-lbl">월간 취소</div></div>
+        <div class="stat-box"><div class="stat-num" id="st-device" style="color:#F0F2F5;font-size:1rem;padding-top:6px">–</div><div class="stat-lbl">모바일 / PC</div></div>
+      </div>
+
+      <table>
+        <thead><tr><th style="width:30%">브라우저</th><th>비율</th><th style="width:60px;text-align:right">건수</th></tr></thead>
+        <tbody id="tb-browser"><tr><td colspan="3" style="color:#6B7280">불러오는 중...</td></tr></tbody>
+      </table>
+      <div style="height:16px"></div>
+      <table>
+        <thead><tr><th style="width:30%">OS</th><th>비율</th><th style="width:60px;text-align:right">건수</th></tr></thead>
+        <tbody id="tb-os"><tr><td colspan="3" style="color:#6B7280">불러오는 중...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://meatmall-server.vercel.app/api';
+function go(u){ location.href = u; }
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+function authHeaders(){
+  return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('mm_access_token') };
+}
+function onOpacity(){
+  const v = document.getElementById('set-opacity').value;
+  document.getElementById('op-val').textContent = v + '%';
+  document.getElementById('preview').style.opacity = v / 100;
+}
+
+/* ─── 설정 로드/저장 ─── */
+async function loadSettings(){
+  try{
+    const r = await fetch(API + '/pwa/settings');
+    const d = await r.json();
+    const s = d.settings || {};
+    document.getElementById('set-enabled').checked  = s.enabled !== false;
+    document.getElementById('set-toast').checked    = s.show_toast !== false;
+    document.getElementById('set-position').value   = s.position || 'bottom-right';
+    document.getElementById('set-opacity').value    = Math.round((s.opacity ?? 0.6) * 100);
+    onOpacity();
+  }catch(e){ toast('설정을 불러오지 못했습니다'); }
+}
+async function saveSettings(){
+  try{
+    const body = {
+      enabled:    document.getElementById('set-enabled').checked,
+      show_toast: document.getElementById('set-toast').checked,
+      position:   document.getElementById('set-position').value,
+      opacity:    Number(document.getElementById('set-opacity').value) / 100
+    };
+    const r = await fetch(API + '/pwa/settings', { method:'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || 'HTTP ' + r.status);
+    toast('✅ 저장되었습니다');
+  }catch(e){ toast('저장 실패: ' + e.message); }
+}
+
+/* ─── 통계 ─── */
+function renderBreakdown(elId, list){
+  const tb = document.getElementById(elId);
+  if (!list || !list.length){ tb.innerHTML = '<tr><td colspan="3" style="color:#6B7280">데이터 없음</td></tr>'; return; }
+  const total = list.reduce((s, x) => s + x.count, 0) || 1;
+  tb.innerHTML = list.map(x => {
+    const pct = Math.round(x.count / total * 100);
+    return `<tr><td>${x.name}</td>
+      <td><div class="bar-wrap"><div class="bar" style="width:${pct}%"></div></div></td>
+      <td style="text-align:right;font-weight:700;color:#C9A84C">${x.count}</td></tr>`;
+  }).join('');
+}
+async function loadStats(){
+  try{
+    const r = await fetch(API + '/pwa/stats', { headers: authHeaders() });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || 'HTTP ' + r.status);
+    const s = d.stats;
+    document.getElementById('st-today').textContent   = s.today.installs;
+    document.getElementById('st-week').textContent    = s.week.installs;
+    document.getElementById('st-month').textContent   = s.month.installs;
+    document.getElementById('st-rate').textContent    = s.success_rate + '%';
+    document.getElementById('st-clicks').textContent  = s.month.clicks;
+    document.getElementById('st-cancels').textContent = s.month.cancels;
+    const dev = {}; (s.devices || []).forEach(x => dev[x.name] = x.count);
+    document.getElementById('st-device').textContent  = (dev.mobile || 0) + ' / ' + (dev.desktop || 0);
+    renderBreakdown('tb-browser', s.browsers);
+    renderBreakdown('tb-os', s.os);
+  }catch(e){ toast('통계를 불러오지 못했습니다'); }
+}
+
+/* ─── AUTH ─── */
+(async function(){
+  const tok = localStorage.getItem('mm_access_token');
+  if (!tok){ location.replace('dashboard.html'); return; }
+  try {
+    const r = await fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + tok } });
+    const d = await r.json();
+    if (!r.ok || !d.user?.is_admin){
+      localStorage.removeItem('mm_access_token');
+      location.replace('dashboard.html'); return;
+    }
+    document.documentElement.style.visibility = '';
+    loadSettings();
+    loadStats();
+  } catch(e){ location.replace('dashboard.html'); }
+})();
+</script>
+</body>
+</html>
