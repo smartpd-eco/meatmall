@@ -3,7 +3,7 @@
    실제 백엔드 서버 연결 완료
 ═══════════════════════════════════════════════════ */
 
-const API_BASE = 'https://meatmall.vercel.app/api';
+const API_BASE = 'https://api.meatbonga.com/api';
 
 let _accessToken = null;
 let _user = null;

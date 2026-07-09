@@ -39,6 +39,7 @@ self.addEventListener('fetch', event => {
 
   /* API 요청은 캐시 없이 항상 네트워크 */
   if (
+    url.includes('api.meatbonga.com') ||
     url.includes('meatmall-server.vercel.app') ||
     url.includes('meatmall.vercel.app') ||
     url.includes('supabase.co')

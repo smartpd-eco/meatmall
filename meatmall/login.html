@@ -75,9 +75,9 @@
 <script src="js/footer.js?v=20260708-email-line"></script>
 <script src="js/pwa-install.js" defer></script>
 <script>
-const API='https://meatmall-server.vercel.app/api';
+const API='https://api.meatbonga.com/api';
 // 서버 콜드스타트 예열: 페이지 로드 즉시 양쪽 도메인 깨우기 (결과 무시)
-['https://meatmall-server.vercel.app/api/products?limit=1','https://meatmall.vercel.app/api/products?limit=1'].forEach(u=>{try{fetch(u,{mode:'cors'}).catch(()=>{});}catch(e){}});
+['https://api.meatbonga.com/api/products?limit=1','https://api.meatbonga.com/api/products?limit=1'].forEach(u=>{try{fetch(u,{mode:'cors'}).catch(()=>{});}catch(e){}});
 function go(u){window.location.href=u}
 document.addEventListener('DOMContentLoaded',()=>{const p=document.getElementById('pw');if(p)p.value=''});
 const cached=JSON.parse(localStorage.getItem('mm_user_cache')||'{}')||{};
@@ -90,7 +90,7 @@ async function doLogin(){
   const btn=document.getElementById('login-btn');btn.textContent='...';btn.disabled=true;
   try{
     // 콜드스타트/특정 도메인 차단 대응: 실패 시 대체 API 도메인으로 재시도
-    const LOGIN_HOSTS=['https://meatmall-server.vercel.app/api','https://meatmall.vercel.app/api'];
+    const LOGIN_HOSTS=['https://api.meatbonga.com/api','https://api.meatbonga.com/api'];
     let r, lastErr;
     for(let i=0;i<4;i++){
       const host=LOGIN_HOSTS[i % LOGIN_HOSTS.length];

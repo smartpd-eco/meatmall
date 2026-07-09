@@ -189,7 +189,7 @@ body{background:var(--onyx)}
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
-const API='https://meatmall-server.vercel.app/api';
+const API='https://api.meatbonga.com/api';
 function go(u){window.location.href=u}
 function fmt(n){return Number(n).toLocaleString('ko-KR')}
 function toast(msg){const el=document.getElementById('toast-global');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200)}

@@ -15,6 +15,7 @@
 .link-msg{font-size:.88rem;color:var(--dark-txt);line-height:1.7;text-align:center;margin-bottom:22px}
 .link-msg strong{color:var(--gold-dk)}
 </style>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
 </head>
 <body>
 <div class="app-wrap">
@@ -31,7 +32,7 @@
   </div>
 </div>
 <script>
-const API = 'https://meatmall-server.vercel.app/api';
+const API = 'https://api.meatbonga.com/api';
 const PROVIDER_LABEL = { kakao: '카카오', naver: '네이버', google: '구글', password: '이메일' };
 
 const params = new URLSearchParams(location.search);

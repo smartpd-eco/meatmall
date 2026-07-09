@@ -66,7 +66,7 @@ body{font-size:.9375rem}.app-wrap{background:var(--light-bg)}
 <div id="toast-wrap" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
-const API='https://meatmall-server.vercel.app/api';
+const API='https://api.meatbonga.com/api';
 function go(u){window.location.href=u}
 function fmt(n){return Number(n).toLocaleString('ko-KR')}
 function toast(m){const t=document.getElementById('toast-wrap');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}

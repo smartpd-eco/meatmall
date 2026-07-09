@@ -1,3 +1,17 @@
+/* ── API 도메인 폴백: api.meatbonga.com 미전파/실패 시 기존 vercel 도메인으로 자동 재시도 (무중단 전환용) ── */
+(function(){
+  if (window.__mmFetchPatched) return; window.__mmFetchPatched = true;
+  var orig = window.fetch.bind(window);
+  window.fetch = function(u, opt){
+    if (typeof u === 'string' && u.indexOf('api.meatbonga.com') > -1){
+      return orig(u, opt).catch(function(){
+        return orig(u.replace('api.meatbonga.com','meatmall.vercel.app'), opt);
+      });
+    }
+    return orig(u, opt);
+  };
+})();
+
 /* ═══════════════════════════════════════════════════════════
    정육본가 — 공통 JS 유틸리티
 ═══════════════════════════════════════════════════════════ */

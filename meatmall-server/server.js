@@ -47,6 +47,7 @@ function isAllowedOrigin(origin) {
   if (allowedOrigins.includes(origin)) return true;
   if (origin.endsWith('.github.io')) return true;
   if (origin.endsWith('.vercel.app')) return true;
+  if (origin.endsWith('.meatbonga.com') || origin === 'https://meatbonga.com') return true;
   return false;
 }
 

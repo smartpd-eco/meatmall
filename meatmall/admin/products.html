@@ -139,6 +139,7 @@ input.tgl:checked::after{left:21px}
 document.documentElement.style.visibility = 'hidden';
 window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 </script>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
 </head>
 <body>
 
@@ -310,7 +311,7 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'https://meatmall-server.vercel.app/api';
+const API = 'https://api.meatbonga.com/api';
 let token      = '';
 let editingId  = null;
 let imgBase64  = null;

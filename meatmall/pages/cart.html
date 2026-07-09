@@ -193,7 +193,7 @@ window.addEventListener('pageshow', function(e){
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
-const API = 'https://meatmall-server.vercel.app/api';
+const API = 'https://api.meatbonga.com/api';
 function go(url){ window.location.href=url; }
 function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
 function toast(msg){
@@ -251,7 +251,7 @@ async function loadAddrSheet(){
   const token=localStorage.getItem('mm_access_token');
   if(token){
     try{
-      const r=await fetch('https://meatmall-server.vercel.app/api/addresses',{headers:{Authorization:'Bearer '+token},credentials:'include'});
+      const r=await fetch('https://api.meatbonga.com/api/addresses',{headers:{Authorization:'Bearer '+token},credentials:'include'});
       if(r.ok){
         const d=await r.json();
         const raw=d.addresses||d||[];
@@ -458,7 +458,7 @@ function orderProductName(items){
 }
 function sendOrderAlimtalk(orderId, amount, name, phone, productName){
   try{
-    fetch('https://meatmall.vercel.app/api/notify/order',{
+    fetch('https://api.meatbonga.com/api/notify/order',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         phone: phone||'',
@@ -544,7 +544,7 @@ async function doPay(){
       orderId:  order.orderId,
       amount:   order.amount,
       goodsName:order.orderName,
-      returnUrl:`https://meatmall-server.vercel.app/api/payment/nice-callback`,
+      returnUrl:`https://api.meatbonga.com/api/payment/nice-callback`,
       fnError: function(r){
         btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>';
         toast('결제 실패: '+(r.errorMsg||'알 수 없는 오류'));

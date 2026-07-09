@@ -90,6 +90,7 @@ td{padding:9px 10px;border-bottom:1px solid #1A1A1A}
 document.documentElement.style.visibility = 'hidden';
 window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 </script>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
 </head>
 <body>
 
@@ -222,8 +223,8 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'https://meatmall-server.vercel.app/api';           // 인증(/auth/me)용 — 기존 로그인 토큰과 동일 서버
-const PWA_API = 'https://meatmall.vercel.app/api';              // PWA 설정·통계용 — git 연동 프로젝트(push 자동배포)
+const API = 'https://api.meatbonga.com/api';           // 인증(/auth/me)용 — 기존 로그인 토큰과 동일 서버
+const PWA_API = 'https://api.meatbonga.com/api';              // PWA 설정·통계용 — git 연동 프로젝트(push 자동배포)
 function go(u){ location.href = u; }
 function toast(msg){
   const el = document.getElementById('toast');
