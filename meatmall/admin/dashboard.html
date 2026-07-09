@@ -328,7 +328,7 @@ function openOrderEdit(id){
     const status   = document.getElementById('mod-st').value;
     const tracking = document.getElementById('mod-tk').value.trim();
     try {
-      await api('/admin/orders/' + id, { method: 'PUT', body: JSON.stringify({ status, ...(tracking && { tracking_number: tracking }) }) });
+      await api('/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status, ...(tracking && { tracking_number: tracking }) }) });
       toast('✅ 주문 상태가 변경됐습니다');
       closeModal(); tabOrders();
     } catch(e){ toast('❌ ' + e.message); }
