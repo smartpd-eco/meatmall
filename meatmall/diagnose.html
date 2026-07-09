@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>연결 진단 · 정육본가</title>
+<style>
+body{font-family:-apple-system,'Malgun Gothic',sans-serif;background:#0F0F0F;color:#eee;margin:0;padding:18px;font-size:14px;line-height:1.6}
+h1{font-size:1.1rem;color:#C9A84C;margin:0 0 4px}
+.sub{color:#888;font-size:.8rem;margin-bottom:16px}
+.row{background:#1A1A1A;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.row b{color:#C9A84C}
+.ok{color:#22C55E;font-weight:700}
+.bad{color:#EF4444;font-weight:700}
+.warn{color:#EAB308;font-weight:700}
+.det{color:#9CA3AF;font-size:.8rem;word-break:break-all;margin-top:4px}
+#verdict{background:#111;border:1px solid #C9A84C;border-radius:8px;padding:14px;margin-top:14px;font-size:.9rem}
+button{background:#C9A84C;color:#111;border:none;border-radius:8px;padding:10px 18px;font-weight:700;font-size:.9rem;cursor:pointer;margin-top:8px}
+</style></head>
+<body>
+<h1>🔍 정육본가 연결 진단</h1>
+<div class="sub">이 페이지에서 자동으로 서버 연결을 점검합니다. 결과 화면을 캡처해 전달해주세요.</div>
+<div id="env" class="row"></div>
+<div id="results"></div>
+<div id="verdict" style="display:none"></div>
+<button onclick="location.reload()">다시 진단</button>
+
+<script>
+const R = document.getElementById('results');
+const HOSTS = {
+  'meatmall-server (프론트 사용)': 'https://meatmall-server.vercel.app/api/products?limit=1',
+  'meatmall (git)': 'https://meatmall.vercel.app/api/products?limit=1',
+  'Supabase': 'https://bwaxzudkmuffvzaalqeo.supabase.co/rest/v1/',
+  'GitHub Pages(자기 자신)': location.origin + '/meatmall/manifest.json'
+};
+
+document.getElementById('env').innerHTML =
+  '<b>환경</b><div class="det">online: '+navigator.onLine+' · UA: '+navigator.userAgent+'</div>';
+
+function line(name){
+  const d=document.createElement('div'); d.className='row'; d.id='r-'+name;
+  d.innerHTML='<b>'+name+'</b> <span class="warn">테스트 중…</span>';
+  R.appendChild(d); return d;
+}
+function set(d,name,cls,msg,det){
+  d.innerHTML='<b>'+name+'</b> <span class="'+cls+'">'+msg+'</span>'+(det?'<div class="det">'+det+'</div>':'');
+}
+
+async function run(){
+  const summary = [];
+  for(const [name,url] of Object.entries(HOSTS)){
+    const d=line(name);
+    const t0=Date.now();
+    // 1) 일반 cors fetch
+    try{
+      const r=await fetch(url,{cache:'no-store'});
+      const ms=Date.now()-t0;
+      set(d,name,'ok','응답 OK ('+r.status+', '+ms+'ms)', url);
+      summary.push([name,'ok',r.status]);
+    }catch(e){
+      const ms=Date.now()-t0;
+      // 2) no-cors로 재시도 → 성공하면 "서버는 살아있고 CORS/헤더 문제", 실패하면 "네트워크 차단"
+      let ncOk=false;
+      try{ await fetch(url,{mode:'no-cors',cache:'no-store'}); ncOk=true; }catch(_){}
+      if(ncOk){
+        set(d,name,'warn','CORS/헤더 문제 (서버는 응답, '+ms+'ms) — '+e.message, url);
+        summary.push([name,'cors',e.message]);
+      }else{
+        set(d,name,'bad','연결 차단/실패 ('+ms+'ms) — '+e.message, url);
+        summary.push([name,'blocked',e.message]);
+      }
+    }
+  }
+  // 판정
+  const v=document.getElementById('verdict'); v.style.display='block';
+  const anyBlocked=summary.some(s=>s[1]==='blocked');
+  const anyCors=summary.some(s=>s[1]==='cors');
+  const allOk=summary.every(s=>s[1]==='ok');
+  if(allOk){
+    v.innerHTML='✅ <b>모든 서버 연결 정상.</b> 이 기기·네트워크에서는 문제가 없습니다. 앞서 오류는 일시적(서버 절전) 이었을 가능성이 높습니다.';
+  }else if(anyBlocked){
+    v.innerHTML='🚫 <b>네트워크 차단으로 판정.</b> 이 기기의 방화벽/보안 프로그램/사내망이 서버 도메인(vercel.app/supabase.co)을 막고 있습니다. → IT팀에 해당 도메인 허용 요청 또는 다른 네트워크(휴대폰 테더링 등)에서 접속 필요.';
+  }else if(anyCors){
+    v.innerHTML='⚠️ <b>서버는 살아있으나 응답 헤더/프록시 문제.</b> 사내망 보안 프록시가 응답을 변조하거나 서버가 일시 오류(503) 상태일 수 있습니다. 잠시 후 재시도하거나 다른 네트워크에서 확인해주세요.';
+  }else{
+    v.innerHTML='결과 혼재 — 위 항목별 상태를 확인해주세요.';
+  }
+}
+run();
+</script>
+</body></html>
