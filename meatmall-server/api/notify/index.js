@@ -202,13 +202,13 @@ const TPL = {
 // 1) 고객 주문 접수 알림
 router.post('/order', async (req, res) => {
   try {
-    const { phone, customerName, orderNo, amount } = req.body || {};
+    const { phone, customerName, orderNo, amount, productName } = req.body || {};
     if (!phone || !orderNo) {
       return res.status(400).json({ ok: false, error: 'phone, orderNo는 필수입니다' });
     }
     const result = await solapi.sendAlimtalk({
       type: 'order', phone, name: customerName, templateCode: TPL.ORDER,
-      variables: { '#{고객명}': customerName || '', '#{주문번호}': orderNo, '#{결제금액}': amount || '' },
+      variables: { '#{고객명}': customerName || '', '#{주문번호}': orderNo, '#{상품명}': productName || '', '#{결제금액}': amount || '' },
       dedupeKey: orderNo,
     });
     res.status(result.ok ? 200 : 500).json(result);
@@ -250,7 +250,7 @@ router.post('/admin', async (req, res) => {
 // 3-2) 배송중 알림 (관리자 상태변경 → 소비자) — 발송안내 템플릿
 router.post('/shipping-alert', async (req, res) => {
   try {
-    const { phone, customerName, orderNo, carrier, trackingNumber } = req.body || {};
+    const { phone, customerName, orderNo, carrier, trackingNumber, productName } = req.body || {};
     if (!phone || !orderNo) {
       return res.status(400).json({ ok: false, error: 'phone, orderNo는 필수입니다' });
     }
@@ -262,7 +262,9 @@ router.post('/shipping-alert', async (req, res) => {
       variables: {
         '#{고객명}':     customerName || '고객',
         '#{주문번호}':   orderNo,
+        '#{상품명}':     productName || '',
         '#{택배사}':     carrier || 'CJ대한통운',
+        '#{택배사명}':   carrier || 'CJ대한통운',
         '#{운송장번호}': trackingNumber || '-',
       },
       dedupeKey: 'ship-' + orderNo,

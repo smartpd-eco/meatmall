@@ -452,7 +452,11 @@ function showPayNotice(){
 }
 
 // ── 주문완료 카카오 알림톡 (결제/주문 성공 시) ──
-function sendOrderAlimtalk(orderId, amount, name, phone){
+function orderProductName(items){
+  if(!items||!items.length) return '';
+  return items.length>1 ? (items[0].name+' 외 '+(items.length-1)+'건') : items[0].name;
+}
+function sendOrderAlimtalk(orderId, amount, name, phone, productName){
   try{
     fetch('https://meatmall.vercel.app/api/notify/order',{
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -460,6 +464,7 @@ function sendOrderAlimtalk(orderId, amount, name, phone){
         phone: phone||'',
         customerName: name||'고객',
         orderNo: orderId,
+        productName: productName||'',
         amount: Number(amount||0).toLocaleString('ko-KR')+'원'
       }), keepalive:true
     }).catch(function(){});
@@ -525,7 +530,7 @@ async function doPay(){
 
     // 무통장: 결제창 없이 바로 완료
     if(order.isVbank){
-      sendOrderAlimtalk(order.orderId, order.amount, selectedAddr.recipient, selectedAddr.phone);
+      sendOrderAlimtalk(order.orderId, order.amount, selectedAddr.recipient, selectedAddr.phone, orderProductName(selItems));
       Store.cart=[]; Store.save(); updateCartBadge();
       const bi=order.bankInfo||{};
       window.location.href=`../pages/order-complete.html?orderId=${order.orderId}&amount=${order.amount}&point=0&vbank=true&bank=${encodeURIComponent(bi.bank||'기업은행')}&account=${encodeURIComponent(bi.account||'123-456789-01-001')}&holder=${encodeURIComponent(bi.holder||'(주)정육본가')}&deadline=${encodeURIComponent(bi.deadline||'')}`;
@@ -554,7 +559,7 @@ async function doPay(){
           });
           const cd=await cr.json();
           if(!cr.ok) throw new Error(cd.error);
-          sendOrderAlimtalk(order.orderId, order.amount, selectedAddr.recipient, selectedAddr.phone);
+          sendOrderAlimtalk(order.orderId, order.amount, selectedAddr.recipient, selectedAddr.phone, orderProductName(selItems));
           Store.cart=[]; Store.save(); updateCartBadge();
           window.location.href=`../pages/order-complete.html?orderId=${order.orderId}&amount=${order.amount}&point=${cd.pointEarned||0}`;
         }catch(e){ toast('결제 검증 실패: '+e.message); btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>'; }

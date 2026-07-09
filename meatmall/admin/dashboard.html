@@ -340,7 +340,10 @@ function openOrderEdit(id){
               customerName: o.recipient || (o.users && o.users.name) || '고객',
               orderNo: o.order_number,
               carrier: 'CJ대한통운',
-              trackingNumber: tracking || '-'
+              trackingNumber: tracking || '-',
+              productName: (o.order_items && o.order_items.length)
+                ? (o.order_items.length>1 ? (o.order_items[0].name+' 외 '+(o.order_items.length-1)+'건') : o.order_items[0].name)
+                : (o.order_name||'')
             }), keepalive: true
           }).catch(function(){});
         }
