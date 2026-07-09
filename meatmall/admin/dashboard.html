@@ -140,6 +140,7 @@ textarea.finput{resize:vertical;min-height:80px;padding:10px 12px}
   <!-- TABS -->
   <nav class="adm-tabs" id="adm-tabs">
     <div class="adm-tab on" data-tab="orders"     onclick="switchTab('orders',this)">📦 주문관리</div>
+    <div class="adm-tab"    data-tab="users"      onclick="switchTab('users',this)">👥 회원관리</div>
     <div class="adm-tab"    data-tab="revenue"    onclick="switchTab('revenue',this)">💰 매출통계</div>
     <div class="adm-tab"    data-tab="cs"         onclick="switchTab('cs',this)">💬 CS관리</div>
     <div class="adm-tab"    data-tab="vendors"    onclick="switchTab('vendors',this)">🏪 거래처관리</div>
@@ -240,7 +241,7 @@ function switchTab(name, el){
   const tabEl = el || document.querySelector(`.adm-tab[data-tab="${name}"]`);
   if (tabEl) tabEl.classList.add('on');
   document.getElementById('adm-body').innerHTML = '<div class="empty">🔄 불러오는 중...</div>';
-  ({ orders: tabOrders, revenue: tabRevenue, cs: tabCS, vendors: tabVendors, autoassign: tabAutoAssign, assignlist: tabAssignList }[name] || (() => {}))();
+  ({ orders: tabOrders, users: tabUsers, revenue: tabRevenue, cs: tabCS, vendors: tabVendors, autoassign: tabAutoAssign, assignlist: tabAssignList }[name] || (() => {}))();
 }
 
 /* ══════════════════════════════════════════════
@@ -251,6 +252,40 @@ function switchTab(name, el){
 const S_LABEL = { pending:'결제대기', pending_deposit:'입금대기', preparing:'준비중', shipping:'배송중', delivered:'배송완료', cancelled:'취소', refund_req:'환불요청', refunded:'환불완료' };
 const S_CLASS = { pending:'bdg-pending', pending_deposit:'bdg-pending', preparing:'bdg-preparing', shipping:'bdg-shipping', delivered:'bdg-delivered', cancelled:'bdg-cancelled', refund_req:'bdg-cancelled', refunded:'bdg-cancelled' };
 let _orders = [];
+
+async function tabUsers(){
+  const body=document.getElementById('adm-body');
+  body.innerHTML='<div class="empty">🔄 불러오는 중...</div>';
+  try{
+    const d=await api('/admin/users?limit=100');
+    const users=d.users||[];
+    const gradeLbl={vip:'VIP', gold:'골드', silver:'실버', bronze:'브론즈', normal:'일반'};
+    const rows=users.map(u=>{
+      const badge=u.is_admin
+        ? '<span class="bdg bdg-completed">관리자</span>'
+        : (u.is_active===false ? '<span class="bdg bdg-cancelled">비활성</span>' : '<span class="bdg bdg-active">활성</span>');
+      return `<tr>
+        <td>${u.name||'-'}</td>
+        <td style="font-size:.8rem">${u.email||'-'}</td>
+        <td style="font-size:.8rem">${u.phone||'-'}</td>
+        <td>${gradeLbl[u.grade]||u.grade||'일반'}</td>
+        <td style="color:#C9A84C;font-weight:700">${Number(u.point||0).toLocaleString('ko-KR')}P</td>
+        <td>${badge}</td>
+        <td style="font-size:.78rem;color:#6B7280">${(u.created_at||'').slice(0,10)}</td>
+      </tr>`;
+    }).join('');
+    body.innerHTML=`<div class="card">
+      <div class="card-head">
+        <div><div class="card-title">회원 관리</div><div class="card-sub">총 ${d.total||users.length}명</div></div>
+        <button class="btn btn-outline btn-sm" onclick="tabUsers()">새로고침</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>포인트</th><th>상태</th><th>가입일</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="7" class="empty">회원이 없습니다</td></tr>'}</tbody>
+      </table></div>
+    </div>`;
+  }catch(e){ body.innerHTML='<div class="empty">❌ '+e.message+'</div>'; }
+}
 
 async function tabOrders(){
   try { const d = await api('/admin/orders?limit=50'); _orders = d.orders || []; }

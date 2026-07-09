@@ -87,7 +87,14 @@ async function doLogin(){
   if(!email||!pw){err.textContent='이메일과 비밀번호를 입력해주세요';err.style.display='block';return}
   const btn=document.getElementById('login-btn');btn.textContent='...';btn.disabled=true;
   try{
-    const r=await fetch(API+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+    // Vercel 콜드스타트로 첫 요청이 실패할 수 있어 1회 자동 재시도
+    let r;
+    try{
+      r=await fetch(API+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+    }catch(netErr){
+      await new Promise(res=>setTimeout(res,1500));
+      r=await fetch(API+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+    }
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'로그인 실패');
     localStorage.setItem('mm_access_token',d.accessToken);
