@@ -1,0 +1,15 @@
+name: keep-warm
+# Vercel 서버리스 콜드스타트(503) 방지 — 5분마다 API를 깨워 warm 유지
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: warm both API domains
+        run: |
+          curl -s -m 20 -o /dev/null "https://meatmall-server.vercel.app/api/products?limit=1" || true
+          curl -s -m 20 -o /dev/null "https://meatmall.vercel.app/api/products?limit=1" || true
+          echo "warmed"
