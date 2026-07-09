@@ -5,7 +5,7 @@ const router   = express.Router();
 const supabase = require('../../lib/supabase');
 const { signAccessToken, signRefreshToken, signLinkToken, verifyLinkToken } = require('../../lib/jwt');
 
-const FRONTEND = 'https://smartpd-eco.github.io/meatmall';
+const FRONTEND = 'https://meatbonga.com';
 
 // ── 소셜 로그인 사용자 확인/생성
 // 반환: { status: 'ok', user }  또는  { status: 'link_required', linkToken, existingEmail, reauthMethod }
@@ -201,7 +201,7 @@ router.get('/kakao', (req, res) => {
   const { relink } = req.query;
   const params = new URLSearchParams({
     client_id:     process.env.KAKAO_CLIENT_ID,
-    redirect_uri:  'https://meatmall-server.vercel.app/api/auth/kakao/callback',
+    redirect_uri:  'https://api.meatbonga.com/api/auth/kakao/callback',
     response_type: 'code',
     scope:         'profile_nickname'  // 이메일 제거 (비즈앱 아니면 불가)
   });
@@ -222,7 +222,7 @@ router.get('/kakao/callback', async (req, res) => {
         grant_type:    'authorization_code',
         client_id:     process.env.KAKAO_CLIENT_ID,
         client_secret: process.env.KAKAO_CLIENT_SECRET || '',
-        redirect_uri:  'https://meatmall-server.vercel.app/api/auth/kakao/callback',
+        redirect_uri:  'https://api.meatbonga.com/api/auth/kakao/callback',
         code
       })
     });
@@ -262,7 +262,7 @@ router.get('/naver', (req, res) => {
   const params = new URLSearchParams({
     response_type: 'code',
     client_id:     process.env.NAVER_CLIENT_ID,
-    redirect_uri:  'https://meatmall-server.vercel.app/api/auth/naver/callback',
+    redirect_uri:  'https://api.meatbonga.com/api/auth/naver/callback',
     state
   });
   res.redirect(`https://nid.naver.com/oauth2.0/authorize?${params}`);
@@ -317,7 +317,7 @@ router.get('/google', (req, res) => {
   const { relink } = req.query;
   const params = new URLSearchParams({
     client_id:     process.env.GOOGLE_CLIENT_ID,
-    redirect_uri:  'https://meatmall-server.vercel.app/api/auth/google/callback',
+    redirect_uri:  'https://api.meatbonga.com/api/auth/google/callback',
     response_type: 'code',
     scope:         'openid email profile',
     access_type:   'offline'
@@ -343,7 +343,7 @@ router.get('/google/callback', async (req, res) => {
         code,
         client_id:     process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri:  'https://meatmall-server.vercel.app/api/auth/google/callback',
+        redirect_uri:  'https://api.meatbonga.com/api/auth/google/callback',
         grant_type:    'authorization_code'
       })
     });
