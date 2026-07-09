@@ -307,11 +307,10 @@ async function notifyAdmins({ orderNo, customerName, amount, address }) {
   }
   return { ok: true, sent, total: phones.length };
 }
-module.exports.notifyAdmins = notifyAdmins;
-
 module.exports = router;
 module.exports.notifyOrderComplete  = notifyOrderComplete;
 module.exports.notifyShippingStart  = notifyShippingStart;
 module.exports.notifyPaymentFail    = notifyPaymentFail;
 module.exports.notifyCSAnswer       = notifyCSAnswer;
 module.exports.notifyAdminNewOrder  = notifyAdminNewOrder;
+module.exports.notifyAdmins         = notifyAdmins;
