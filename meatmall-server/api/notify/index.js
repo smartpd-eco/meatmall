@@ -193,9 +193,10 @@ router.post('/cs-answer', async (req, res) => {
 const solapi = require('../../lib/solapi');
 
 const TPL = {
-  ORDER:  process.env.SOLAPI_ORDER_TEMPLATE  || '',
-  VENDOR: process.env.SOLAPI_VENDOR_TEMPLATE || '',
-  ADMIN:  process.env.SOLAPI_ADMIN_TEMPLATE  || '',
+  // 신규 표준명 우선, 없으면 기존 변수명으로 폴백 (Vercel 재등록 없이 호환)
+  ORDER:  process.env.SOLAPI_ORDER_TEMPLATE  || process.env.SOLAPI_TEMPLATE_ORDER_COMPLETE || '',
+  VENDOR: process.env.SOLAPI_VENDOR_TEMPLATE || process.env.SOLAPI_TEMPLATE_SHIPPING_START || '',
+  ADMIN:  process.env.SOLAPI_ADMIN_TEMPLATE  || process.env.SOLAPI_TEMPLATE_ADMIN_ORDER    || '',
 };
 
 // 1) 고객 주문 접수 알림

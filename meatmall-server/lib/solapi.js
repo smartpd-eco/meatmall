@@ -10,7 +10,7 @@ const supabase = require('./supabase');
 const CFG = {
   apiKey:    process.env.SOLAPI_API_KEY    || '',
   apiSecret: process.env.SOLAPI_API_SECRET || '',
-  sender:    process.env.SOLAPI_SENDER     || '',
+  sender:    process.env.SOLAPI_SENDER || process.env.ALIMTALK_SENDER_NO || '',
   pfId:      process.env.SOLAPI_PFID       || '',
 };
 
