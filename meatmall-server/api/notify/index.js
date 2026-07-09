@@ -247,6 +247,30 @@ router.post('/admin', async (req, res) => {
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
+// 3-2) 배송중 알림 (관리자 상태변경 → 소비자) — 발송안내 템플릿
+router.post('/shipping-alert', async (req, res) => {
+  try {
+    const { phone, customerName, orderNo, carrier, trackingNumber } = req.body || {};
+    if (!phone || !orderNo) {
+      return res.status(400).json({ ok: false, error: 'phone, orderNo는 필수입니다' });
+    }
+    const tpl = process.env.SOLAPI_SHIPPING_TEMPLATE
+      || process.env.SOLAPI_TEMPLATE_SHIPPING_START
+      || process.env.SOLAPI_VENDOR_TEMPLATE || '';
+    const result = await solapi.sendAlimtalk({
+      type: 'shipping', phone, name: customerName, templateCode: tpl,
+      variables: {
+        '#{고객명}':     customerName || '고객',
+        '#{주문번호}':   orderNo,
+        '#{택배사}':     carrier || 'CJ대한통운',
+        '#{운송장번호}': trackingNumber || '-',
+      },
+      dedupeKey: 'ship-' + orderNo,
+    });
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
 // 4) 테스트 발송 — body: { phone, template:'order'|'vendor'|'admin', variables?:{} }
 router.post('/test', async (req, res) => {
   try {

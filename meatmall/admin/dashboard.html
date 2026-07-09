@@ -329,6 +329,22 @@ function openOrderEdit(id){
     const tracking = document.getElementById('mod-tk').value.trim();
     try {
       await api('/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status, ...(tracking && { tracking_number: tracking }) }) });
+      // 배송중으로 변경 시 소비자에게 배송 알림톡 발송 (발송안내 템플릿)
+      if (status === 'shipping') {
+        const ph = o.phone || (o.users && o.users.phone) || '';
+        if (ph) {
+          fetch('https://meatmall.vercel.app/api/notify/shipping-alert', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phone: ph,
+              customerName: o.recipient || (o.users && o.users.name) || '고객',
+              orderNo: o.order_number,
+              carrier: 'CJ대한통운',
+              trackingNumber: tracking || '-'
+            }), keepalive: true
+          }).catch(function(){});
+        }
+      }
       toast('✅ 주문 상태가 변경됐습니다');
       closeModal(); tabOrders();
     } catch(e){ toast('❌ ' + e.message); }
