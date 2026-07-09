@@ -18,7 +18,7 @@
   var ICON = BASE + 'install-icon.png';          /* 새 공식 설치 아이콘 */
   var ICON_FALLBACK = BASE + 'icon-192.png';     /* 이미지 없을 때 기존 아이콘 */
   var SHARE_IMG = BASE + 'share-btn.png';        /* 공유하기 버튼 이미지 */
-  var SHARE_URL = 'https://smartpd-eco.github.io/meatmall/';
+  var SHARE_URL = 'https://smartpd-eco.github.io/';
   var LS_INSTALLED = 'mm-pwa-installed';
   var LS_TOAST     = 'mm-pwa-toast-v1';
   var LS_SETTINGS  = 'mm-pwa-settings';

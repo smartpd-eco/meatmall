@@ -1,11 +1,11 @@
 const CACHE_NAME = 'jeongyuk-v20260709c';
 const CACHE_URLS = [
-  '/meatmall/',
-  '/meatmall/index.html',
-  '/meatmall/css/main.css',
-  '/meatmall/js/app.js',
-  '/meatmall/js/api.js',
-  '/meatmall/images/logo2.png',
+  '/',
+  '/index.html',
+  '/css/main.css',
+  '/js/app.js',
+  '/js/api.js',
+  '/images/logo2.png',
 ];
 
 /* ── 설치: 지정 파일 사전 캐시 + 즉시 활성화 대기 ── */
@@ -69,7 +69,7 @@ self.addEventListener('fetch', event => {
           caches.match(event.request).then(cached => {
             if (cached) return cached;
             if (event.request.mode === 'navigate') {
-              return caches.match('/meatmall/index.html');
+              return caches.match('/index.html');
             }
           })
         )

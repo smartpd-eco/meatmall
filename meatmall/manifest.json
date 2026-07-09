@@ -3,21 +3,21 @@
   "short_name": "정육본가",
   "version": "1.1",
   "description": "프리미엄 정육 전문 쇼핑몰 — 90분 배송",
-  "start_url": "/meatmall/",
-  "scope": "/meatmall/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0F0F0F",
   "theme_color": "#0F0F0F",
   "icons": [
     {
-      "src": "/meatmall/images/icon-192.png",
+      "src": "/images/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/meatmall/images/icon-512.png",
+      "src": "/images/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -26,7 +26,7 @@
   "related_applications": [
     {
       "platform": "webapp",
-      "url": "https://smartpd-eco.github.io/meatmall/manifest.json"
+      "url": "https://smartpd-eco.github.io/manifest.json"
     }
   ],
   "prefer_related_applications": false

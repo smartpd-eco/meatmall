@@ -30,14 +30,14 @@ body{background:#0F0F0F;display:flex;align-items:center;justify-content:center;m
   var error        = params.get('error');
 
   if (error || !accessToken) {
-    window.location.href = '/meatmall/login.html';
+    window.location.href = '/login.html';
   } else {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('mm_access_token', accessToken);  // 앱 전체 호환
     if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
     window.location.href = (needsPhone === 'true')
-      ? '/meatmall/pages/phone-verify.html'
-      : '/meatmall/index.html';
+      ? '/pages/phone-verify.html'
+      : '/index.html';
   }
 })();
 </script>
