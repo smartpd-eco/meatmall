@@ -289,6 +289,26 @@ router.post('/test', async (req, res) => {
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
+// 관리자 다중 수신 알림 (ADMIN_PHONES 콤마 구분) — 결제/주문 접수 시 서버 내부 호출용
+async function notifyAdmins({ orderNo, customerName, amount, address }) {
+  const phones = (process.env.ADMIN_PHONES || '').split(',').map(function (x){ return x.trim(); }).filter(Boolean);
+  if (!phones.length) { console.log('[관리자알림] ADMIN_PHONES 미설정 — 건너뜀'); return { ok: true, skipped: true }; }
+  const amt = (typeof amount === 'number') ? amount.toLocaleString('ko-KR') + '원' : (amount || '');
+  let sent = 0;
+  for (const phone of phones) {
+    try {
+      const r = await solapi.sendAlimtalk({
+        type: 'admin', phone, name: customerName, templateCode: TPL.ADMIN,
+        variables: { '#{orderNo}': orderNo, '#{customerName}': customerName || '', '#{address}': address || '', '#{amount}': amt },
+        dedupeKey: 'admin-' + phone + '-' + orderNo,
+      });
+      if (r && r.ok) sent++;
+    } catch (e) { console.error('[관리자알림 발송 오류]', phone, e.message); }
+  }
+  return { ok: true, sent, total: phones.length };
+}
+module.exports.notifyAdmins = notifyAdmins;
+
 module.exports = router;
 module.exports.notifyOrderComplete  = notifyOrderComplete;
 module.exports.notifyShippingStart  = notifyShippingStart;

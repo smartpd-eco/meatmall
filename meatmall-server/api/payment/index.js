@@ -4,7 +4,7 @@ const fetch    = require('node-fetch');
 const { v4: uuidv4 } = require('uuid');
 const supabase = require('../../lib/supabase');
 const { requireAuth, requireAdmin } = require('../../middleware/auth');
-const { notifyOrderComplete, notifyAdminNewOrder } = require('../notify/index');
+const { notifyOrderComplete, notifyAdminNewOrder, notifyAdmins } = require('../notify/index');
 
 // ══════════════════════════════════════════════════
 // 나이스페이먼츠 설정 — 키값만 Vercel 환경변수에 등록하면 됨
@@ -116,6 +116,16 @@ router.post('/ready', requireAuth, async (req, res) => {
       }))
     );
 
+    // 무통장 주문은 접수 즉시 관리자 알림 (카드는 confirm에서 발송)
+    if (isVbank) {
+      notifyAdmins({
+        orderNo:      orderNumber,
+        customerName: recipient || '고객',
+        amount:       finalAmount,
+        address:      address1 || '',
+      }).catch(e => console.error('[관리자 알림 오류(무통장)]', e));
+    }
+
     // 포인트 차감
     if (Number(pointUse) > 0) {
       await supabase.from('point_logs').insert({
@@ -161,7 +171,7 @@ router.post('/confirm', requireAuth, async (req, res) => {
       return res.status(400).json({ error:'결제 정보가 올바르지 않습니다' });
 
     const { data: order } = await supabase
-      .from('orders').select('id,final_amount,payment_status,user_id,phone,recipient,payment_method')
+      .from('orders').select('id,final_amount,payment_status,user_id,phone,recipient,payment_method,address1')
       .eq('order_number', orderId).single();
 
     if (!order)            return res.status(404).json({ error:'주문을 찾을 수 없습니다' });
@@ -205,12 +215,11 @@ router.post('/confirm', requireAuth, async (req, res) => {
         deliveryDate: '3~5 영업일 이내',
       }).catch(e => console.error('[결제완료 알림 오류]', e));
     }
-    notifyAdminNewOrder({
-      orderId,
-      amount:        order.final_amount,
-      recipient:     order.recipient || '-',
-      items:         '주문 상품',
-      paymentMethod: order.payment_method || '카드',
+    notifyAdmins({
+      orderNo:      orderId,
+      customerName: order.recipient || '고객',
+      amount:       order.final_amount,
+      address:      order.address1 || '',
     }).catch(e => console.error('[관리자 알림 오류]', e));
 
     res.json({ ok:true, orderId, amount:Number(amount), pointEarned:pt, message:'결제 완료' });
