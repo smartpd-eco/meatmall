@@ -240,7 +240,7 @@ router.post('/admin', async (req, res) => {
     }
     const result = await solapi.sendAlimtalk({
       type: 'admin', phone, name: customerName, templateCode: TPL.ADMIN,
-      variables: { '#{주문번호}': orderNo, '#{주문자}': customerName || '', '#{지역}': area || '', '#{금액}': amount || '' },
+      variables: { '#{orderNo}': orderNo, '#{customerName}': customerName || '', '#{address}': area || '', '#{amount}': amount || '' },
       dedupeKey: 'admin-' + orderNo,
     });
     res.status(result.ok ? 200 : 500).json(result);
