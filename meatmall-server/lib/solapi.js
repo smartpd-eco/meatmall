@@ -7,11 +7,20 @@
 const { SolapiMessageService } = require('solapi');
 const supabase = require('./supabase');
 
+// 환경변수 값 정리: BOM(U+FEFF)·제로폭·앞뒤 공백/따옴표 제거
+// (일부 등록 과정에서 값에 BOM이 섞여 HMAC 헤더 생성이 깨지는 문제 방어)
+function envClean(v) {
+  return String(v || '')
+    .replace(/[\uFEFF\u200B-\u200D\u2060]/g, '')
+    .replace(/^['"]|['"]$/g, '')
+    .trim();
+}
+
 const CFG = {
-  apiKey:    process.env.SOLAPI_API_KEY    || '',
-  apiSecret: process.env.SOLAPI_API_SECRET || '',
-  sender:    process.env.SOLAPI_SENDER || process.env.ALIMTALK_SENDER_NO || '',
-  pfId:      process.env.SOLAPI_PFID       || '',
+  apiKey:    envClean(process.env.SOLAPI_API_KEY),
+  apiSecret: envClean(process.env.SOLAPI_API_SECRET),
+  sender:    envClean(process.env.SOLAPI_SENDER || process.env.ALIMTALK_SENDER_NO),
+  pfId:      envClean(process.env.SOLAPI_PFID),
 };
 
 // 휴대폰 번호 정규화: 숫자만 → 01012345678 형식
@@ -62,6 +71,7 @@ async function sendAlimtalk({ type, phone, name, templateCode, variables, dedupe
   if (!to || to.length < 10) {
     return { ok: false, error: '유효하지 않은 전화번호입니다' };
   }
+  templateCode = String(templateCode || '').replace(/[\uFEFF\u200B-\u200D\u2060]/g, '').trim();
   if (!templateCode) {
     return { ok: false, error: '템플릿 코드가 설정되지 않았습니다 (환경변수 확인)' };
   }
