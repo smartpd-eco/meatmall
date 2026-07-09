@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jeongyuk-v20260709a';
+const CACHE_NAME = 'jeongyuk-v20260709b';
 const CACHE_URLS = [
   '/meatmall/',
   '/meatmall/index.html',

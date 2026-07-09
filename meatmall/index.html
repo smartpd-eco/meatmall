@@ -160,12 +160,16 @@ async function fetchRetry(url, tries){
   tries = tries || 4;
   let lastErr;
   for(let i=0;i<tries;i++){
+    // 홀수 시도는 대체 API 도메인으로 (사내망 등 특정 도메인 차단 우회)
+    const u = (i % 2 === 1)
+      ? url.replace('meatmall-server.vercel.app', 'meatmall.vercel.app')
+      : url;
     try{
-      const r = await fetch(url);
+      const r = await fetch(u);
       if(r.ok) return r;
       lastErr = new Error('HTTP '+r.status);
     }catch(e){ lastErr = e; }
-    if(i < tries-1) await new Promise(res=>setTimeout(res, 1000 + i*800));
+    if(i < tries-1) await new Promise(res=>setTimeout(res, 900 + i*700));
   }
   throw lastErr || new Error('요청 실패');
 }

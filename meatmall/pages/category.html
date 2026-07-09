@@ -262,9 +262,10 @@ function hideLoading(){
 async function fetchRetry(url, tries){
   tries = tries || 4; let lastErr;
   for(let i=0;i<tries;i++){
-    try{ const r=await fetch(url); if(r.ok) return r; lastErr=new Error('HTTP '+r.status); }
+    const u = (i % 2 === 1) ? url.replace('meatmall-server.vercel.app','meatmall.vercel.app') : url;
+    try{ const r=await fetch(u); if(r.ok) return r; lastErr=new Error('HTTP '+r.status); }
     catch(e){ lastErr=e; }
-    if(i<tries-1) await new Promise(res=>setTimeout(res, 1000+i*800));
+    if(i<tries-1) await new Promise(res=>setTimeout(res, 900+i*700));
   }
   throw lastErr||new Error('요청 실패');
 }

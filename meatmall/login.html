@@ -87,14 +87,17 @@ async function doLogin(){
   if(!email||!pw){err.textContent='이메일과 비밀번호를 입력해주세요';err.style.display='block';return}
   const btn=document.getElementById('login-btn');btn.textContent='...';btn.disabled=true;
   try{
-    // Vercel 콜드스타트로 첫 요청이 실패할 수 있어 1회 자동 재시도
-    let r;
-    try{
-      r=await fetch(API+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
-    }catch(netErr){
-      await new Promise(res=>setTimeout(res,1500));
-      r=await fetch(API+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+    // 콜드스타트/특정 도메인 차단 대응: 실패 시 대체 API 도메인으로 재시도
+    const LOGIN_HOSTS=['https://meatmall-server.vercel.app/api','https://meatmall.vercel.app/api'];
+    let r, lastErr;
+    for(let i=0;i<3;i++){
+      const host=LOGIN_HOSTS[i % LOGIN_HOSTS.length];
+      try{
+        r=await fetch(host+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+        break;
+      }catch(netErr){ lastErr=netErr; await new Promise(res=>setTimeout(res,1200)); }
     }
+    if(!r) throw (lastErr||new Error('서버 연결 실패'));
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'로그인 실패');
     localStorage.setItem('mm_access_token',d.accessToken);
