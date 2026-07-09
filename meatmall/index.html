@@ -155,26 +155,39 @@ function render(list){
   if(sold.length){sw.innerHTML=`<div class="soldout-sec"><div class="soldout-title">✕ SOLD OUT — 현재 품절</div>${sold.map(p=>`<div class="soldout-row"><span>${p.name}</span><span class="soldout-badge">SOLD OUT</span></div>`).join('')}<div style="font-size:.75rem;color:#9CA3AF;margin-top:10px;line-height:1.7">기준 미달 정육은 입고돼도 판매하지 않습니다</div></div>`}
   else sw.innerHTML='';
 }
+// Vercel 콜드스타트 대응: 실패 시 지연 재시도 (최대 4회)
+async function fetchRetry(url, tries){
+  tries = tries || 4;
+  let lastErr;
+  for(let i=0;i<tries;i++){
+    try{
+      const r = await fetch(url);
+      if(r.ok) return r;
+      lastErr = new Error('HTTP '+r.status);
+    }catch(e){ lastErr = e; }
+    if(i < tries-1) await new Promise(res=>setTimeout(res, 1000 + i*800));
+  }
+  throw lastErr || new Error('요청 실패');
+}
 async function loadPrds(catFilter){
   const grid=document.getElementById('prd-grid');
   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:#9CA3AF">불러오는 중...</div>';
   document.getElementById('soldout-wrap').innerHTML='';
   try{
     const url=catFilter?`${API}/products?limit=30&category=${encodeURIComponent(catFilter)}`:`${API}/products?limit=30`;
-    const r=await fetch(url);
-    if(!r.ok)throw new Error('HTTP '+r.status);
+    const r=await fetchRetry(url, 4);
     const d=await r.json();
     allPrds=d.products||[];
     render(allPrds);
     try{preloadProductImages(allPrds);}catch(_){}
   }catch(e){
     console.error('[loadPrds]',e);
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:#9CA3AF">상품을 불러오지 못했습니다</div>';
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:#9CA3AF">상품을 불러오지 못했습니다<br><button onclick="loadPrds(\''+(catFilter||'')+'\')" style="margin-top:14px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#111;border:none;border-radius:8px;padding:9px 22px;font-size:.82rem;font-weight:700;cursor:pointer">다시 시도</button></div>';
   }
 }
 async function loadCats(){
   try{
-    const r=await fetch(API+'/admin/categories');
+    const r=await fetchRetry(API+'/admin/categories', 3);
     if(!r.ok)return;
     const d=await r.json();
     const cats=d.categories||[];

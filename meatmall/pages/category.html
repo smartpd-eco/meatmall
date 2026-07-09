@@ -259,21 +259,29 @@ function hideLoading(){
   }
 }
 
+async function fetchRetry(url, tries){
+  tries = tries || 4; let lastErr;
+  for(let i=0;i<tries;i++){
+    try{ const r=await fetch(url); if(r.ok) return r; lastErr=new Error('HTTP '+r.status); }
+    catch(e){ lastErr=e; }
+    if(i<tries-1) await new Promise(res=>setTimeout(res, 1000+i*800));
+  }
+  throw lastErr||new Error('요청 실패');
+}
 async function loadProducts(){
   showLoading();
   try{
     const sort=document.getElementById('sort-sel').value;
     let url=`${API}/products?limit=30&sort=${sort}`;
     if(currentCat) url+=`&category=${encodeURIComponent(currentCat)}`;
-    const r=await fetch(url);
-    if(!r.ok) throw new Error('HTTP '+r.status);
+    const r=await fetchRetry(url, 4);
     const d=await r.json();
     allProducts=d.products||[];
     document.getElementById('result-count').textContent=allProducts.length+'개';
     renderProducts(allProducts);
   }catch(e){
     console.error('[loadProducts]',e);
-    document.getElementById('prd-wrap').innerHTML=`<div class="empty-state"><div class="empty-icon">😢</div><div class="empty-text">상품을 불러오지 못했습니다</div></div>`;
+    document.getElementById('prd-wrap').innerHTML=`<div class="empty-state"><div class="empty-icon">😢</div><div class="empty-text">상품을 불러오지 못했습니다</div><button onclick="loadProducts()" style="margin-top:16px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#111;border:none;border-radius:8px;padding:10px 24px;font-size:.85rem;font-weight:700;cursor:pointer">다시 시도</button></div>`;
   }finally{
     hideLoading(); // 반드시 실행 — 어떤 경우에도 로딩 상태 해제
   }
