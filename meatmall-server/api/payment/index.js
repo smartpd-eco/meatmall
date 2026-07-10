@@ -66,11 +66,14 @@ router.post('/ready', requireAuth, async (req, res) => {
 
     const userId = req.user.sub;
 
-    // 계정에 전화번호 등록이 안 된 경우 주문 자체를 막음 (프론트 우회 방지, 서버측 필수 검증)
-    const { data: acctUser } = await supabase.from('users').select('phone').eq('id', userId).single();
-    if (!acctUser?.phone) {
-      return res.status(403).json({ error: '전화번호 등록이 필요합니다. 마이페이지에서 전화번호를 등록해주세요', code: 'PHONE_REQUIRED' });
-    }
+    // 계정에 전화번호가 없으면, 배송지에 입력한 번호를 계정에 자동 등록(별도 인증 단계 불필요).
+    // 배송지 저장 시 이미 번호를 받으므로 주문을 막지 않고 진행한다.
+    try {
+      const { data: acctUser } = await supabase.from('users').select('phone').eq('id', userId).single();
+      if (!acctUser?.phone && phone) {
+        await supabase.from('users').update({ phone, updated_at: new Date().toISOString() }).eq('id', userId);
+      }
+    } catch (e) { console.error('[ready 계정 전화번호 자동등록 오류]', e.message); }
 
     const productTotal = items.reduce((s,i) => s + i.price * i.qty, 0);
     const deliveryFee  = productTotal >= 50000 ? 0 : 3500;
