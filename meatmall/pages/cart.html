@@ -125,6 +125,16 @@ window.addEventListener('pageshow', function(e){
       </div>
     </div>
 
+    <!-- 배송방식 -->
+    <div>
+      <div style="font-size:1.0625rem;font-weight:700;color:var(--dark);margin-bottom:4px">🚚 배송방식</div>
+      <div class="pay-methods" id="ship-methods">
+        <div class="pay-chip" id="dtype-same" onclick="selDelivery('same_day')">⚡ 당일배송</div>
+        <div class="pay-chip on" id="dtype-std" onclick="selDelivery('standard')">📦 일반배송</div>
+      </div>
+      <div id="dtype-desc" style="font-size:.8125rem;color:var(--gray-txt);margin-top:6px;line-height:1.55"></div>
+    </div>
+
     <!-- 결제수단 -->
     <div>
       <div style="font-size:1.0625rem;font-weight:700;color:var(--dark);margin-bottom:4px">💳 결제수단</div>
@@ -249,6 +259,25 @@ function ensurePayment(){
 
 let selected = new Set(Store.cart.map(c=>c.productId));
 let payMode = 'WIDGET';   // 'WIDGET'(카드·간편결제) | 'VBANK'(무통장)
+// 배송방식: 'same_day'(당일, 오전9~오후5시 발주) | 'standard'(일반 택배)
+let deliveryType = 'standard';
+function kstHour(){ try{ return Number(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul',hour:'2-digit',hour12:false})); }catch(e){ return new Date().getHours(); } }
+function sameDayOpen(){ const h=kstHour(); return h>=9 && h<17; }
+function selDelivery(t){
+  deliveryType=t;
+  const same=document.getElementById('dtype-same'), std=document.getElementById('dtype-std'), d=document.getElementById('dtype-desc');
+  if(same) same.classList.toggle('on', t==='same_day');
+  if(std) std.classList.toggle('on', t==='standard');
+  if(d) d.innerHTML = t==='same_day'
+    ? '⚡ 오전 9시~오후 5시 발주 건은 제휴 정육점이 <b>당일 배송</b>합니다. (서비스 지역 한정)'
+    : '📦 좋은축산에서 택배로 발송합니다. 발주 후 <b>1~2일</b> 소요.';
+}
+function initDelivery(){
+  const same=document.getElementById('dtype-same');
+  if(sameDayOpen()){ if(same) same.style.display=''; }
+  else { if(same) same.style.display='none'; deliveryType='standard'; }  // 시간외: 당일배송 숨김
+  selDelivery(deliveryType);
+}
 let userPoint = 0;
 let selectedAddr = null;
 
@@ -412,6 +441,7 @@ function openCheckout(){
   document.getElementById('vbank-section').style.display='none';
   document.getElementById('toss-widget-section').style.display='block';
   document.getElementById('point-use').value='';
+  initDelivery();   // 배송방식 초기화(시간외 당일 숨김)
   calcFinal();
   document.getElementById('pay-overlay').classList.add('open');
   paySheet.classList.add('open');
@@ -547,6 +577,7 @@ async function doPay(){
         deliveryNote: selectedAddr.deliveryNote||'',
         pointUse:     pt,
         paymentMethod:payMode==='VBANK'?'VBANK':'CARD',
+        deliveryType: deliveryType,
         depositorName:payMode==='VBANK'?document.getElementById('depositor-name').value.trim():null,
         bankName:     payMode==='VBANK'?document.getElementById('bank-name').value:null,
       })

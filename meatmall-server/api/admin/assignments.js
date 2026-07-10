@@ -79,9 +79,10 @@ router.post('/auto', async (req, res) => {
   try {
     const { data: pendingOrders, error: ordErr } = await supabase
       .from('orders')
-      .select('id, order_number, address1, final_amount, order_items(product_id, qty, price)')
+      .select('id, order_number, address1, final_amount, delivery_type, order_items(product_id, qty, price)')
       .eq('status', 'pending')
-      .eq('payment_status', 'paid');
+      .eq('payment_status', 'paid')
+      .eq('delivery_type', 'same_day');   // 당일배송 주문만 정육점 배정 대상
     if (ordErr) throw ordErr;
 
     if (!pendingOrders?.length) {

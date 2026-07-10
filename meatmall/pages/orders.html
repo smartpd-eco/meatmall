@@ -117,7 +117,7 @@ function render(orders){
     ${isVW?`<div class="vb-notice">입금계좌 <strong>${o.bank_name||'기업은행'} · (주)정육본가</strong> · 입금자명 <strong>${o.depositor_name||'미등록'}</strong><br>입금금액 <strong style="color:var(--gold)">${fmt(o.final_amount)}원</strong>${o.deposit_deadline?` · 기한 <strong style="color:#DC2626">${new Date(o.deposit_deadline).toLocaleDateString('ko-KR')}</strong>`:''}</div>`:''}
     ${first?`<div class="ord-item-row"><div class="ord-thumb">🥩</div><div style="flex:1;min-width:0"><div class="ord-item-name">${first.name}${more>0?` 외 ${more}건`:''}</div><div class="ord-item-meta">수량 ${first.qty}개${first.option?' · '+first.option:''}</div></div><div class="ord-item-price">${fmt(first.subtotal||first.price*first.qty)}원</div></div>`:''}
     <div class="ord-foot">
-      <div style="font-size:.9375rem;font-weight:700;color:var(--dark-txt)">총 <strong style="color:var(--gold);font-size:1.3125rem">${fmt(o.final_amount)}원</strong> <span style="font-size:.8125rem;color:var(--gray-txt);font-weight:400">${PL[o.payment_method]||''}</span></div>
+      <div style="font-size:.9375rem;font-weight:700;color:var(--dark-txt)">총 <strong style="color:var(--gold);font-size:1.3125rem">${fmt(o.final_amount)}원</strong> <span style="font-size:.8125rem;color:var(--gray-txt);font-weight:400">${PL[o.payment_method]||''}</span> <span style="font-size:.75rem;font-weight:700;color:${o.delivery_type==='same_day'?'#EA580C':'var(--gray-txt)'}">${o.delivery_type==='same_day'?'⚡당일배송':'📦일반배송'}</span></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         ${isSh?`<button class="oabtn oabtn-g" onclick="toast('운송장: ${o.tracking_number||'등록 전'}')">📦 배송조회</button>`:''}
         ${isDone?`<button class="oabtn oabtn-o" onclick="toast('리뷰 준비 중')">⭐ 리뷰</button>`:''}

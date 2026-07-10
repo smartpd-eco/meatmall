@@ -80,8 +80,10 @@ router.post('/ready', requireAuth, async (req, res) => {
     const {
       items, recipient, phone, zipCode, address1, address2,
       deliveryNote, couponId, pointUse=0,
-      paymentMethod='CARD', depositorName, bankName
+      paymentMethod='CARD', depositorName, bankName,
+      deliveryType='standard'
     } = req.body;
+    const deliveryTypeV = deliveryType === 'same_day' ? 'same_day' : 'standard';
 
     if (!items?.length) return res.status(400).json({ error:'주문 상품이 없습니다' });
     if (!recipient || !phone || !zipCode || !address1)
@@ -112,6 +114,7 @@ router.post('/ready', requireAuth, async (req, res) => {
       status:          isVbank ? 'pending_deposit' : 'pending',
       recipient, phone, zip_code: zipCode, address1, address2: address2||null,
       delivery_note:   deliveryNote||null,
+      delivery_type:   deliveryTypeV,
       product_total:   productTotal,
       delivery_fee:    deliveryFee,
       discount_amount: couponDisc,
