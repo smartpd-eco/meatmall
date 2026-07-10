@@ -425,4 +425,98 @@ router.put('/shipping-settings', async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════════════════
+// 당일배송 정산 (settlement_settings, vendor_settlements)
+// ════════════════════════════════════════════════════
+router.get('/settlement-settings', async (req, res) => {
+  try {
+    const { data } = await supabase.from('settlement_settings')
+      .select('commission_rate, settle_days').eq('id', 1).maybeSingle();
+    res.json({ ok: true, settings: data || { commission_rate: 10, settle_days: 5 } });
+  } catch (err) { res.json({ ok: true, settings: { commission_rate: 10, settle_days: 5 } }); }
+});
+
+router.put('/settlement-settings', async (req, res) => {
+  try {
+    let rate = Number(req.body.commission_rate);
+    if (isNaN(rate) || rate < 0 || rate > 100) rate = 10;
+    let days = parseInt(req.body.settle_days, 10);
+    if (!Number.isInteger(days) || days < 1 || days > 30) days = 5;
+    const { data, error } = await supabase.from('settlement_settings')
+      .upsert([{ id: 1, commission_rate: rate, settle_days: days, updated_at: new Date().toISOString() }], { onConflict: 'id' })
+      .select().single();
+    if (error) throw error;
+    res.json({ ok: true, settings: data });
+  } catch (err) {
+    console.error('[settlement-settings PUT]', err);
+    res.status(500).json({ error: '정산 설정 저장 오류' });
+  }
+});
+
+// 배송완료된 당일배송 주문을 스캔해 미정산 건의 정산 레코드 생성 (멱등)
+router.post('/settlements/generate', async (req, res) => {
+  try {
+    const { data: st } = await supabase.from('settlement_settings')
+      .select('commission_rate, settle_days').eq('id', 1).maybeSingle();
+    const rate = Number(st?.commission_rate ?? 10);
+    const days = Number(st?.settle_days ?? 5);
+
+    const { data: orders } = await supabase.from('orders')
+      .select('id, order_number, final_amount, delivered_at')
+      .eq('status', 'delivered').eq('delivery_type', 'same_day');
+
+    const { data: existing } = await supabase.from('vendor_settlements').select('order_id');
+    const done = new Set((existing || []).map(x => x.order_id));
+
+    let created = 0;
+    for (const o of (orders || [])) {
+      if (done.has(o.id)) continue;
+      const { data: vo } = await supabase.from('vendor_orders')
+        .select('vendor_id, total_amount').eq('order_id', o.id).limit(1).maybeSingle();
+      const gross = Number(vo?.total_amount ?? o.final_amount ?? 0);
+      const commission = Math.round(gross * rate / 100);
+      const base = o.delivered_at ? new Date(o.delivered_at) : new Date();
+      const due = new Date(base.getTime() + days * 86400000).toISOString().slice(0, 10);
+      const { error } = await supabase.from('vendor_settlements').insert({
+        order_id: o.id, vendor_id: vo?.vendor_id || null, order_number: o.order_number,
+        gross, commission_rate: rate, commission, payout: gross - commission,
+        status: 'pending', due_date: due,
+      });
+      if (!error) created++;
+    }
+    res.json({ ok: true, created });
+  } catch (err) {
+    console.error('[settlements generate]', err);
+    res.status(500).json({ error: '정산 집계 오류 (vendor_settlements 테이블 확인)' });
+  }
+});
+
+router.get('/settlements', async (req, res) => {
+  try {
+    const { status } = req.query;
+    let q = supabase.from('vendor_settlements')
+      .select('*, vendors(vendor_name)')
+      .order('created_at', { ascending: false }).limit(500);
+    if (status) q = q.eq('status', status);
+    const { data, error } = await q;
+    if (error) throw error;
+    const totalPending = (data || []).filter(s => s.status === 'pending').reduce((a, s) => a + Number(s.payout || 0), 0);
+    res.json({ ok: true, settlements: data || [], totalPending });
+  } catch (err) {
+    res.status(500).json({ error: '정산 조회 오류' });
+  }
+});
+
+router.patch('/settlements/:id/pay', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('vendor_settlements')
+      .update({ status: 'paid', settled_at: new Date().toISOString() })
+      .eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json({ ok: true, settlement: data });
+  } catch (err) {
+    res.status(500).json({ error: '정산 완료 처리 오류' });
+  }
+});
+
 module.exports = router;

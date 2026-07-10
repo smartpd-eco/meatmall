@@ -80,9 +80,9 @@ router.post('/auto', async (req, res) => {
     const { data: pendingOrders, error: ordErr } = await supabase
       .from('orders')
       .select('id, order_number, address1, final_amount, delivery_type, order_items(product_id, qty, price)')
-      .eq('status', 'pending')
+      .in('status', ['pending', 'preparing'])
       .eq('payment_status', 'paid')
-      .eq('delivery_type', 'same_day');   // 당일배송 주문만 정육점 배정 대상
+      .eq('delivery_type', 'same_day');   // 당일배송(결제완료) 주문만 정육점 배정 대상
     if (ordErr) throw ordErr;
 
     if (!pendingOrders?.length) {
@@ -95,6 +95,11 @@ router.post('/auto', async (req, res) => {
 
     for (const order of pendingOrders) {
       try {
+        // 이미 배정된 주문은 건너뜀 (중복 배정 방지)
+        const { data: existAssign } = await supabase
+          .from('order_assignments').select('id').eq('order_id', order.id).limit(1);
+        if (existAssign && existAssign.length) continue;
+
         const dong = parseDong(order.address1 || '');
 
         const { data: zone } = await supabase
