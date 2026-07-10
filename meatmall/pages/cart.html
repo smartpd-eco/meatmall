@@ -129,12 +129,16 @@ window.addEventListener('pageshow', function(e){
     <div>
       <div style="font-size:1.0625rem;font-weight:700;color:var(--dark);margin-bottom:4px">💳 결제수단</div>
       <div class="pay-methods">
-        <div class="pay-chip on" onclick="selPay(this,'CARD')">💳 카드</div>
-        <div class="pay-chip" onclick="selPay(this,'KAKAO')">💬 카카오</div>
-        <div class="pay-chip" onclick="selPay(this,'NAVER')">🟢 네이버</div>
-        <div class="pay-chip" onclick="selPay(this,'TOSS')">🔵 토스</div>
-        <div class="pay-chip" onclick="selPay(this,'VBANK')">🏦 무통장</div>
-        <div class="pay-chip" onclick="selPay(this,'PHONE')">📱 휴대폰</div>
+        <div class="pay-chip on" onclick="selPayMode(this,'WIDGET')">💳 카드·간편결제</div>
+        <div class="pay-chip" onclick="selPayMode(this,'VBANK')">🏦 무통장입금</div>
+      </div>
+    </div>
+
+    <!-- 카드·간편결제 안내 (결제하기 → 토스 통합결제창 오픈) -->
+    <div id="toss-widget-section">
+      <div style="background:var(--white);border:1px solid rgba(201,168,76,.25);border-radius:var(--radius-md);padding:12px 14px;font-size:.8125rem;color:var(--gray-txt);line-height:1.6">
+        💳 <strong style="color:var(--dark)">카드·간편결제</strong><br>
+        <span style="color:var(--gray-400)">‘결제하기’를 누르면 토스페이먼츠 통합결제창이 열립니다. 카드·토스페이·카카오페이·네이버페이 등에서 선택해 결제하세요.</span>
       </div>
     </div>
 
@@ -185,11 +189,11 @@ window.addEventListener('pageshow', function(e){
     <button class="btn btn-primary btn-full btn-lg" id="pay-btn" onclick="doPay()">
       <span id="pay-btn-text">결제하기</span>
     </button>
-    <p style="text-align:center;font-size:.8125rem;color:var(--gray-400)">나이스페이먼츠 안전 결제 · SSL 암호화</p>
+    <p style="text-align:center;font-size:.8125rem;color:var(--gray-400)">토스페이먼츠 안전 결제 · SSL 암호화</p>
   </div>
 </div>
 
-<script src="https://pay.nicepay.co.kr/v1/js/"></script>
+<script src="https://js.tosspayments.com/v2/standard"></script>
 <div id="toast-global" class="toast"></div>
 <script src="../js/app.js"></script>
 <script>
@@ -206,11 +210,21 @@ Store.load(); updateCartBadge();
 
 // 결제 설정 API에서 동적 로드
 let payConfig = {
-  clientKey: 'test_ck_docs_Jz9BYo1zelvxd10pR0rl',
+  clientKey: 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq',
   isTest: true,
   vbank: { bank:'기업은행', account:'123-456789-01-001', holder:'(주)정육본가' },
   freeShipping: 50000, deliveryFee: 3500,
 };
+// 토스페이먼츠 결제창(Payment Window) 인스턴스
+let tossPayments=null, tossPayment=null;
+function ensurePayment(){
+  if(!payConfig.clientKey || typeof TossPayments==='undefined') return false;
+  try{
+    if(!tossPayments) tossPayments = TossPayments(payConfig.clientKey);
+    if(!tossPayment)  tossPayment  = tossPayments.payment({ customerKey: TossPayments.ANONYMOUS });
+    return true;
+  }catch(e){ console.error('[toss payment]',e); return false; }
+}
 (async function loadConfig(){
   try {
     const r = await fetch(API+'/payment/config');
@@ -228,7 +242,7 @@ let payConfig = {
 
 
 let selected = new Set(Store.cart.map(c=>c.productId));
-let payMethod = 'CARD';
+let payMode = 'WIDGET';   // 'WIDGET'(카드·간편결제) | 'VBANK'(무통장)
 let userPoint = 0;
 let selectedAddr = null;
 
@@ -381,17 +395,19 @@ function openCheckout(){
   document.getElementById('checkout-bar').style.display='none';
   document.getElementById('avail-pt').textContent=`보유: ${fmt(userPoint)}P`;
   document.getElementById('addr-list-sheet').innerHTML='<div style="text-align:center;padding:18px;color:var(--gray-400);font-size:.8125rem">🔄 배송지 불러오는 중...</div>';
-  // 결제수단/포인트 초기화
+  // 결제수단/포인트 초기화 — 기본 카드·간편결제(위젯)
   document.querySelectorAll('.pay-chip').forEach(c=>c.classList.remove('on'));
-  document.querySelector('.pay-chip[onclick*="CARD"]').classList.add('on');
-  payMethod='CARD';
+  document.querySelector('.pay-chip[onclick*="WIDGET"]').classList.add('on');
+  payMode='WIDGET';
   document.getElementById('vbank-section').style.display='none';
+  document.getElementById('toss-widget-section').style.display='block';
   document.getElementById('point-use').value='';
   calcFinal();
   document.getElementById('pay-overlay').classList.add('open');
   paySheet.classList.add('open');
   document.body.style.overflow='hidden';
   loadAddrSheet();
+  ensurePayment();
 }
 function closePaySheet(){
   document.getElementById('pay-overlay').classList.remove('open');
@@ -402,10 +418,13 @@ function closePaySheet(){
   document.getElementById('checkout-bar').style.display=selItems.length>0?'block':'none';
 }
 
-function selPay(el,method){
+function selPayMode(el,mode){
   document.querySelectorAll('.pay-chip').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on'); payMethod=method;
-  document.getElementById('vbank-section').style.display=method==='VBANK'?'block':'none';
+  el.classList.add('on'); payMode=mode;
+  const isVbank=mode==='VBANK';
+  document.getElementById('vbank-section').style.display=isVbank?'block':'none';
+  document.getElementById('toss-widget-section').style.display=isVbank?'none':'block';
+  if(!isVbank) ensurePayment();
 }
 
 function useAllPoint(){
@@ -479,14 +498,13 @@ async function doPay(){
     return;
   }
 
-  // 카드·간편결제: PG(나이스페이먼츠) 운영키 발급 전이라 안내 후 무통장 유도
-  if(payMethod!=='VBANK' && payConfig.isTest){
-    showPayNotice();
-    return;
+  // 카드·간편결제(결제창) 준비 확인
+  if(payMode!=='VBANK'){
+    if(!ensurePayment()){ toast('결제 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요'); return; }
   }
 
   // 무통장 입금자명 확인
-  if(payMethod==='VBANK'){
+  if(payMode==='VBANK'){
     const depName=document.getElementById('depositor-name')?.value?.trim();
     if(!depName){
       toast('입금자명을 입력해주세요');
@@ -518,15 +536,15 @@ async function doPay(){
         address2:     selectedAddr.address2||'',
         deliveryNote: selectedAddr.deliveryNote||'',
         pointUse:     pt,
-        paymentMethod:payMethod,
-        depositorName:payMethod==='VBANK'?document.getElementById('depositor-name').value.trim():null,
-        bankName:     payMethod==='VBANK'?document.getElementById('bank-name').value:null,
+        paymentMethod:payMode==='VBANK'?'VBANK':'CARD',
+        depositorName:payMode==='VBANK'?document.getElementById('depositor-name').value.trim():null,
+        bankName:     payMode==='VBANK'?document.getElementById('bank-name').value:null,
       })
     });
     const readyData=await readyRes.json();
     if(!readyRes.ok) throw new Error(readyData.error||'주문 생성 실패');
 
-    const {order,nice}=readyData;
+    const {order}=readyData;
 
     // 무통장: 결제창 없이 바로 완료
     if(order.isVbank){
@@ -537,34 +555,26 @@ async function doPay(){
       return;
     }
 
-    // 카드/간편결제: 나이스 결제창
-    AUTHNICE.requestPay({
-      clientId: nice.clientKey,
-      method:   payMethod==='CARD'?'card':payMethod==='KAKAO'?'kakao':payMethod==='NAVER'?'naverpay':payMethod==='TOSS'?'tosspay':'cellphone',
-      orderId:  order.orderId,
-      amount:   order.amount,
-      goodsName:order.orderName,
-      returnUrl:`https://api.meatbonga.com/api/payment/nice-callback`,
-      fnError: function(r){
-        btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>';
-        toast('결제 실패: '+(r.errorMsg||'알 수 없는 오류'));
-      },
-      fnSuccess: async function(r){
-        try{
-          const cr=await fetch(API+'/payment/confirm',{
-            method:'POST',
-            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-            credentials:'include',
-            body:JSON.stringify({paymentKey:r.tid||r.paymentKey,orderId:order.orderId,amount:order.amount})
-          });
-          const cd=await cr.json();
-          if(!cr.ok) throw new Error(cd.error);
-          sendOrderAlimtalk(order.orderId, order.amount, selectedAddr.recipient, selectedAddr.phone, orderProductName(selItems));
-          Store.cart=[]; Store.save(); updateCartBadge();
-          window.location.href=`../pages/order-complete.html?orderId=${order.orderId}&amount=${order.amount}&point=${cd.pointEarned||0}`;
-        }catch(e){ toast('결제 검증 실패: '+e.message); btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>'; }
-      }
-    });
+    // 카드/간편결제: 토스페이먼츠 통합결제창 → successUrl로 리다이렉트
+    try{
+      const phone=(selectedAddr.phone||'').replace(/[^0-9]/g,'');
+      await tossPayment.requestPayment({
+        method:   'CARD',
+        amount:   { currency:'KRW', value: order.amount },
+        orderId:  order.orderId,
+        orderName:order.orderName,
+        successUrl: location.origin + '/pages/payment-success.html',
+        failUrl:    location.origin + '/pages/payment-fail.html',
+        customerName: selectedAddr.recipient || '고객',
+        ...(phone.length>=10 ? { customerMobilePhone: phone } : {}),
+        card: { useEscrow:false, flowMode:'DEFAULT', useCardPoint:false, useAppCardOnly:false },
+      });
+      // 성공 시 successUrl로 이동하므로 이후 코드는 실행되지 않음
+    }catch(e){
+      btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>';
+      if(e && (e.code==='USER_CANCEL'||e.code==='PAY_PROCESS_CANCELED')) return;
+      toast('결제 요청 실패: '+((e&&e.message)||'알 수 없는 오류'));
+    }
   }catch(err){
     toast(err.message||'오류가 발생했습니다');
     btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>';

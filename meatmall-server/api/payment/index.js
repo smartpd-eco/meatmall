@@ -9,12 +9,14 @@ const { notifyOrderComplete, notifyAdminNewOrder, notifyAdmins } = require('../n
 // ══════════════════════════════════════════════════
 // 나이스페이먼츠 설정 — 키값만 Vercel 환경변수에 등록하면 됨
 // ══════════════════════════════════════════════════
-const NICE = {
-  clientKey: process.env.NICE_CLIENT_KEY  || 'test_ck_docs_Jz9BYo1zelvxd10pR0rl',
-  secretKey: process.env.NICE_SECRET_KEY  || 'test_sk_docs_OePez1rFSehN5kNm8dEW',
-  baseURL:   'https://api.nicepay.co.kr/v1',
-  isTest:    !process.env.NICE_CLIENT_KEY,  // 운영 키 없으면 테스트 모드
+// 토스페이먼츠(TossPayments) — 환경변수 미설정 시 공개 문서 테스트 키로 폴백(테스트 전용)
+// ⚠️ 라이브 전환 시 Vercel 환경변수에 실키 등록. 실 시크릿 키는 절대 코드에 넣지 말 것.
+const TOSS = {
+  clientKey: process.env.TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq',
+  secretKey: process.env.TOSS_SECRET_KEY || 'test_sk_zXLkKEypNArWmo50nX3lmeaxYG5R',
+  baseURL:   'https://api.tosspayments.com/v1',
 };
+TOSS.isTest = /^test_/.test(TOSS.secretKey);
 
 // 무통장 계좌 정보 — 환경변수로 관리
 const VBANK = {
@@ -23,8 +25,9 @@ const VBANK = {
   holder:  process.env.VBANK_HOLDER  || '(주)정육본가',
 };
 
-function niceAuth() {
-  return 'Basic ' + Buffer.from(`${NICE.secretKey}:`).toString('base64');
+function tossAuth() {
+  // Basic base64(SECRET_KEY:) — 콜론 필수
+  return 'Basic ' + Buffer.from(`${TOSS.secretKey}:`).toString('base64');
 }
 function makeOrderNo() {
   const d = new Date().toISOString().slice(0,10).replace(/-/g,'');
@@ -37,8 +40,8 @@ function makeOrderNo() {
 router.get('/config', (req, res) => {
   res.json({
     ok: true,
-    clientKey: NICE.clientKey,
-    isTest: NICE.isTest,
+    clientKey: TOSS.clientKey,
+    isTest: TOSS.isTest,
     vbank: VBANK,
     methods: ['CARD','KAKAO','NAVER','TOSS','VBANK','PHONE'],
     freeShipping: 50000,
@@ -153,7 +156,7 @@ router.post('/ready', requireAuth, async (req, res) => {
           }
         })
       },
-      nice: { clientKey: NICE.clientKey, isTest: NICE.isTest },
+      toss: { clientKey: TOSS.clientKey, isTest: TOSS.isTest },
     });
   } catch(err) {
     console.error('[payment/ready]', err);
@@ -179,16 +182,16 @@ router.post('/confirm', requireAuth, async (req, res) => {
     if (order.payment_status === 'paid') return res.status(400).json({ error:'이미 결제된 주문' });
     if (order.final_amount !== Number(amount)) return res.status(400).json({ error:'결제 금액 불일치' });
 
-    // 테스트 모드: 나이스 API 호출 생략
-    if (!NICE.isTest) {
-      const niceRes = await fetch(`${NICE.baseURL}/payments/confirm`, {
+    // 토스페이먼츠 결제 승인 (테스트 키도 실제 승인 API 호출). 금액은 위에서 서버 저장값과 검증 완료.
+    if (TOSS.secretKey) {
+      const tr = await fetch(`${TOSS.baseURL}/payments/confirm`, {
         method:'POST',
-        headers:{ Authorization:niceAuth(), 'Content-Type':'application/json' },
+        headers:{ Authorization: tossAuth(), 'Content-Type':'application/json' },
         body: JSON.stringify({ paymentKey, orderId, amount:Number(amount) })
       });
-      const nd = await niceRes.json();
-      if (!niceRes.ok || nd.resultCode !== '0000')
-        return res.status(400).json({ error: nd.resultMsg||'결제 승인 실패' });
+      const td = await tr.json();
+      if (!tr.ok)
+        return res.status(400).json({ error: td.message||'결제 승인 실패', code: td.code });
     }
 
     await supabase.from('orders').update({
@@ -306,16 +309,15 @@ router.post('/cancel', requireAuth, async (req, res) => {
     if (order.payment_status !== 'paid')
       return res.status(400).json({ error:'결제된 주문만 취소 가능' });
 
-    // 운영 모드: 나이스 취소 API
-    if (!NICE.isTest && order.payment_key) {
-      const niceRes = await fetch(`${NICE.baseURL}/payments/${order.payment_key}/cancel`, {
+    // 토스페이먼츠 결제 취소 API
+    if (TOSS.secretKey && order.payment_key) {
+      const tr = await fetch(`${TOSS.baseURL}/payments/${order.payment_key}/cancel`, {
         method:'POST',
-        headers:{ Authorization:niceAuth(), 'Content-Type':'application/json' },
-        body: JSON.stringify({ reason, cancelAmt: cancelAmt||order.final_amount })
+        headers:{ Authorization: tossAuth(), 'Content-Type':'application/json' },
+        body: JSON.stringify({ cancelReason: reason, ...(cancelAmt ? { cancelAmount: Number(cancelAmt) } : {}) })
       });
-      const nd = await niceRes.json();
-      if (!niceRes.ok || nd.resultCode !== '0000')
-        return res.status(400).json({ error: nd.resultMsg||'취소 실패' });
+      const td = await tr.json();
+      if (!tr.ok) return res.status(400).json({ error: td.message||'취소 실패' });
     }
 
     await supabase.from('orders').update({
@@ -351,15 +353,14 @@ router.post('/partial-cancel', requireAdmin, async (req, res) => {
     if (!order || order.payment_status !== 'paid')
       return res.status(400).json({ error:'결제된 주문만 부분 취소 가능' });
 
-    if (!NICE.isTest && order.payment_key) {
-      const niceRes = await fetch(`${NICE.baseURL}/payments/${order.payment_key}/cancel`, {
+    if (TOSS.secretKey && order.payment_key) {
+      const tr = await fetch(`${TOSS.baseURL}/payments/${order.payment_key}/cancel`, {
         method:'POST',
-        headers:{ Authorization:niceAuth(), 'Content-Type':'application/json' },
-        body: JSON.stringify({ reason, cancelAmt:Number(cancelAmt) })
+        headers:{ Authorization: tossAuth(), 'Content-Type':'application/json' },
+        body: JSON.stringify({ cancelReason: reason, cancelAmount: Number(cancelAmt) })
       });
-      const nd = await niceRes.json();
-      if (!niceRes.ok || nd.resultCode !== '0000')
-        return res.status(400).json({ error: nd.resultMsg||'부분 취소 실패' });
+      const td = await tr.json();
+      if (!tr.ok) return res.status(400).json({ error: td.message||'부분 취소 실패' });
     }
 
     await supabase.from('orders').update({
@@ -411,16 +412,23 @@ router.get('/orders/:orderId', requireAuth, async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════
-// POST /api/payment/nice-webhook  — 나이스 웹훅 (서버→서버)
+// POST /api/payment/toss-webhook  — 토스페이먼츠 웹훅 (서버→서버)
+// PAYMENT_STATUS_CHANGED 등. 카드 확정은 successUrl→/confirm에서 완료됨(보조 안전망).
 // ══════════════════════════════════════════════════
-router.post('/nice-webhook', async (req, res) => {
+router.post('/toss-webhook', async (req, res) => {
   try {
-    const { resultCode, orderId, amount, paymentKey, status } = req.body;
-    if (resultCode === '0000' && status === 'paid') {
-      await supabase.from('orders').update({
-        status:'preparing', payment_status:'paid',
-        payment_key:paymentKey, paid_at:new Date().toISOString(),
-      }).eq('order_number', orderId);
+    const { eventType, data } = req.body || {};
+    if (eventType === 'PAYMENT_STATUS_CHANGED' && data && data.orderId) {
+      if (data.status === 'DONE') {
+        await supabase.from('orders').update({
+          status:'preparing', payment_status:'paid',
+          payment_key:data.paymentKey, paid_at:new Date().toISOString(),
+        }).eq('order_number', data.orderId).eq('payment_status', 'unpaid');
+      } else if (['CANCELED','PARTIAL_CANCELED','EXPIRED','ABORTED'].includes(data.status)) {
+        await supabase.from('orders').update({
+          payment_status: data.status === 'CANCELED' ? 'refunded' : 'cancelled',
+        }).eq('order_number', data.orderId);
+      }
     }
     res.json({ ok:true });
   } catch(err) {

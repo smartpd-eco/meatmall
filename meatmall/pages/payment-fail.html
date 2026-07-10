@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>결제 실패 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.app-wrap{background:var(--light-bg);min-height:100vh;display:flex;align-items:center;justify-content:center}
+.pc-box{text-align:center;padding:40px 24px;max-width:360px}
+.pc-title{font-size:1.05rem;font-weight:800;color:var(--dark-txt);margin:8px 0}
+.pc-sub{font-size:.86rem;color:var(--gray-txt);line-height:1.6}
+.pc-code{display:inline-block;margin-top:10px;font-size:.75rem;color:#9CA3AF;background:#F3F4F6;border-radius:8px;padding:4px 10px}
+.pc-btn{margin-top:20px;padding:12px 24px;background:var(--gold);color:var(--black);border:none;border-radius:14px;font-size:.9375rem;font-weight:700;cursor:pointer}
+.pc-btn.ghost{background:var(--white);color:var(--gray-txt);border:1.5px solid #ddd}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <div class="pc-box">
+    <div style="font-size:2.6rem">🙏</div>
+    <div class="pc-title">결제가 완료되지 않았어요</div>
+    <div class="pc-sub" id="pc-msg">결제가 취소되었거나 승인되지 않았습니다.<br>다시 시도해주세요.</div>
+    <div class="pc-code" id="pc-code" style="display:none"></div>
+    <div><button class="pc-btn" onclick="location.href='./cart.html'">장바구니로 돌아가기</button></div>
+    <div><button class="pc-btn ghost" onclick="location.href='../index.html'">홈으로</button></div>
+  </div>
+</div>
+<script>
+function q(k){return new URLSearchParams(location.search).get(k)}
+const code=q('code'), message=q('message');
+if(message){ document.getElementById('pc-msg').innerHTML=message.replace(/</g,'&lt;'); }
+if(code){ const c=document.getElementById('pc-code'); c.style.display='inline-block'; c.textContent='오류코드: '+code; }
+</script>
+</body></html>
