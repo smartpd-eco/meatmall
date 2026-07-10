@@ -309,52 +309,54 @@ function openUserManage(id){
     <div style="font-size:.8rem;color:#9CA3AF;margin-bottom:2px">${u.email||''}</div>
     <div style="font-size:.78rem;color:#6B7280;margin-bottom:16px">${u.phone||'연락처 없음'} · 가입 ${(u.created_at||'').slice(0,10)}</div>
 
-    <div class="fgrp" style="margin-bottom:16px">
+    <div class="fgrp" style="margin-bottom:14px">
       <label class="flbl">💎 보유 포인트: <strong style="color:#C9A84C">${Number(u.point||0).toLocaleString('ko-KR')}P</strong></label>
       <div style="display:flex;gap:6px;margin-top:6px">
         <input class="finput" id="pt-amt" type="number" placeholder="가감액 (적립 1000 / 차감 -500)" style="flex:1.2">
-        <input class="finput" id="pt-rsn" placeholder="사유" style="flex:1">
+        <input class="finput" id="pt-rsn" placeholder="사유(선택)" style="flex:1">
       </div>
-      <button class="btn btn-sm" style="margin-top:8px;background:#C9A84C;color:#111;width:100%;font-weight:700" onclick="applyPoint('${u.id}')">포인트 적용</button>
+      <div style="font-size:.72rem;color:#9CA3AF;margin-top:4px">비워두면 포인트는 변경되지 않습니다</div>
     </div>
 
-    <div class="fgrp" style="margin-bottom:16px">
+    <div class="fgrp" style="margin-bottom:14px">
       <label class="flbl">🏅 등급</label>
-      <div style="display:flex;gap:6px">
-        <select class="fselect" id="usr-grade" style="flex:1">${gOpts}</select>
-        <button class="btn btn-sm btn-outline" onclick="applyGrade('${u.id}')">등급 변경</button>
-      </div>
+      <select class="fselect" id="usr-grade" style="width:100%">${gOpts}</select>
     </div>
 
-    <div class="fgrp">
-      <label class="flbl">🔐 계정 상태: ${active?'<span style="color:#22C55E">활성</span>':'<span style="color:#EF4444">비활성</span>'}</label>
-      <button class="btn btn-sm" style="width:100%;color:#fff;background:${active?'#DC2626':'#16A34A'}" onclick="toggleActive('${u.id}',${active})">${active?'계정 비활성화 (로그인 차단)':'계정 활성화'}</button>
+    <div class="fgrp" style="margin-bottom:8px">
+      <label class="flbl">🔐 계정 상태</label>
+      <select class="fselect" id="usr-active" style="width:100%">
+        <option value="1"${active?' selected':''}>활성</option>
+        <option value="0"${!active?' selected':''}>비활성 (로그인 차단)</option>
+      </select>
     </div>
-  `, null, null);
+    <div style="font-size:.72rem;color:#9CA3AF">변경 후 아래 <strong style="color:#C9A84C">저장하기</strong>를 눌러야 반영됩니다. 닫기 시 반영되지 않습니다.</div>
+  `, '저장하기', ()=>saveUser(id));
 }
-async function applyPoint(id){
+// 모아둔 변경(포인트·등급·활성)을 저장하기 누를 때 한 번에 반영. 닫기/취소 시 미반영.
+async function saveUser(id){
+  const u=_users.find(x=>x.id===id); if(!u){ closeModal(); return; }
+  const grade=document.getElementById('usr-grade').value;
+  const active=document.getElementById('usr-active').value==='1';
   const amount=parseInt(document.getElementById('pt-amt').value,10);
   const reason=(document.getElementById('pt-rsn').value||'').trim();
-  if(!amount){ toast('가감할 포인트를 입력하세요 (예: 1000 또는 -500)'); return; }
+  const wasActive=u.is_active!==false;
+  const changes=[];
   try{
-    const d=await api('/admin/users/'+id+'/points',{method:'POST',body:JSON.stringify({amount,reason})});
-    toast('✅ 포인트 적용 완료 · 잔액 '+Number(d.point).toLocaleString('ko-KR')+'P');
-    closeModal(); tabUsers();
-  }catch(e){ toast('❌ '+e.message); }
-}
-async function applyGrade(id){
-  const grade=document.getElementById('usr-grade').value;
-  try{
-    await api('/admin/users/'+id,{method:'PATCH',body:JSON.stringify({grade})});
-    toast('✅ 등급이 변경됐습니다');
-    closeModal(); tabUsers();
-  }catch(e){ toast('❌ '+e.message); }
-}
-async function toggleActive(id,cur){
-  if(!confirm(cur?'이 계정을 비활성화(로그인 차단)할까요?':'이 계정을 다시 활성화할까요?')) return;
-  try{
-    await api('/admin/users/'+id,{method:'PATCH',body:JSON.stringify({is_active:!cur})});
-    toast('✅ 계정 상태가 변경됐습니다');
+    const patch={};
+    if(grade!==(u.grade||'normal')) patch.grade=grade;
+    if(active!==wasActive) patch.is_active=active;
+    if(Object.keys(patch).length){
+      await api('/admin/users/'+id,{method:'PATCH',body:JSON.stringify(patch)});
+      if(patch.grade) changes.push('등급 '+(GRADE_LBL[grade]||grade));
+      if('is_active' in patch) changes.push(active?'활성화':'비활성화');
+    }
+    if(Number.isInteger(amount) && amount!==0){
+      const d=await api('/admin/users/'+id+'/points',{method:'POST',body:JSON.stringify({amount,reason})});
+      changes.push('포인트 '+(amount>0?'+':'')+amount+'P → '+Number(d.point).toLocaleString('ko-KR')+'P');
+    }
+    if(!changes.length){ toast('변경 사항이 없습니다'); return; }
+    toast('✅ 저장됨 · '+changes.join(' / '));
     closeModal(); tabUsers();
   }catch(e){ toast('❌ '+e.message); }
 }
