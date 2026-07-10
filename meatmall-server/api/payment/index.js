@@ -34,18 +34,41 @@ function makeOrderNo() {
   return `ORD-${d}-${uuidv4().slice(0,6).toUpperCase()}`;
 }
 
+// ── 배송비 정책 (shipping_settings 테이블, 60초 캐시, 테이블 없거나 오류 시 기본값 폴백)
+let _shipCache = null, _shipAt = 0;
+async function getShipping() {
+  if (_shipCache && Date.now() - _shipAt < 60000) return _shipCache;
+  let s = { mode: 'free50', base_fee: 3500 };
+  try {
+    const { data } = await supabase.from('shipping_settings').select('mode, base_fee').eq('id', 1).maybeSingle();
+    if (data) s = { mode: data.mode || 'free50', base_fee: Number(data.base_fee ?? 3500) };
+  } catch (e) { /* 테이블 미생성 등 → 기본값 사용 */ }
+  _shipCache = s; _shipAt = Date.now();
+  return s;
+}
+// 무료 기준 금액(0 = 전상품 무료)
+function shipThreshold(mode) { return mode === 'free30' ? 30000 : mode === 'free50' ? 50000 : 0; }
+// 실제 부과 배송비 계산
+function shipFee(s, productTotal) {
+  if (s.mode === 'freeall') return 0;
+  return productTotal >= shipThreshold(s.mode) ? 0 : Number(s.base_fee || 0);
+}
+
 // ══════════════════════════════════════════════════
 // GET /api/payment/config  — 프론트에 결제 설정 전달
 // ══════════════════════════════════════════════════
-router.get('/config', (req, res) => {
+router.get('/config', async (req, res) => {
+  const s = await getShipping();
   res.json({
     ok: true,
     clientKey: TOSS.clientKey,
     isTest: TOSS.isTest,
     vbank: VBANK,
     methods: ['CARD','KAKAO','NAVER','TOSS','VBANK','PHONE'],
-    freeShipping: 50000,
-    deliveryFee: 3500,
+    shippingMode: s.mode,
+    freeAll: s.mode === 'freeall',
+    freeShipping: shipThreshold(s.mode),
+    deliveryFee: s.base_fee,
   });
 });
 
@@ -76,7 +99,7 @@ router.post('/ready', requireAuth, async (req, res) => {
     } catch (e) { console.error('[ready 계정 전화번호 자동등록 오류]', e.message); }
 
     const productTotal = items.reduce((s,i) => s + i.price * i.qty, 0);
-    const deliveryFee  = productTotal >= 50000 ? 0 : 3500;
+    const deliveryFee  = shipFee(await getShipping(), productTotal);
     const couponDisc   = 0; // 쿠폰 추후 적용
     const finalAmount  = Math.max(100, productTotal + deliveryFee - couponDisc - Number(pointUse));
     const isVbank      = paymentMethod === 'VBANK';

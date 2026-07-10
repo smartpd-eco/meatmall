@@ -213,8 +213,14 @@ let payConfig = {
   clientKey: 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq',
   isTest: true,
   vbank: { bank:'기업은행', account:'123-456789-01-001', holder:'(주)정육본가' },
-  freeShipping: 50000, deliveryFee: 3500,
+  freeShipping: 50000, deliveryFee: 3500, freeAll: false,
 };
+// 배송비 계산 — 서버 배송비 정책(freeAll/freeShipping/deliveryFee) 기반
+function calcShip(selTotal){
+  if(!selTotal || selTotal<=0) return 0;
+  if(payConfig.freeAll) return 0;
+  return selTotal >= (payConfig.freeShipping||50000) ? 0 : (payConfig.deliveryFee||3500);
+}
 // 토스페이먼츠 결제창(Payment Window) 인스턴스
 let tossPayments=null, tossPayment=null;
 function ensurePayment(){
@@ -319,7 +325,7 @@ function selectAddr(i){
 function renderCart(){
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
   const selTotal=selItems.reduce((s,c)=>s+c.price*c.qty,0);
-  const delivery=selTotal>=50000?0:(selTotal>0?3500:0);
+  const delivery=calcShip(selTotal);
   document.getElementById('cart-cnt').textContent=`(${Store.cart.length}개)`;
 
   if(Store.cart.length===0){
@@ -359,7 +365,11 @@ function renderCart(){
     </div>
     <div class="cart-del" onclick="removeItem('${c.productId}')">✕</div>
   </div>`).join('')}
-  ${selTotal>0&&selTotal<50000?`<div style="padding:12px 18px;background:#FFFBF5;font-size:.8125rem;color:var(--secondary)">🚚 <strong>${fmt(50000-selTotal)}원</strong> 더 담으면 무료배송!</div>`:selTotal>=50000?`<div style="padding:12px 18px;background:var(--green-light);font-size:.8125rem;color:var(--green);font-weight:700">✅ 무료배송 혜택 적용!</div>`:''}
+  ${(()=>{ const th=payConfig.freeAll?0:(payConfig.freeShipping||50000);
+    if(payConfig.freeAll) return `<div style="padding:12px 18px;background:var(--green-light);font-size:.8125rem;color:var(--green);font-weight:700">✅ 전 상품 무료배송!</div>`;
+    if(selTotal>0&&selTotal<th) return `<div style="padding:12px 18px;background:#FFFBF5;font-size:.8125rem;color:var(--secondary)">🚚 <strong>${fmt(th-selTotal)}원</strong> 더 담으면 무료배송!</div>`;
+    if(selTotal>=th) return `<div style="padding:12px 18px;background:var(--green-light);font-size:.8125rem;color:var(--green);font-weight:700">✅ 무료배송 혜택 적용!</div>`;
+    return ''; })()}
   <div class="order-summary">
     <div class="sum-row"><span>상품금액 (${selItems.length}개)</span><span>${fmt(selTotal)}원</span></div>
     <div class="sum-row"><span>배송비</span><span>${delivery===0?'<span style="color:var(--green)">무료</span>':fmt(delivery)+'원'}</span></div>
@@ -430,7 +440,7 @@ function selPayMode(el,mode){
 function useAllPoint(){
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
   const selTotal=selItems.reduce((s,c)=>s+c.price*c.qty,0);
-  const delivery=selTotal>=50000?0:3500;
+  const delivery=calcShip(selTotal);
   document.getElementById('point-use').value=Math.max(0,Math.min(userPoint,selTotal+delivery-100));
   calcFinal();
 }
@@ -438,7 +448,7 @@ function useAllPoint(){
 function calcFinal(){
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
   const selTotal=selItems.reduce((s,c)=>s+c.price*c.qty,0);
-  const delivery=selTotal>=50000?0:3500;
+  const delivery=calcShip(selTotal);
   const pt=Math.min(Number(document.getElementById('point-use').value)||0,userPoint,selTotal+delivery-100);
   const final=Math.max(0,selTotal+delivery-pt);
   document.getElementById('sh-point').textContent=`-${fmt(pt)}원`;

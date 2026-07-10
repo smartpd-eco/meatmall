@@ -391,4 +391,38 @@ router.get('/users', async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════════════════
+// 배송비 정책 설정 (shipping_settings, 단일 행 id=1)
+// GET  /api/admin/shipping-settings
+// PUT  /api/admin/shipping-settings  { mode: 'free30'|'free50'|'freeall', base_fee }
+// ════════════════════════════════════════════════════
+router.get('/shipping-settings', async (req, res) => {
+  try {
+    const { data } = await supabase
+      .from('shipping_settings').select('mode, base_fee, updated_at').eq('id', 1).maybeSingle();
+    res.json({ ok: true, settings: data || { mode: 'free50', base_fee: 3500 } });
+  } catch (err) {
+    res.json({ ok: true, settings: { mode: 'free50', base_fee: 3500 } });
+  }
+});
+
+router.put('/shipping-settings', async (req, res) => {
+  try {
+    const MODES = ['free30', 'free50', 'freeall'];
+    const mode = MODES.includes(req.body.mode) ? req.body.mode : 'free50';
+    let base_fee = parseInt(req.body.base_fee, 10);
+    if (!Number.isInteger(base_fee) || base_fee < 0) base_fee = 3500;
+
+    const { data, error } = await supabase
+      .from('shipping_settings')
+      .upsert([{ id: 1, mode, base_fee, updated_at: new Date().toISOString() }], { onConflict: 'id' })
+      .select().single();
+    if (error) throw error;
+    res.json({ ok: true, settings: data });
+  } catch (err) {
+    console.error('[admin shipping-settings PUT]', err);
+    res.status(500).json({ error: '배송비 설정 저장 오류 (shipping_settings 테이블 확인)' });
+  }
+});
+
 module.exports = router;

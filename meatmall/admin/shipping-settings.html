@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>배송비 설정 · 정육본가 관리자</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--bg:#0F0F0F;--card:#1A1A1A;--line:#2A2A2A;--txt:#E5E7EB;--sub:#9CA3AF}
+*{box-sizing:border-box;margin:0;font-family:'Noto Sans KR',sans-serif}
+body{background:var(--bg);color:var(--txt);min-height:100vh}
+.hdr{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.hdr .back{background:none;border:none;color:var(--txt);font-size:1.3rem;cursor:pointer}
+.hdr h1{font-size:1.05rem;font-weight:800;color:var(--gold)}
+.wrap{max-width:520px;margin:0 auto;padding:20px 18px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.desc{font-size:.84rem;color:var(--sub);line-height:1.7;margin-bottom:18px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;margin-bottom:10px;transition:all .15s}
+.opt.on{border-color:var(--gold);background:rgba(201,168,76,.08)}
+.opt input{margin-top:3px;accent-color:var(--gold);width:18px;height:18px}
+.opt .t{font-size:.95rem;font-weight:700}
+.opt .s{font-size:.8rem;color:var(--sub);margin-top:3px}
+.fee-row{margin:16px 0 4px;display:flex;align-items:center;gap:10px}
+.fee-row label{font-size:.86rem;color:var(--sub)}
+.fee-row input{flex:1;background:#111;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--txt);font-size:.95rem}
+.fee-row input:disabled{opacity:.4}
+.save{width:100%;margin-top:20px;padding:14px;background:var(--gold);color:#111;border:none;border-radius:12px;font-size:1rem;font-weight:800;cursor:pointer}
+.save:disabled{opacity:.5}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#222;border:1px solid var(--gold);color:#fff;padding:11px 20px;border-radius:24px;font-size:.86rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:100}
+.toast.show{opacity:1}
+</style>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+</head>
+<body>
+<div class="hdr">
+  <button class="back" onclick="location.href='dashboard.html'">←</button>
+  <h1>🚚 배송비 설정</h1>
+</div>
+<div class="wrap">
+  <div class="card">
+    <div class="desc">주문 시 적용되는 배송비 정책을 설정합니다. 전 주문(당일·일반 공통)에 적용됩니다.</div>
+
+    <label class="opt" id="opt-free30" onclick="pick('free30')">
+      <input type="radio" name="mode" value="free30">
+      <div><div class="t">3만원 이상 무료배송</div><div class="s">3만원 미만 주문은 아래 배송비 부과</div></div>
+    </label>
+    <label class="opt" id="opt-free50" onclick="pick('free50')">
+      <input type="radio" name="mode" value="free50">
+      <div><div class="t">5만원 이상 무료배송</div><div class="s">5만원 미만 주문은 아래 배송비 부과</div></div>
+    </label>
+    <label class="opt" id="opt-freeall" onclick="pick('freeall')">
+      <input type="radio" name="mode" value="freeall">
+      <div><div class="t">완전 무료배송</div><div class="s">모든 주문 배송비 0원</div></div>
+    </label>
+
+    <div class="fee-row">
+      <label>기준 미만 배송비</label>
+      <input type="number" id="base-fee" value="3500" min="0" step="100">
+      <span style="font-size:.86rem;color:var(--sub)">원</span>
+    </div>
+
+    <button class="save" id="save-btn" onclick="save()">저장하기</button>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+if(!token) location.href='../login.html';
+let mode='free50';
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
+function pick(m){
+  mode=m;
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('on'));
+  document.getElementById('opt-'+m).classList.add('on');
+  document.querySelector(`input[value="${m}"]`).checked=true;
+  document.getElementById('base-fee').disabled = (m==='freeall');
+}
+async function load(){
+  try{
+    const r=await fetch(API+'/admin/shipping-settings',{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    const s=d.settings||{mode:'free50',base_fee:3500};
+    document.getElementById('base-fee').value=s.base_fee ?? 3500;
+    pick(s.mode||'free50');
+  }catch(e){ pick('free50'); }
+}
+async function save(){
+  const btn=document.getElementById('save-btn');
+  const base_fee=parseInt(document.getElementById('base-fee').value,10);
+  if(mode!=='freeall' && (!Number.isInteger(base_fee)||base_fee<0)){ toast('배송비를 올바르게 입력하세요'); return; }
+  btn.disabled=true; btn.textContent='저장 중...';
+  try{
+    const r=await fetch(API+'/admin/shipping-settings',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+      body:JSON.stringify({mode, base_fee: mode==='freeall'?0:base_fee})
+    });
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'저장 실패');
+    toast('✅ 배송비 정책이 저장됐습니다');
+  }catch(e){ toast('❌ '+e.message); }
+  finally{ btn.disabled=false; btn.textContent='저장하기'; }
+}
+load();
+</script>
+</body></html>
