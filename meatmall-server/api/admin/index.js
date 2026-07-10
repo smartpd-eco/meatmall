@@ -303,6 +303,72 @@ router.patch('/cs/:id', async (req, res) => {
 // ════════════════════════════════════════════════════
 // GET /api/admin/users — 회원 목록
 // ════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// PATCH /api/admin/users/:id — 회원 등급/활성 상태 변경
+// body: { grade?, is_active? }
+// ════════════════════════════════════════════════════
+router.patch('/users/:id', async (req, res) => {
+  try {
+    const { grade, is_active } = req.body;
+    const GRADES = ['normal', 'bronze', 'silver', 'gold', 'vip'];
+    const patch = { updated_at: new Date().toISOString() };
+    if (grade !== undefined) {
+      if (!GRADES.includes(grade)) return res.status(400).json({ error: '유효하지 않은 등급입니다' });
+      patch.grade = grade;
+    }
+    if (is_active !== undefined) patch.is_active = !!is_active;
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .update(patch)
+      .eq('id', req.params.id)
+      .select('id, name, email, phone, grade, point, is_active, is_admin, created_at')
+      .single();
+    if (error) throw error;
+    res.json({ ok: true, user });
+  } catch (err) {
+    console.error('[admin users PATCH]', err);
+    res.status(500).json({ error: '회원 정보 수정 오류' });
+  }
+});
+
+// ════════════════════════════════════════════════════
+// POST /api/admin/users/:id/points — 포인트 가감(+적립/-차감) + 로그 기록
+// body: { amount: 정수(±), reason }
+// ════════════════════════════════════════════════════
+router.post('/users/:id/points', async (req, res) => {
+  try {
+    const amount = parseInt(req.body.amount, 10);
+    const reason = String(req.body.reason || '').trim() || '수동 조정';
+    if (!Number.isInteger(amount) || amount === 0)
+      return res.status(400).json({ error: '가감할 포인트를 입력해주세요 (0 제외)' });
+
+    const { data: u, error: e1 } = await supabase
+      .from('users').select('point').eq('id', req.params.id).single();
+    if (e1 || !u) return res.status(404).json({ error: '회원을 찾을 수 없습니다' });
+
+    const current = Number(u.point || 0);
+    const next = current + amount;
+    if (next < 0) return res.status(400).json({ error: `차감액이 보유 포인트(${current}P)를 초과합니다` });
+
+    const { error: e2 } = await supabase
+      .from('users').update({ point: next, updated_at: new Date().toISOString() }).eq('id', req.params.id);
+    if (e2) throw e2;
+
+    await supabase.from('point_logs').insert({
+      user_id: req.params.id, amount, reason: `[관리자] ${reason}`.slice(0, 100),
+    });
+
+    res.json({ ok: true, point: next, delta: amount });
+  } catch (err) {
+    console.error('[admin points]', err);
+    res.status(500).json({ error: '포인트 조정 오류' });
+  }
+});
+
+// ════════════════════════════════════════════════════
+// GET /api/admin/users — 회원 목록
+// ════════════════════════════════════════════════════
 router.get('/users', async (req, res) => {
   try {
     const { page = 1, limit = 20, search } = req.query;

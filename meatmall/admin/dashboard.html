@@ -254,38 +254,109 @@ const S_LABEL = { pending:'결제대기', pending_deposit:'입금대기', prepar
 const S_CLASS = { pending:'bdg-pending', pending_deposit:'bdg-pending', preparing:'bdg-preparing', shipping:'bdg-shipping', delivered:'bdg-delivered', cancelled:'bdg-cancelled', refund_req:'bdg-cancelled', refunded:'bdg-cancelled' };
 let _orders = [];
 
+let _users = [];
+const GRADE_LBL = { vip:'VIP', gold:'골드', silver:'실버', bronze:'브론즈', normal:'일반' };
 async function tabUsers(){
   const body=document.getElementById('adm-body');
   body.innerHTML='<div class="empty">🔄 불러오는 중...</div>';
   try{
-    const d=await api('/admin/users?limit=100');
-    const users=d.users||[];
-    const gradeLbl={vip:'VIP', gold:'골드', silver:'실버', bronze:'브론즈', normal:'일반'};
-    const rows=users.map(u=>{
-      const badge=u.is_admin
-        ? '<span class="bdg bdg-completed">관리자</span>'
-        : (u.is_active===false ? '<span class="bdg bdg-cancelled">비활성</span>' : '<span class="bdg bdg-active">활성</span>');
-      return `<tr>
-        <td>${u.name||'-'}</td>
-        <td style="font-size:.8rem">${u.email||'-'}</td>
-        <td style="font-size:.8rem">${u.phone||'-'}</td>
-        <td>${gradeLbl[u.grade]||u.grade||'일반'}</td>
-        <td style="color:#C9A84C;font-weight:700">${Number(u.point||0).toLocaleString('ko-KR')}P</td>
-        <td>${badge}</td>
-        <td style="font-size:.78rem;color:#6B7280">${(u.created_at||'').slice(0,10)}</td>
-      </tr>`;
-    }).join('');
+    const d=await api('/admin/users?limit=200');
+    _users=d.users||[];
     body.innerHTML=`<div class="card">
       <div class="card-head">
-        <div><div class="card-title">회원 관리</div><div class="card-sub">총 ${d.total||users.length}명</div></div>
-        <button class="btn btn-outline btn-sm" onclick="tabUsers()">새로고침</button>
+        <div><div class="card-title">회원 관리</div><div class="card-sub">총 ${d.total||_users.length}명</div></div>
+        <div class="fbar" style="margin-bottom:0">
+          <input class="fin-sm" id="usr-q" placeholder="이름·이메일 검색" oninput="filterUsers()" style="width:200px">
+          <button class="btn btn-outline btn-sm" onclick="tabUsers()">새로고침</button>
+        </div>
       </div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>포인트</th><th>상태</th><th>가입일</th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="7" class="empty">회원이 없습니다</td></tr>'}</tbody>
+        <thead><tr><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>포인트</th><th>상태</th><th>가입일</th><th>관리</th></tr></thead>
+        <tbody id="usr-tbody">${userRows(_users)}</tbody>
       </table></div>
     </div>`;
   }catch(e){ body.innerHTML='<div class="empty">❌ '+e.message+'</div>'; }
+}
+function userRows(list){
+  if(!list.length) return '<tr><td colspan="8" class="empty">회원이 없습니다</td></tr>';
+  return list.map(u=>{
+    const badge=u.is_admin
+      ? '<span class="bdg bdg-completed">관리자</span>'
+      : (u.is_active===false ? '<span class="bdg bdg-cancelled">비활성</span>' : '<span class="bdg bdg-active">활성</span>');
+    return `<tr>
+      <td>${u.name||'-'}</td>
+      <td style="font-size:.8rem">${u.email||'-'}</td>
+      <td style="font-size:.8rem">${u.phone||'-'}</td>
+      <td>${GRADE_LBL[u.grade]||u.grade||'일반'}</td>
+      <td style="color:#C9A84C;font-weight:700">${Number(u.point||0).toLocaleString('ko-KR')}P</td>
+      <td>${badge}</td>
+      <td style="font-size:.78rem;color:#6B7280">${(u.created_at||'').slice(0,10)}</td>
+      <td>${u.is_admin?'<span style="color:#9CA3AF;font-size:.76rem">-</span>':`<button class="btn btn-sm btn-outline" onclick="openUserManage('${u.id}')">관리</button>`}</td>
+    </tr>`;
+  }).join('');
+}
+function filterUsers(){
+  const q=(document.getElementById('usr-q').value||'').toLowerCase();
+  const f=_users.filter(u=>!q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q));
+  document.getElementById('usr-tbody').innerHTML=userRows(f);
+}
+function openUserManage(id){
+  const u=_users.find(x=>x.id===id); if(!u) return;
+  const gOpts=Object.entries(GRADE_LBL).map(([v,l])=>`<option value="${v}"${(u.grade||'normal')===v?' selected':''}>${l}</option>`).join('');
+  const active=u.is_active!==false;
+  openModal('회원 관리', `
+    <div style="font-size:.86rem;font-weight:700;color:#E5E7EB">${u.name||''}</div>
+    <div style="font-size:.8rem;color:#9CA3AF;margin-bottom:2px">${u.email||''}</div>
+    <div style="font-size:.78rem;color:#6B7280;margin-bottom:16px">${u.phone||'연락처 없음'} · 가입 ${(u.created_at||'').slice(0,10)}</div>
+
+    <div class="fgrp" style="margin-bottom:16px">
+      <label class="flbl">💎 보유 포인트: <strong style="color:#C9A84C">${Number(u.point||0).toLocaleString('ko-KR')}P</strong></label>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <input class="finput" id="pt-amt" type="number" placeholder="가감액 (적립 1000 / 차감 -500)" style="flex:1.2">
+        <input class="finput" id="pt-rsn" placeholder="사유" style="flex:1">
+      </div>
+      <button class="btn btn-sm" style="margin-top:8px;background:#C9A84C;color:#111;width:100%;font-weight:700" onclick="applyPoint('${u.id}')">포인트 적용</button>
+    </div>
+
+    <div class="fgrp" style="margin-bottom:16px">
+      <label class="flbl">🏅 등급</label>
+      <div style="display:flex;gap:6px">
+        <select class="fselect" id="usr-grade" style="flex:1">${gOpts}</select>
+        <button class="btn btn-sm btn-outline" onclick="applyGrade('${u.id}')">등급 변경</button>
+      </div>
+    </div>
+
+    <div class="fgrp">
+      <label class="flbl">🔐 계정 상태: ${active?'<span style="color:#22C55E">활성</span>':'<span style="color:#EF4444">비활성</span>'}</label>
+      <button class="btn btn-sm" style="width:100%;color:#fff;background:${active?'#DC2626':'#16A34A'}" onclick="toggleActive('${u.id}',${active})">${active?'계정 비활성화 (로그인 차단)':'계정 활성화'}</button>
+    </div>
+  `, null, null);
+}
+async function applyPoint(id){
+  const amount=parseInt(document.getElementById('pt-amt').value,10);
+  const reason=(document.getElementById('pt-rsn').value||'').trim();
+  if(!amount){ toast('가감할 포인트를 입력하세요 (예: 1000 또는 -500)'); return; }
+  try{
+    const d=await api('/admin/users/'+id+'/points',{method:'POST',body:JSON.stringify({amount,reason})});
+    toast('✅ 포인트 적용 완료 · 잔액 '+Number(d.point).toLocaleString('ko-KR')+'P');
+    closeModal(); tabUsers();
+  }catch(e){ toast('❌ '+e.message); }
+}
+async function applyGrade(id){
+  const grade=document.getElementById('usr-grade').value;
+  try{
+    await api('/admin/users/'+id,{method:'PATCH',body:JSON.stringify({grade})});
+    toast('✅ 등급이 변경됐습니다');
+    closeModal(); tabUsers();
+  }catch(e){ toast('❌ '+e.message); }
+}
+async function toggleActive(id,cur){
+  if(!confirm(cur?'이 계정을 비활성화(로그인 차단)할까요?':'이 계정을 다시 활성화할까요?')) return;
+  try{
+    await api('/admin/users/'+id,{method:'PATCH',body:JSON.stringify({is_active:!cur})});
+    toast('✅ 계정 상태가 변경됐습니다');
+    closeModal(); tabUsers();
+  }catch(e){ toast('❌ '+e.message); }
 }
 
 async function tabOrders(){
@@ -321,6 +392,12 @@ function renderOrdersTab(){
   </div>`;
 }
 
+// 결제 완료된 신규 주문(카드·간편결제 등)은 '결제완료'로 표시. 배송 단계로 넘어가면 원래 상태 표시.
+function orderBadge(o){
+  if (o.status === 'preparing' && o.payment_status === 'paid')
+    return '<span class="bdg bdg-completed">결제완료</span>';
+  return `<span class="bdg ${S_CLASS[o.status]||'bdg-pending'}">${S_LABEL[o.status]||o.status}</span>`;
+}
 function orderRows(list){
   if (!list.length) return '<tr><td colspan="8" class="empty">주문 없음</td></tr>';
   return list.map(o => `
@@ -330,7 +407,7 @@ function orderRows(list){
     <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem">${(o.order_items||[]).map(i=>i.name).join(', ')||'–'}</td>
     <td style="font-weight:700">${fmt(o.final_amount)}원</td>
     <td style="font-size:.78rem">${o.payment_method||'–'}</td>
-    <td><span class="bdg ${S_CLASS[o.status]||'bdg-pending'}">${S_LABEL[o.status]||o.status}</span></td>
+    <td>${orderBadge(o)}</td>
     <td style="font-size:.78rem">${fmtDate(o.created_at)}</td>
     <td><button class="btn btn-sm btn-outline" onclick="openOrderEdit('${o.id}')">상태변경</button></td>
   </tr>`).join('');
