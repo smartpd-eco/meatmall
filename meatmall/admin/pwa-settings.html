@@ -133,6 +133,12 @@ select{background:#fff!important;border:1px solid #D1D5DB!important;color:#11182
 .mm-nav a:hover{color:#2563EB!important}
 input[type=range]{accent-color:#3B82F6!important}
 </style>
+<style>
+/* 최종 색 보정: 토글 골드 → 블루 */
+.tgl-track{background:#D1D5DB!important}
+.tgl input:checked + .tgl-track{background:#3B82F6!important}
+.tgl-track::after,.tgl input:checked + .tgl-track::after{background:#fff!important}
+</style>
 </head>
 <body>
 <aside class="mm-side">

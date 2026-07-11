@@ -144,6 +144,16 @@ body{background:#F4F6F8;color:#1F2937;padding-left:232px}
 .mm-nav a.on{background:#3B82F6!important;color:#fff!important;border-left-color:#1D4ED8!important}
 .mm-nav a:hover{color:#2563EB!important}
 </style>
+<style>
+/* 최종 색 보정 */
+.method-item{background:#fff!important;border:1px solid #E5E7EB!important}
+.method-item.active{border-color:#3B82F6!important}
+.method-name{color:#111827!important}
+.method-status{color:#16A34A!important}
+.stat-box{background:#F9FAFB!important;border:1px solid #E5E7EB!important}
+.stat-num{color:#2563EB!important}
+code{background:#EFF6FF!important;color:#1D4ED8!important;padding:1px 5px;border-radius:4px}
+</style>
 </head>
 <body>
 <aside class="mm-side">
@@ -266,7 +276,7 @@ body{background:#F4F6F8;color:#1F2937;padding-left:232px}
     </div>
     <div class="card-body">
       <div class="info info-note" id="vbank-info">불러오는 중...</div>
-      <div style="font-size:.85rem;font-weight:700;color:#F0F2F5;margin-bottom:10px">계좌 변경 방법 (Vercel 환경변수)</div>
+      <div style="font-size:.85rem;font-weight:700;color:#111827;margin-bottom:10px">계좌 변경 방법 (Vercel 환경변수)</div>
       <div class="step-list">
         <div class="step-item">
           <div class="step-num">①</div>
@@ -326,7 +336,7 @@ body{background:#F4F6F8;color:#1F2937;padding-left:232px}
           ${[['💳 신용카드','2.5~3.5%','카드사별 상이'],['💬 카카오페이','3.5%','간편결제'],['🟢 네이버페이','3.74%','간편결제'],['🔵 토스페이','3.3%','간편결제'],['🏦 무통장입금','0%','수수료 없음'],['📱 휴대폰결제','4.5%','통신사별 상이']].map(([m,f,n]) => `
           <tr>
             <td>${m}</td>
-            <td style="font-weight:700;color:#C9A84C">${f}</td>
+            <td style="font-weight:700;color:#111827">${f}</td>
             <td style="color:#6B7280">${n}</td>
           </tr>`).join('')}
         </tbody>
