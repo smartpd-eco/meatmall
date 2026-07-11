@@ -126,6 +126,7 @@ textarea.finput{resize:vertical;min-height:80px;padding:10px 12px}
 </style>
 <script>window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()})</script>
 <script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
 <div class="adm">
@@ -717,6 +718,25 @@ function renderVendorsTab(){
   </div>`;
 }
 
+// 주소검색(Daum) → 시/구/동 자동 파싱·입력
+function vendorAddrSearch(){
+  if (typeof daum === 'undefined' || !daum.Postcode){ toast('주소검색 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요'); return; }
+  new daum.Postcode({ oncomplete: function(d){
+    const addr = d.roadAddress || d.jibunAddress || '';
+    const sido = d.sido || '';          // 서울 / 경기 ...
+    const sigungu = d.sigungu || '';    // 강남구  또는  안산시 단원구
+    const dong = d.bname || '';         // 고잔동 (법정동)
+    let city = '', district = '';
+    const parts = sigungu.split(' ').filter(Boolean);
+    if (parts.length >= 2) {            // 도 지역: 'OO시 OO구'
+      city = parts[0]; district = parts.slice(1).join(' ');
+    } else if (parts.length === 1) {    // 광역시/특별시: sigungu='OO구' → 시=sido
+      city = sido; district = parts[0];
+    } else { city = sido; }
+    const set = (id2, val) => { const el = document.getElementById(id2); if (el) el.value = val; };
+    set('vf-addr', addr); set('vf-city', city); set('vf-district', district); set('vf-dong', dong);
+  }}).open();
+}
 function openVendorForm(id){
   const v = id ? _vendors.find(x => x.id === id) : null;
   openModal(v ? '거래처 수정' : '거래처 등록', `
@@ -729,7 +749,12 @@ function openVendorForm(id){
     <div class="fgrp"><label class="flbl">영업시간</label><input class="finput" id="vf-hours" value="${v?.business_hours||'09:00-18:00'}"></div>
   </div>
   <div class="form-row c1">
-    <div class="fgrp"><label class="flbl">주소</label><input class="finput" id="vf-addr" value="${v?.address||''}" placeholder="경기도 안산시 단원구 고잔로 123"></div>
+    <div class="fgrp"><label class="flbl">주소 <span style="color:#6B7280;font-weight:400">(주소검색으로 시/구/동 자동입력)</span></label>
+      <div style="display:flex;gap:6px">
+        <input class="finput" id="vf-addr" value="${v?.address||''}" placeholder="주소검색을 눌러 선택하세요" style="flex:1" readonly>
+        <button type="button" class="btn btn-sm" style="white-space:nowrap;background:#C9A84C;color:#111;font-weight:700" onclick="vendorAddrSearch()">🔍 주소검색</button>
+      </div>
+    </div>
   </div>
   <div class="form-row c3">
     <div class="fgrp"><label class="flbl">시</label><input class="finput" id="vf-city" value="${v?.city||''}" placeholder="안산시"></div>
