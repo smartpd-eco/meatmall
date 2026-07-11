@@ -30,8 +30,43 @@ body{background:var(--bg);color:var(--txt);min-height:100vh}
 .toast.show{opacity:1}
 </style>
 <script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+<style>
+/* ===== LIGHT THEME + FIXED SIDEBAR ===== */
+:root{--gold:#16A34A;--bg:#F4F6F8;--card:#fff;--line:#E5E7EB;--txt:#1F2937;--sub:#6B7280}
+body{padding-left:232px}
+.opt.on{background:#F0FDF4!important;border-color:#16A34A!important}
+.mm-side{position:fixed;left:0;top:0;width:232px;height:100vh;background:#fff;border-right:1px solid #E5E7EB;overflow-y:auto;z-index:500;display:flex;flex-direction:column}
+.mm-brand{display:flex;align-items:center;gap:8px;padding:18px 20px;font-size:1.05rem;font-weight:800;color:#15803D;border-bottom:1px solid #F0F0F0}
+.mm-brand small{font-size:.58rem;color:#9CA3AF;font-weight:600;letter-spacing:.1em}
+.mm-lbl{font-size:.7rem;color:#9CA3AF;font-weight:700;padding:16px 20px 4px}
+.mm-nav{display:flex;flex-direction:column}
+.mm-nav a{display:flex;align-items:center;gap:9px;padding:11px 20px;font-size:.875rem;font-weight:600;color:#4B5563;text-decoration:none;border-left:3px solid transparent}
+.mm-nav a:hover{background:#F3F4F6;color:#15803D}
+.mm-nav a.on{background:#ECFDF5;color:#15803D;border-left-color:#16A34A;font-weight:700}
+.mm-nav a.grp:first-of-type{border-top:1px solid #F0F0F0;margin-top:5px;padding-top:14px}
+.mm-nav a.ext{color:#9CA3AF}.mm-nav a.ext.on{color:#15803D}
+@media(max-width:820px){body{padding-left:0}.mm-side{transform:translateX(-100%)}}
+</style>
 </head>
 <body>
+<aside class="mm-side">
+  <div class="mm-brand">🥩 정육본가 <small>ADMIN</small></div>
+  <div class="mm-lbl">메인 메뉴</div>
+  <nav class="mm-nav">
+    <a href="dashboard.html?tab=orders">📦 주문관리</a>
+    <a href="dashboard.html?tab=users">👥 회원관리</a>
+    <a href="dashboard.html?tab=revenue">📊 매출통계</a>
+    <a href="dashboard.html?tab=cs">💬 CS관리</a>
+    <a class="grp" href="dashboard.html?tab=vendors">🏪 거래처관리</a>
+    <a class="grp" href="dashboard.html?tab=autoassign">🚚 배송배정</a>
+    <a class="grp" href="dashboard.html?tab=assignlist">📋 배정현황</a>
+    <a class="grp" href="dashboard.html?tab=settlements">💰 정산관리</a>
+    <a class="ext" href="products.html">📦 상품관리</a>
+    <a class="ext" href="payment-settings.html">💳 결제설정</a>
+    <a class="ext" href="pwa-settings.html">📲 PWA설정</a>
+    <a class="ext on" href="shipping-settings.html">🚚 배송비설정</a>
+  </nav>
+</aside>
 <div class="hdr">
   <button class="back" onclick="location.href='dashboard.html'">←</button>
   <h1>🚚 배송비 설정</h1>

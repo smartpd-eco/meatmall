@@ -140,8 +140,66 @@ document.documentElement.style.visibility = 'hidden';
 window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 </script>
 <script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+<style>
+/* ===== LIGHT THEME + FIXED SIDEBAR (admin) ===== */
+body{background:#F4F6F8;color:#1F2937;padding-left:232px}
+.mm-side{position:fixed;left:0;top:0;width:232px;height:100vh;background:#fff;border-right:1px solid #E5E7EB;overflow-y:auto;z-index:500;display:flex;flex-direction:column}
+.mm-brand{display:flex;align-items:center;gap:8px;padding:18px 20px;font-size:1.05rem;font-weight:800;color:#15803D;border-bottom:1px solid #F0F0F0}
+.mm-brand small{font-size:.58rem;color:#9CA3AF;font-weight:600;letter-spacing:.1em}
+.mm-lbl{font-size:.7rem;color:#9CA3AF;font-weight:700;padding:16px 20px 4px}
+.mm-nav{display:flex;flex-direction:column}
+.mm-nav a{display:flex;align-items:center;gap:9px;padding:11px 20px;font-size:.875rem;font-weight:600;color:#4B5563;text-decoration:none;border-left:3px solid transparent}
+.mm-nav a:hover{background:#F3F4F6;color:#15803D}
+.mm-nav a.on{background:#ECFDF5;color:#15803D;border-left-color:#16A34A;font-weight:700}
+.mm-nav a.grp:first-of-type{border-top:1px solid #F0F0F0;margin-top:5px;padding-top:14px}
+.mm-nav a.ext{color:#9CA3AF}.mm-nav a.ext.on{color:#15803D}
+.hdr{background:#fff!important;border-bottom:1px solid #E5E7EB!important;color:#4B5563}
+.hdr-brand{color:#15803D}.hdr-brand small{color:#9CA3AF}
+.hdr-btn{border:1px solid #E5E7EB!important;color:#6B7280!important}
+.hdr-btn:hover{background:#F3F4F6!important;color:#111827!important}
+.subnav{display:none!important}
+.tabs{background:#fff!important;border-bottom:1px solid #E5E7EB!important}
+.tab{color:#6B7280!important}.tab:hover{color:#15803D!important}
+.tab.on{color:#15803D!important;border-bottom-color:#16A34A!important}
+.card{background:#fff!important;border:1px solid #E5E7EB!important}
+.card-head{border-bottom-color:#F0F0F0!important}
+.card-title{color:#111827!important}.card-sub{color:#6B7280!important}
+.info-warn{background:#FFFBEB!important;border:1px solid #FDE68A!important;color:#92400E!important}
+.info-ok{background:#F0FDF4!important;border:1px solid #BBF7D0!important;color:#15803D!important}
+.info-note{background:#F9FAFB!important;border:1px solid #E5E7EB!important;color:#4B5563!important}
+.key-inp{background:#F9FAFB!important;border:1px solid #D1D5DB!important;color:#111827!important}
+.key-inp.filled{background:#F0FDF4!important;border-color:#86EFAC!important}
+.key-lbl{color:#6B7280!important}
+thead th{background:#F9FAFB!important;color:#6B7280!important;border-bottom:1px solid #E5E7EB!important}
+tbody td{border-bottom:1px solid #F3F4F6!important;color:#374151!important}
+tbody tr:hover td{background:#F9FAFB!important}
+.fin{background:#fff!important;border:1px solid #D1D5DB!important;color:#111827!important}
+.set-row{border-bottom:1px solid #F0F0F0!important}
+.set-lbl{color:#111827!important}.set-sub{color:#6B7280!important}
+select{background:#fff!important;border:1px solid #D1D5DB!important;color:#111827!important}
+.op-val{color:#15803D!important}
+@media(max-width:820px){body{padding-left:0}.mm-side{transform:translateX(-100%)}}
+</style>
 </head>
 <body>
+<aside class="mm-side">
+  <div class="mm-brand">🥩 정육본가 <small>ADMIN</small></div>
+  <div class="mm-lbl">메인 메뉴</div>
+  <nav class="mm-nav">
+    <a href="dashboard.html?tab=orders">📦 주문관리</a>
+    <a href="dashboard.html?tab=users">👥 회원관리</a>
+    <a href="dashboard.html?tab=revenue">📊 매출통계</a>
+    <a href="dashboard.html?tab=cs">💬 CS관리</a>
+    <a class="grp" href="dashboard.html?tab=vendors">🏪 거래처관리</a>
+    <a class="grp" href="dashboard.html?tab=autoassign">🚚 배송배정</a>
+    <a class="grp" href="dashboard.html?tab=assignlist">📋 배정현황</a>
+    <a class="grp" href="dashboard.html?tab=settlements">💰 정산관리</a>
+    <a class="ext on" href="products.html">📦 상품관리</a>
+    <a class="ext" href="payment-settings.html">💳 결제설정</a>
+    <a class="ext" href="pwa-settings.html">📲 PWA설정</a>
+    <a class="ext" href="shipping-settings.html">🚚 배송비설정</a>
+  </nav>
+</aside>
 
 <!-- HEADER -->
 <header class="hdr">
