@@ -203,7 +203,7 @@ router.get('/kakao', (req, res) => {
     client_id:     process.env.KAKAO_CLIENT_ID,
     redirect_uri:  'https://api.meatbonga.com/api/auth/kakao/callback',
     response_type: 'code',
-    scope:         'profile_nickname'  // 이메일 제거 (비즈앱 아니면 불가)
+    scope:         'profile_nickname account_email'  // account_email: 카카오 비즈앱 승인 시 이메일 제공 → 이메일 기반 중복가입 방지 자동 작동
   });
   if (relink) params.set('state', 'relink:' + relink);
   res.redirect(`https://kauth.kakao.com/oauth/authorize?${params}`);

@@ -164,6 +164,16 @@ router.post('/phone', requireAuth, async (req, res) => {
     if (!passResult.verified)
       return res.status(400).json({ error: '본인인증에 실패했습니다' });
 
+    // 중복가입 방지: 다른 계정이 이미 이 번호를 등록했으면 차단 (카카오 등 이메일 미제공 케이스 안전망)
+    const { data: dupe } = await supabase
+      .from('users').select('id').eq('phone', phone).neq('id', req.user.sub).limit(1);
+    if (dupe && dupe.length) {
+      return res.status(409).json({
+        error: '이미 이 번호로 가입된 계정이 있습니다. 기존 로그인 방식(구글/네이버/카카오/이메일)으로 이용해주세요.',
+        code: 'PHONE_TAKEN'
+      });
+    }
+
     const { data: user, error } = await supabase
       .from('users')
       .update({ phone, updated_at: new Date().toISOString() })

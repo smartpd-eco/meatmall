@@ -235,3 +235,42 @@ window.getCachedImage = (url) => {
   if (!_imgCache.has(url)) _imgCache.set(url, url);
   return _imgCache.get(url);
 };
+
+// ── 자동 로그아웃: 10분 무동작 시 세션 종료 ──────────────────
+(function idleLogout(){
+  var IDLE_MS = 10 * 60 * 1000;            // 10분
+  var LAST_KEY = 'mm_last_active';
+  var timer = null;
+  function isLoggedIn(){ return !!localStorage.getItem('mm_access_token'); }
+  function clearSession(){
+    ['mm_access_token','mm_user_cache','mm_user','mm_token'].forEach(function(k){ localStorage.removeItem(k); });
+  }
+  function doLogout(){
+    if(!isLoggedIn()) return;
+    clearSession();
+    try{ alert('장시간 활동이 없어 자동 로그아웃되었습니다. 다시 로그인해주세요.'); }catch(e){}
+    location.href = '/login.html';
+  }
+  function reset(){
+    clearTimeout(timer);
+    if(!isLoggedIn()) return;
+    try{ localStorage.setItem(LAST_KEY, String(Date.now())); }catch(e){}
+    timer = setTimeout(doLogout, IDLE_MS);
+  }
+  // 다른 탭/재방문 시 마지막 활동 기준으로 만료 판정
+  function checkExpiredOnLoad(){
+    if(!isLoggedIn()) return;
+    var last = Number(localStorage.getItem(LAST_KEY) || 0);
+    if(last && (Date.now() - last) >= IDLE_MS){ doLogout(); }
+  }
+  ['mousemove','mousedown','keydown','scroll','touchstart','click','wheel'].forEach(function(ev){
+    window.addEventListener(ev, reset, { passive:true });
+  });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden){ checkExpiredOnLoad(); reset(); } });
+  // 다른 탭에서 로그아웃되면 이 탭도 로그인 화면으로
+  window.addEventListener('storage', function(e){
+    if(e.key==='mm_access_token' && !e.newValue && !isLoggedIn()){ /* 로그아웃 동기화 */ }
+  });
+  checkExpiredOnLoad();
+  reset();
+})();

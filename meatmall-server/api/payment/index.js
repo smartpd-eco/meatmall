@@ -96,7 +96,11 @@ router.post('/ready', requireAuth, async (req, res) => {
     try {
       const { data: acctUser } = await supabase.from('users').select('phone').eq('id', userId).single();
       if (!acctUser?.phone && phone) {
-        await supabase.from('users').update({ phone, updated_at: new Date().toISOString() }).eq('id', userId);
+        // 다른 계정이 이미 쓰는 번호면 자동등록 생략(중복 방지) — 주문 자체는 배송지 번호로 진행
+        const { data: dupe } = await supabase.from('users').select('id').eq('phone', phone).neq('id', userId).limit(1);
+        if (!dupe || !dupe.length) {
+          await supabase.from('users').update({ phone, updated_at: new Date().toISOString() }).eq('id', userId);
+        }
       }
     } catch (e) { console.error('[ready 계정 전화번호 자동등록 오류]', e.message); }
 

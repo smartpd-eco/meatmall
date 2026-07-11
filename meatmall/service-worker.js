@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jeongyuk-v20260710f';
+const CACHE_NAME = 'jeongyuk-v20260711a';
 const CACHE_URLS = [
   '/',
   '/index.html',
