@@ -1,0 +1,36 @@
+/* ===== 정육본가 관리자 공통 테마 (라이트블루) — 전 관리자 페이지 최종 적용 ===== */
+/* 이 파일은 각 페이지의 인라인 <style> 뒤에 로드되어 항상 우선 적용됩니다. */
+
+/* ── 버튼: 1/3 축소 + 일관 스타일 ── */
+.btn, .btn-gold, .btn-outline, .copy-btn, .hdr-btn, .adm-logout, .adm-shop, .save, #save-btn, button.save {
+  height: auto !important; min-height: 0 !important;
+  padding: 5px 12px !important; font-size: .76rem !important;
+  font-weight: 600 !important; border-radius: 6px !important; line-height: 1.4 !important;
+}
+.btn-sm { padding: 3px 9px !important; font-size: .72rem !important; }
+
+/* ── 채운 버튼 = 라이트블루 + 흰 글자 ── */
+.btn-gold, .btn-primary, .save, #save-btn, button.save {
+  background: #3B82F6 !important; color: #fff !important; border: 1px solid #3B82F6 !important;
+}
+.btn-gold:hover, .btn-primary:hover, .save:hover, #save-btn:hover { background: #2563EB !important; }
+
+/* ── 외곽선 버튼 = 블루 라인 + 블루 글자 ── */
+.btn-outline, .copy-btn, .hdr-btn, .adm-logout, .adm-shop {
+  background: #fff !important; color: #2563EB !important; border: 1px solid #3B82F6 !important;
+}
+.btn-outline:hover, .copy-btn:hover, .hdr-btn:hover, .adm-logout:hover, .adm-shop:hover {
+  background: #EFF6FF !important; color: #1D4ED8 !important;
+}
+
+/* ── 사이드 활성 메뉴 = 라이트블루 + 흰 글자 ── */
+.adm-tab.on, .mm-nav a.on { background: #3B82F6 !important; color: #fff !important; border-left-color: #1D4ED8 !important; }
+.adm-tabs .adm-tab-ext, .mm-nav a.ext { color: #6B7280 !important; }
+.adm-tabs .adm-tab-ext:hover, .mm-nav a.ext:hover { color: #2563EB !important; }
+
+/* ── 단계 번호 원형 = 블루 (크기 유지) ── */
+.step-num { background: #3B82F6 !important; color: #fff !important; }
+
+/* ── 링크/포인트 색 통일 ── */
+.step-txt a, .tab.on, .snav.on { color: #2563EB !important; }
+.tab.on { border-bottom-color: #3B82F6 !important; }
