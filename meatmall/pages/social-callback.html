@@ -23,6 +23,7 @@ body{background:#0F0F0F;display:flex;align-items:center;justify-content:center;m
 </div>
 <script>
 (function(){
+  var base = location.pathname.indexOf('/meatmall/') === 0 ? '/meatmall' : '';
   var params       = new URLSearchParams(window.location.search);
   var accessToken  = params.get('accessToken');
   var refreshToken = params.get('refreshToken');
@@ -30,14 +31,15 @@ body{background:#0F0F0F;display:flex;align-items:center;justify-content:center;m
   var error        = params.get('error');
 
   if (error || !accessToken) {
-    window.location.href = '/login.html';
+    window.location.href = base + '/login.html';
   } else {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('mm_access_token', accessToken);  // 앱 전체 호환
+    localStorage.setItem('mm_last_active', String(Date.now()));
     if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
     window.location.href = (needsPhone === 'true')
-      ? '/pages/phone-verify.html'
-      : '/index.html';
+      ? base + '/pages/phone-verify.html'
+      : base + '/index.html';
   }
 })();
 </script>

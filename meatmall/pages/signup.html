@@ -105,6 +105,7 @@ async function doSignup(){
   try{const r=await fetch(API+'/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DATA)});
     const d=await r.json();if(!r.ok)throw new Error(d.error||'가입 실패');
     localStorage.setItem('mm_access_token',d.accessToken);localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
+    localStorage.setItem('mm_last_active',String(Date.now()));
     go('../index.html');
   }catch(e){toast('❌ '+e.message);btn.textContent='시작하기';btn.disabled=false}
 }

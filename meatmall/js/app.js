@@ -243,13 +243,13 @@ window.getCachedImage = (url) => {
   var timer = null;
   function isLoggedIn(){ return !!localStorage.getItem('mm_access_token'); }
   function clearSession(){
-    ['mm_access_token','mm_user_cache','mm_user','mm_token'].forEach(function(k){ localStorage.removeItem(k); });
+    ['mm_access_token','mm_user_cache','mm_user','mm_token',LAST_KEY].forEach(function(k){ localStorage.removeItem(k); });
   }
   function doLogout(){
     if(!isLoggedIn()) return;
     clearSession();
     try{ alert('장시간 활동이 없어 자동 로그아웃되었습니다. 다시 로그인해주세요.'); }catch(e){}
-    location.href = '/login.html';
+    location.href = location.pathname.indexOf('/meatmall/') === 0 ? '/meatmall/login.html' : '/login.html';
   }
   function reset(){
     clearTimeout(timer);
@@ -261,6 +261,10 @@ window.getCachedImage = (url) => {
   function checkExpiredOnLoad(){
     if(!isLoggedIn()) return;
     var last = Number(localStorage.getItem(LAST_KEY) || 0);
+    if(!last){
+      try{ localStorage.setItem(LAST_KEY, String(Date.now())); }catch(e){}
+      return;
+    }
     if(last && (Date.now() - last) >= IDLE_MS){ doLogout(); }
   }
   ['mousemove','mousedown','keydown','scroll','touchstart','click','wheel'].forEach(function(ev){

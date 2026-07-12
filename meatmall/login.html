@@ -107,6 +107,7 @@ async function doLogin(){
     if(!r.ok)throw new Error(d.error||'로그인 실패');
     localStorage.setItem('mm_access_token',d.accessToken);
     localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
+    localStorage.setItem('mm_last_active',String(Date.now()));
     if(d.user?.is_admin)sessionStorage.setItem('mm_admin','true');
     go(d.user?.is_admin?'admin/dashboard.html':'index.html');
   }catch(e){err.textContent='❌ '+e.message;err.style.display='block';btn.textContent='로그인';btn.disabled=false}

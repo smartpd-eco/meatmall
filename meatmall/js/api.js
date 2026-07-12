@@ -31,7 +31,10 @@ const Auth = {
   clear() {
     _accessToken = null;
     _user = null;
+    localStorage.removeItem('mm_access_token');
+    localStorage.removeItem('mm_token');
     localStorage.removeItem('mm_user_cache');
+    localStorage.removeItem('mm_last_active');
   }
 };
 
@@ -49,7 +52,7 @@ async function apiFetch(path, options = {}) {
       res = await fetch(url, { ...options, headers, credentials: 'include', _retry: true });
     } else {
       Auth.clear();
-      window.location.href = '/login.html';
+      window.location.href = location.pathname.indexOf('/meatmall/') === 0 ? '/meatmall/login.html' : '/login.html';
       return;
     }
   }
@@ -129,7 +132,7 @@ const AuthAPI = {
   async logout() {
     try { await apiFetch('/auth/logout', { method: 'POST' }); } catch(e) {}
     Auth.clear();
-    window.location.href = '/login.html';
+    window.location.href = location.pathname.indexOf('/meatmall/') === 0 ? '/meatmall/login.html' : '/login.html';
   },
 
   async init() {
