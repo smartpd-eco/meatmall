@@ -196,6 +196,20 @@ code{background:#EFF6FF!important;color:#1D4ED8!important;padding:1px 5px;border
 
 <div class="page">
 
+  <!-- 무통장 입금 계좌 (사업주 직접 설정) -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">🏦 무통장 입금 계좌</div>
+      <button class="btn btn-gold" onclick="saveVbank()">저장</button>
+    </div>
+    <div class="card-body">
+      <div class="info info-note" style="margin-bottom:14px">고객 결제(무통장 입금) 화면에 표시되는 계좌입니다. 여기서 바꾸면 즉시 반영됩니다.</div>
+      <div class="key-row"><div class="key-lbl"><span>은행명</span></div><input class="key-inp" id="vb-bank" placeholder="예: 기업은행"></div>
+      <div class="key-row"><div class="key-lbl"><span>계좌번호</span></div><input class="key-inp" id="vb-account" placeholder="예: 123-456789-01-001"></div>
+      <div class="key-row"><div class="key-lbl"><span>예금주</span></div><input class="key-inp" id="vb-holder" placeholder="예: (주)정육본가"></div>
+    </div>
+  </div>
+
   <!-- 결제 연동 상태 -->
   <div class="card">
     <div class="card-head">
@@ -213,11 +227,11 @@ code{background:#EFF6FF!important;color:#1D4ED8!important;padding:1px 5px;border
     </div>
   </div>
 
-  <!-- 나이스페이먼츠 키 등록 안내 -->
+  <!-- 토스페이먼츠 키 등록 안내 -->
   <div class="card">
     <div class="card-head">
-      <div class="card-title">🔑 나이스페이먼츠 키 등록</div>
-      <a href="https://www.nicepay.co.kr" target="_blank" style="font-size:.78rem;color:#C9A84C;font-weight:600">공식사이트 →</a>
+      <div class="card-title">🔑 토스페이먼츠 키 등록</div>
+      <a href="https://developers.tosspayments.com/my/api-keys" target="_blank" style="font-size:.78rem;color:#2563EB;font-weight:600">토스 개발자센터 →</a>
     </div>
     <div class="card-body">
       <div class="info info-warn">
@@ -226,15 +240,15 @@ code{background:#EFF6FF!important;color:#1D4ED8!important;padding:1px 5px;border
       </div>
       <div class="key-row">
         <div class="key-lbl">
-          <span>NICE_CLIENT_KEY (클라이언트 키)</span>
-          <button class="copy-btn" onclick="copyKey('NICE_CLIENT_KEY')">이름 복사</button>
+          <span>TOSS_CLIENT_KEY (클라이언트 키)</span>
+          <button class="copy-btn" onclick="copyKey('TOSS_CLIENT_KEY')">이름 복사</button>
         </div>
         <input class="key-inp" id="check-ck" placeholder="test_ck_... 또는 live_ck_..." readonly>
       </div>
       <div class="key-row">
         <div class="key-lbl">
-          <span>NICE_SECRET_KEY (시크릿 키)</span>
-          <button class="copy-btn" onclick="copyKey('NICE_SECRET_KEY')">이름 복사</button>
+          <span>TOSS_SECRET_KEY (시크릿 키)</span>
+          <button class="copy-btn" onclick="copyKey('TOSS_SECRET_KEY')">이름 복사</button>
         </div>
         <input class="key-inp" id="check-sk" placeholder="등록 후 표시 안 됨 (보안)" readonly>
       </div>
@@ -252,8 +266,8 @@ code{background:#EFF6FF!important;color:#1D4ED8!important;padding:1px 5px;border
             <div class="step-num">2</div>
             <div class="step-txt">
               <strong>Add New</strong> 클릭 후 아래 변수 추가:<br>
-              <code>NICE_CLIENT_KEY</code> = 발급받은 클라이언트 키<br>
-              <code>NICE_SECRET_KEY</code> = 발급받은 시크릿 키
+              <code>TOSS_CLIENT_KEY</code> = 발급받은 클라이언트 키<br>
+              <code>TOSS_SECRET_KEY</code> = 발급받은 시크릿 키
             </div>
           </div>
           <div class="step-item">
@@ -269,30 +283,7 @@ code{background:#EFF6FF!important;color:#1D4ED8!important;padding:1px 5px;border
     </div>
   </div>
 
-  <!-- 무통장 계좌 설정 -->
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title">🏦 무통장 입금 계좌</div>
-    </div>
-    <div class="card-body">
-      <div class="info info-note" id="vbank-info">불러오는 중...</div>
-      <div style="font-size:.85rem;font-weight:700;color:#111827;margin-bottom:10px">계좌 변경 방법 (Vercel 환경변수)</div>
-      <div class="step-list">
-        <div class="step-item">
-          <div class="step-num">①</div>
-          <div class="step-txt">
-            <code>VBANK_BANK</code> = 은행명 (예: 기업은행)<br>
-            <code>VBANK_ACCOUNT</code> = 계좌번호<br>
-            <code>VBANK_HOLDER</code> = 예금주명
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num">②</div>
-          <div class="step-txt">Vercel 재배포 후 적용됩니다</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- (무통장 계좌는 상단 카드에서 직접 관리) -->
 
   <!-- 결제 수단 현황 -->
   <div class="card">
@@ -305,7 +296,7 @@ code{background:#EFF6FF!important;color:#1D4ED8!important;padding:1px 5px;border
         <!-- JS render -->
       </div>
       <div class="info info-note" style="margin-top:14px">
-        모든 결제수단은 나이스페이먼츠 계약 후 자동 활성화됩니다.<br>
+        모든 결제수단은 토스페이먼츠 계약 후 자동 활성화됩니다.<br>
         수단별 수수료는 계약 조건에 따라 다릅니다.
       </div>
     </div>
@@ -342,7 +333,7 @@ code{background:#EFF6FF!important;color:#1D4ED8!important;padding:1px 5px;border
         </tbody>
       </table>
       <div class="info info-warn" style="margin-top:14px;font-size:.78rem">
-        위 수수료는 참고용이며 나이스페이먼츠 계약 조건에 따라 달라질 수 있습니다.
+        위 수수료는 참고용이며 토스페이먼츠 계약 조건에 따라 달라질 수 있습니다.
       </div>
     </div>
   </div>
@@ -398,8 +389,9 @@ async function loadConfig(){
     }
 
     const vb = d.vbank || {};
-    document.getElementById('vbank-info').innerHTML =
-      `<strong>현재 계좌:</strong> ${vb.bank || '–'} ${vb.account || '–'}<br><strong>예금주:</strong> ${vb.holder || '–'}`;
+    if(document.getElementById('vb-bank'))    document.getElementById('vb-bank').value    = vb.bank || '';
+    if(document.getElementById('vb-account')) document.getElementById('vb-account').value = vb.account || '';
+    if(document.getElementById('vb-holder'))  document.getElementById('vb-holder').value  = vb.holder || '';
 
     document.getElementById('methods-grid').innerHTML = METHODS.map(m => `
     <div class="method-item active">
@@ -424,6 +416,19 @@ async function loadConfig(){
 function testPay(method){
   toast(`${method} 테스트 — 장바구니로 이동합니다`);
   setTimeout(() => window.open('../pages/cart.html', '_blank'), 800);
+}
+
+// 무통장 계좌 저장 (사업주 직접 변경 → DB → 결제화면 반영)
+async function saveVbank(){
+  const bank=document.getElementById('vb-bank').value.trim();
+  const account=document.getElementById('vb-account').value.trim();
+  const holder=document.getElementById('vb-holder').value.trim();
+  if(!bank||!account||!holder){ toast('은행·계좌번호·예금주를 모두 입력하세요'); return; }
+  try{
+    const r=await fetch(API+'/admin/vbank-settings',{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+localStorage.getItem('mm_access_token')},body:JSON.stringify({bank,account,holder})});
+    const d=await r.json(); if(!r.ok) throw new Error(d.error||'저장 실패');
+    toast('✅ 무통장 계좌가 저장됐습니다 (결제화면 즉시 반영)');
+  }catch(e){ toast('❌ '+e.message); }
 }
 
 /* ─── AUTH ─── */

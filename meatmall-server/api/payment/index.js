@@ -54,6 +54,19 @@ function shipFee(s, productTotal) {
   return productTotal >= shipThreshold(s.mode) ? 0 : Number(s.base_fee || 0);
 }
 
+// ── 무통장 계좌 (vbank_settings 테이블, 60초 캐시, 미설정 시 VBANK 기본값)
+let _vbCache = null, _vbAt = 0;
+async function getVbank() {
+  if (_vbCache && Date.now() - _vbAt < 60000) return _vbCache;
+  let v = { bank: VBANK.bank, account: VBANK.account, holder: VBANK.holder };
+  try {
+    const { data } = await supabase.from('vbank_settings').select('bank,account,holder').eq('id', 1).maybeSingle();
+    if (data) v = { bank: data.bank || v.bank, account: data.account || v.account, holder: data.holder || v.holder };
+  } catch (e) {}
+  _vbCache = v; _vbAt = Date.now();
+  return v;
+}
+
 // ══════════════════════════════════════════════════
 // GET /api/payment/config  — 프론트에 결제 설정 전달
 // ══════════════════════════════════════════════════
@@ -63,7 +76,7 @@ router.get('/config', async (req, res) => {
     ok: true,
     clientKey: TOSS.clientKey,
     isTest: TOSS.isTest,
-    vbank: VBANK,
+    vbank: await getVbank(),
     methods: ['CARD','KAKAO','NAVER','TOSS','VBANK','PHONE'],
     shippingMode: s.mode,
     freeAll: s.mode === 'freeall',
@@ -106,6 +119,7 @@ router.post('/ready', requireAuth, async (req, res) => {
 
     const productTotal = items.reduce((s,i) => s + i.price * i.qty, 0);
     const deliveryFee  = shipFee(await getShipping(), productTotal);
+    const vb           = await getVbank();
     const couponDisc   = 0; // 쿠폰 추후 적용
     const finalAmount  = Math.max(100, productTotal + deliveryFee - couponDisc - Number(pointUse));
     const isVbank      = paymentMethod === 'VBANK';
@@ -131,7 +145,7 @@ router.post('/ready', requireAuth, async (req, res) => {
     // 무통장 컬럼은 존재할 때만 추가 (스키마 마이그레이션 전 호환)
     if (isVbank) {
       try {
-        orderData.bank_name        = bankName || VBANK.bank;
+        orderData.bank_name        = bankName || vb.bank;
         orderData.depositor_name   = depositorName || null;
         orderData.deposit_deadline = new Date(Date.now()+3*86400000).toISOString();
       } catch(e) {}
@@ -181,9 +195,9 @@ router.post('/ready', requireAuth, async (req, res) => {
         paymentMethod, isVbank,
         ...(isVbank && {
           bankInfo: {
-            bank:     bankName || VBANK.bank,
-            account:  VBANK.account,
-            holder:   VBANK.holder,
+            bank:     bankName || vb.bank,
+            account:  vb.account,
+            holder:   vb.holder,
             deadline: new Date(Date.now()+3*86400000).toLocaleDateString('ko-KR'),
             amount:   finalAmount,
           }

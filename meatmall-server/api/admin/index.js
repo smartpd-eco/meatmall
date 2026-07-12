@@ -519,4 +519,31 @@ router.patch('/settlements/:id/pay', async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════════════════
+// 무통장 입금 계좌 (vbank_settings, 사업주 직접 변경)
+// ════════════════════════════════════════════════════
+router.get('/vbank-settings', async (req, res) => {
+  try {
+    const { data } = await supabase.from('vbank_settings').select('bank, account, holder').eq('id', 1).maybeSingle();
+    res.json({ ok: true, settings: data || { bank: '기업은행', account: '', holder: '(주)정육본가' } });
+  } catch (err) { res.json({ ok: true, settings: { bank: '기업은행', account: '', holder: '(주)정육본가' } }); }
+});
+
+router.put('/vbank-settings', async (req, res) => {
+  try {
+    const bank = String(req.body.bank || '').trim();
+    const account = String(req.body.account || '').trim();
+    const holder = String(req.body.holder || '').trim();
+    if (!bank || !account || !holder) return res.status(400).json({ error: '은행·계좌번호·예금주를 모두 입력해주세요' });
+    const { data, error } = await supabase.from('vbank_settings')
+      .upsert([{ id: 1, bank, account, holder, updated_at: new Date().toISOString() }], { onConflict: 'id' })
+      .select().single();
+    if (error) throw error;
+    res.json({ ok: true, settings: data });
+  } catch (err) {
+    console.error('[vbank-settings PUT]', err);
+    res.status(500).json({ error: '무통장 계좌 저장 오류' });
+  }
+});
+
 module.exports = router;
