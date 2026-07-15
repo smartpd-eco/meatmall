@@ -830,6 +830,7 @@ function renderVendorsTab(){
               <div style="display:flex;gap:4px">
                 <button class="btn btn-sm btn-outline" onclick="openVendorForm(${v.id})">수정</button>
                 <button class="btn btn-sm btn-outline" onclick="openZoneForm(${v.id},'${(v.vendor_name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">구역</button>
+                <button class="btn btn-sm btn-outline" onclick="openVendorAccountForm(${v.id},'${(v.vendor_name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">계정</button>
                 <button class="btn btn-sm btn-danger" onclick="toggleVendor(${v.id},'${(v.vendor_name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}',${v.is_active})">${v.is_active?'비활성':'활성화'}</button>
               </div>
             </td>
@@ -929,6 +930,37 @@ async function toggleVendor(id, name, isActive){
     if (isActive) await api('/admin/vendors/' + id, { method: 'DELETE' });
     else          await api('/admin/vendors/' + id, { method: 'PUT', body: JSON.stringify({ is_active: true }) });
     toast('✅ 완료됐습니다'); tabVendors();
+  } catch(e){ toast('❌ ' + e.message); }
+}
+
+// ── 벤더 계정 연결: 회원 이메일에 벤더 권한 부여 → 로그인 시 벤더 페이지로 이동 ──
+async function openVendorAccountForm(vendorId, vendorName){
+  let accounts = [];
+  try { const d = await api('/admin/vendors/' + vendorId + '/accounts'); accounts = d.accounts || []; } catch(e){}
+  const listHtml = accounts.length
+    ? accounts.map(a => `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #F0F0F0">
+        <div><div style="font-weight:600">${a.name||'–'} <span class="bdg ${a.role==='vendor'?'bdg-active':'bdg-inactive'}" style="margin-left:4px">${a.role||'customer'}</span></div>
+        <div style="font-size:.78rem;color:#6B7280">${a.email||'-'}</div></div>
+        <button class="btn btn-sm btn-danger" onclick="unlinkVendorAccount(${vendorId},'${a.id}','${vendorName.replace(/'/g,"\\'")}')">연결해제</button></div>`).join('')
+    : '<div style="font-size:.82rem;color:#9CA3AF;padding:6px 0">연결된 계정이 없습니다</div>';
+  openModal(`벤더 계정 연결 — ${vendorName}`, `
+    <div style="font-size:.82rem;color:#6B7280;margin-bottom:12px">이 거래처를 관리할 <b>회원 이메일</b>을 입력하면 해당 계정에 벤더 권한이 부여됩니다. 로그인하면 자동으로 벤더 페이지로 이동합니다.<br><span style="color:#9CA3AF">※ 먼저 해당 정육점이 일반 회원가입을 완료해야 합니다.</span></div>
+    <div style="margin-bottom:14px"><div class="flbl" style="margin-bottom:6px">연결된 계정</div>${listHtml}</div>
+    <div class="fgrp"><label class="flbl">회원 이메일</label><input class="finput" id="vlink-email" placeholder="vendor@example.com"></div>
+  `, '연결', async () => {
+    const email = document.getElementById('vlink-email').value.trim();
+    if (!email){ toast('이메일을 입력해주세요'); return; }
+    try {
+      await api('/admin/vendors/' + vendorId + '/link-account', { method: 'POST', body: JSON.stringify({ email }) });
+      toast('✅ 계정이 연결됐습니다'); closeModal();
+    } catch(e){ toast('❌ ' + e.message); }
+  });
+}
+async function unlinkVendorAccount(vendorId, userId, vendorName){
+  if (!confirm('이 계정의 벤더 권한을 해제하시겠습니까?')) return;
+  try {
+    await api('/admin/vendors/' + vendorId + '/unlink-account', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
+    toast('✅ 연결이 해제됐습니다'); closeModal(); openVendorAccountForm(vendorId, vendorName);
   } catch(e){ toast('❌ ' + e.message); }
 }
 
