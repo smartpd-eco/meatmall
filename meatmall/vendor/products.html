@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>상품등록(당일배송건) · 정육본가 벤더</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor-theme.css">
+<script>document.documentElement.style.visibility='hidden';window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});</script>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+</head>
+<body>
+<aside class="v-side">
+  <div class="v-brand">
+    <div class="ico">🏪</div>
+    <div>
+      <div class="code" id="v-code">VENDOR</div>
+      <div class="shop" id="v-shop">불러오는 중…</div>
+      <div class="vid" id="v-id">벤더사 ID : —</div>
+    </div>
+  </div>
+  <nav class="v-nav">
+    <a href="dashboard.html">🏠 매출집계</a>
+    <a class="on" href="products.html">📦 상품등록(당일배송건)</a>
+    <a href="orders.html">📋 발주현황</a>
+  </nav>
+  <button class="logout" onclick="logout()">↩ 로그아웃</button>
+</aside>
+
+<div class="v-head">
+  <div><h1>상품등록(당일배송건)</h1><div class="sub">당일배송 가능한 상품만 등록하세요. 등록 상품은 담당 권역 고객에게 당일배송 상품으로 노출됩니다.</div></div>
+</div>
+<nav class="v-tabs">
+  <div class="v-tab on" id="tab-list-btn" onclick="showTab('list')">📋 상품 목록</div>
+  <div class="v-tab" id="tab-add-btn" onclick="showTab('add')">➕ 상품 등록</div>
+</nav>
+
+<!-- ── 목록 ── -->
+<div class="v-body" id="tab-list">
+  <div class="card">
+    <div class="card-head">
+      <div><div class="card-title">내 당일배송 상품</div><div class="card-sub" id="prd-count">불러오는 중…</div></div>
+      <button class="btn btn-green btn-sm" onclick="showTab('add')">+ 상품 등록</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th style="width:52px">이미지</th><th>상품명</th><th>카테고리</th><th class="t-right">판매가</th><th class="t-center">재고</th><th class="t-center">당일수량</th><th class="t-center">상태</th><th class="t-center">액션</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="8" class="empty">🔄 불러오는 중…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── 등록/수정 ── -->
+<div class="v-body" id="tab-add" style="display:none">
+  <div class="card">
+    <div style="font-size:.82rem;color:var(--v-green-d);font-weight:700;margin-bottom:16px" id="form-mode">새 당일배송 상품 등록</div>
+    <div class="form-grid">
+      <div class="fgrp full"><label class="flbl">상품명 <span class="req">*</span></label>
+        <input class="finput" id="f-name" placeholder="예: 국내산 삼겹살 (냉장, 300g)"><span class="ferr" id="e-name">상품명을 입력하세요</span></div>
+
+      <div class="fgrp"><label class="flbl">카테고리 <span class="req">*</span></label>
+        <select class="fselect" id="f-cat"><option value="">카테고리를 선택하세요</option></select><span class="ferr" id="e-cat">카테고리를 선택하세요</span></div>
+      <div class="fgrp"><label class="flbl">부위</label>
+        <input class="finput" id="f-part" placeholder="예: 삼겹살 / 목살 / 앞다리"></div>
+
+      <div class="fgrp"><label class="flbl">중량/용량</label>
+        <div class="finput-row">
+          <input class="finput" id="f-weight" type="number" placeholder="예: 300">
+          <select class="fselect" id="f-unit" style="max-width:90px"><option value="g">g</option><option value="kg">kg</option></select>
+        </div></div>
+      <div class="fgrp"><label class="flbl">원산지</label>
+        <input class="finput" id="f-origin" placeholder="예: 국내산(돼지)"></div>
+
+      <div class="fgrp"><label class="flbl">판매가 (원) <span class="req">*</span></label>
+        <input class="finput" id="f-price" type="number" placeholder="판매가를 입력하세요"><span class="ferr" id="e-price">판매가를 입력하세요</span></div>
+      <div class="fgrp"><label class="flbl">정가 (할인 전, 선택)</label>
+        <input class="finput" id="f-oprice" type="number" placeholder="0"></div>
+
+      <div class="fgrp"><label class="flbl">재고수량 <span class="req">*</span></label>
+        <input class="finput" id="f-stock" type="number" placeholder="재고수량을 입력하세요"><span class="ferr" id="e-stock">재고수량을 입력하세요</span></div>
+      <div class="fgrp"><label class="flbl">당일배송 가능수량 <span class="req">*</span></label>
+        <input class="finput" id="f-sameqty" type="number" placeholder="당일배송 가능 수량"><span class="ferr" id="e-sameqty">당일배송 가능수량을 입력하세요</span></div>
+
+      <div class="fgrp"><label class="flbl">보관방법</label>
+        <select class="fselect" id="f-store"><option value="냉장">냉장</option><option value="냉동">냉동</option><option value="실온">실온</option></select></div>
+      <div class="fgrp"><label class="flbl">상품상태</label>
+        <div class="radio-row">
+          <div class="radio-chip on" id="st-on" onclick="setState(true)">● 판매중</div>
+          <div class="radio-chip" id="st-off" onclick="setState(false)">품절</div>
+        </div></div>
+
+      <div class="fgrp full"><label class="flbl">상품설명</label>
+        <textarea class="finput" id="f-desc" placeholder="상품에 대한 설명을 입력하세요 (선택)"></textarea></div>
+
+      <div class="fgrp full"><label class="flbl">상품이미지</label>
+        <div class="img-area" id="img-area" onclick="document.getElementById('img-file').click()">
+          <div class="img-ico">☁️</div><div class="img-txt">이미지 업로드<br><span style="font-size:.72rem">jpg, png 파일만 가능 (최대 1MB)</span></div>
+        </div>
+        <input type="file" id="img-file" accept="image/*" onchange="previewImg(this)"></div>
+    </div>
+    <div class="save-bar">
+      <button class="btn btn-ghost" onclick="resetForm()">취소</button>
+      <button class="btn btn-green" id="save-btn" onclick="save()"><span id="save-txt">등록하기</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+let editingId=null, imgBase64=null, isActive=true, cats=[], mine=[];
+function go(u){location.href=u}
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600)}
+function logout(){localStorage.removeItem('mm_access_token');localStorage.removeItem('mm_user_cache');location.href='../login.html'}
+function hdrs(){return{Authorization:'Bearer '+token,'Content-Type':'application/json'}}
+
+(async function(){
+  if(!token){location.href='../login.html';return}
+  try{
+    const r=await fetch(API+'/auth/me',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    if(!r.ok||!d.user||!d.user.vendor_id){toast('벤더 권한이 없습니다');setTimeout(()=>location.href='../login.html',1200);return}
+    document.documentElement.style.visibility='';
+    loadVendor(); loadCats(); loadMine();
+  }catch(e){location.href='../login.html'}
+})();
+
+async function loadVendor(){
+  try{const r=await fetch(API+'/vendor/me',{headers:hdrs()});const d=await r.json();
+    if(d.vendor){document.getElementById('v-shop').textContent=d.vendor.vendor_name||'—';
+      document.getElementById('v-id').textContent='벤더사 ID : VENDOR'+String(d.vendor.id).padStart(3,'0');
+      document.getElementById('v-code').textContent='VENDOR'+String(d.vendor.id).padStart(3,'0');}
+  }catch(e){}
+}
+async function loadCats(){
+  try{const r=await fetch(API+'/admin/categories');const d=await r.json();cats=d.categories||[];
+    document.getElementById('f-cat').innerHTML='<option value="">카테고리를 선택하세요</option>'+cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  }catch(e){}
+}
+async function loadMine(){
+  try{const r=await fetch(API+'/vendor/products',{headers:hdrs()});const d=await r.json();mine=d.products||[];renderList();}
+  catch(e){document.getElementById('rows').innerHTML='<tr><td colspan="8" class="empty">❌ 불러오기 실패</td></tr>'}
+}
+function renderList(){
+  document.getElementById('prd-count').textContent='총 '+mine.length+'개';
+  const tb=document.getElementById('rows');
+  if(!mine.length){tb.innerHTML='<tr><td colspan="8" class="empty">등록된 당일배송 상품이 없습니다. 상품을 등록해주세요.</td></tr>';return}
+  tb.innerHTML=mine.map(p=>`<tr>
+    <td>${p.thumbnail_url?`<img src="${p.thumbnail_url}" style="width:44px;height:44px;object-fit:cover;border-radius:7px">`:`<div style="width:44px;height:44px;background:#F3F4F6;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${p.emoji||'🥩'}</div>`}</td>
+    <td><div style="font-weight:600">${p.name}</div><div style="font-size:.74rem;color:#9CA3AF">${p.weight_g||0}g${p.origin?' · '+p.origin:''}</div></td>
+    <td>${p.category_name||p.category||'–'}</td>
+    <td class="t-right" style="font-weight:700">${fmt(p.price)}원</td>
+    <td class="t-center">${p.stock||0}</td>
+    <td class="t-center">${p.same_day_qty||0}</td>
+    <td class="t-center"><span class="bdg ${p.is_active&&p.stock>0?'bdg-green':'bdg-gray'}">${p.is_active&&p.stock>0?'판매중':'품절'}</span></td>
+    <td class="t-center"><div style="display:flex;gap:5px;justify-content:center">
+      <button class="btn btn-outline btn-sm" onclick="edit('${p.id}')">수정</button>
+      <button class="btn btn-danger btn-sm" onclick="del('${p.id}','${(p.name||'').replace(/'/g,"\\'")}')">삭제</button>
+    </div></td></tr>`).join('');
+}
+function showTab(n){
+  document.getElementById('tab-list').style.display=n==='list'?'block':'none';
+  document.getElementById('tab-add').style.display=n==='add'?'block':'none';
+  document.getElementById('tab-list-btn').classList.toggle('on',n==='list');
+  document.getElementById('tab-add-btn').classList.toggle('on',n==='add');
+  if(n==='list')loadMine();
+}
+function setState(on){isActive=on;document.getElementById('st-on').classList.toggle('on',on);document.getElementById('st-off').classList.toggle('on',!on)}
+function previewImg(input){
+  const f=input.files[0];if(!f)return;
+  if(f.size>1024*1024){toast('이미지 크기는 1MB 이하여야 합니다');input.value='';return}
+  const rd=new FileReader();rd.onload=e=>{imgBase64=e.target.result;const a=document.getElementById('img-area');a.classList.add('has-img');a.innerHTML=`<img src="${imgBase64}"><button class="img-rm" onclick="rmImg(event)">✕</button>`};rd.readAsDataURL(f);
+}
+function rmImg(e){if(e)e.stopPropagation();imgBase64=null;const a=document.getElementById('img-area');a.classList.remove('has-img');a.innerHTML='<div class="img-ico">☁️</div><div class="img-txt">이미지 업로드<br><span style="font-size:.72rem">jpg, png 파일만 가능 (최대 1MB)</span></div>';document.getElementById('img-file').value=''}
+function weightG(){const w=Number(document.getElementById('f-weight').value)||0;return document.getElementById('f-unit').value==='kg'?w*1000:w}
+function composeDesc(){
+  const part=document.getElementById('f-part').value.trim();
+  const store=document.getElementById('f-store').value;
+  const desc=document.getElementById('f-desc').value.trim();
+  let meta=[];if(part)meta.push('부위: '+part);if(store)meta.push('보관: '+store);
+  return (meta.length?meta.join(' · ')+'\n':'')+desc;
+}
+async function save(){
+  const name=document.getElementById('f-name').value.trim();
+  const catId=document.getElementById('f-cat').value;
+  const price=Number(document.getElementById('f-price').value);
+  const stock=document.getElementById('f-stock').value;
+  const sameqty=document.getElementById('f-sameqty').value;
+  let ok=true;
+  [['e-name',!name],['e-cat',!catId],['e-price',!price],['e-stock',stock===''],['e-sameqty',sameqty==='']].forEach(([id,c])=>{document.getElementById(id).classList.toggle('show',c);if(c)ok=false});
+  if(!ok){toast('필수 항목을 입력해주세요');return}
+  const btn=document.getElementById('save-btn');btn.disabled=true;
+  try{
+    let thumb=editingId?(mine.find(x=>x.id===editingId)||{}).thumbnail_url||null:null;
+    if(imgBase64&&imgBase64.startsWith('data:')){
+      document.getElementById('save-txt').textContent='이미지 업로드 중…';
+      const mime=imgBase64.split(';')[0].split(':')[1]||'image/jpeg';
+      const up=await fetch(API+'/upload/image',{method:'POST',headers:hdrs(),body:JSON.stringify({base64:imgBase64,contentType:mime})});
+      const ud=await up.json();if(!up.ok)throw new Error(ud.error||'이미지 업로드 실패');thumb=ud.url;
+    }else if(imgBase64){thumb=imgBase64}
+    document.getElementById('save-txt').textContent='저장 중…';
+    const catName=(cats.find(c=>String(c.id)===String(catId))||{}).name||'';
+    const payload={name,description:composeDesc(),category:catName,category_id:Number(catId),
+      origin:document.getElementById('f-origin').value.trim(),weight_g:weightG(),price,
+      origin_price:Number(document.getElementById('f-oprice').value)||0,stock:Number(stock),
+      same_day_qty:Number(sameqty),is_active:isActive,thumbnail_url:thumb};
+    const url=editingId?`${API}/vendor/products/${editingId}`:`${API}/vendor/products`;
+    const method=editingId?'PATCH':'POST';
+    const r=await fetch(url,{method,headers:hdrs(),body:JSON.stringify(payload)});const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'저장 실패');
+    toast(editingId?'✅ 상품이 수정됐습니다':'✅ 상품이 등록됐습니다');resetForm();showTab('list');
+  }catch(e){toast('❌ '+e.message)}finally{btn.disabled=false;document.getElementById('save-txt').textContent=editingId?'수정 저장':'등록하기'}
+}
+function edit(id){
+  const p=mine.find(x=>x.id===id);if(!p)return;editingId=id;showTab('add');
+  document.getElementById('form-mode').textContent='✏️ 수정 중: '+p.name;
+  document.getElementById('save-txt').textContent='수정 저장';
+  document.getElementById('f-name').value=p.name||'';
+  document.getElementById('f-cat').value=p.category_id||'';
+  document.getElementById('f-price').value=p.price||'';
+  document.getElementById('f-oprice').value=p.origin_price||'';
+  document.getElementById('f-stock').value=p.stock||0;
+  document.getElementById('f-sameqty').value=p.same_day_qty||0;
+  document.getElementById('f-origin').value=p.origin||'';
+  document.getElementById('f-weight').value=p.weight_g||'';
+  document.getElementById('f-unit').value='g';
+  // 부위/보관/설명 파싱
+  let part='',store='냉장',desc=p.description||'';
+  const m=desc.match(/^(?:부위: ([^·\n]+))?(?: · )?(?:보관: ([^\n]+))?\n?([\s\S]*)$/);
+  if(m){if(m[1])part=m[1].trim();if(m[2])store=m[2].trim();if(m[3]!==undefined)desc=m[3]}
+  document.getElementById('f-part').value=part;
+  document.getElementById('f-store').value=['냉장','냉동','실온'].includes(store)?store:'냉장';
+  document.getElementById('f-desc').value=desc;
+  setState(p.is_active!==false);
+  imgBase64=null;
+  if(p.thumbnail_url){const a=document.getElementById('img-area');a.classList.add('has-img');a.innerHTML=`<img src="${p.thumbnail_url}"><button class="img-rm" onclick="rmImg(event)">✕</button>`}
+  else rmImg(null);
+}
+async function del(id,name){
+  if(!confirm('"'+name+'"\n정말 삭제(비활성화)하시겠습니까?'))return;
+  try{const r=await fetch(`${API}/vendor/products/${id}`,{method:'DELETE',headers:hdrs()});if(!r.ok)throw new Error();toast('🗑️ 삭제됐습니다');loadMine();}
+  catch(e){toast('❌ 삭제 실패')}
+}
+function resetForm(){
+  editingId=null;imgBase64=null;isActive=true;
+  ['f-name','f-part','f-weight','f-origin','f-price','f-oprice','f-stock','f-sameqty','f-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  document.getElementById('f-cat').value='';document.getElementById('f-unit').value='g';document.getElementById('f-store').value='냉장';
+  setState(true);rmImg(null);
+  document.getElementById('form-mode').textContent='새 당일배송 상품 등록';
+  document.getElementById('save-txt').textContent='등록하기';
+  document.querySelectorAll('.ferr').forEach(e=>e.classList.remove('show'));
+}
+</script>
+</body></html>

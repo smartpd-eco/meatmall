@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>매출집계 · 정육본가 벤더</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor-theme.css">
+<script>document.documentElement.style.visibility='hidden';window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});</script>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+</head>
+<body>
+<aside class="v-side" id="side">
+  <div class="v-brand">
+    <div class="ico">🏪</div>
+    <div>
+      <div class="code" id="v-code">VENDOR</div>
+      <div class="shop" id="v-shop">불러오는 중…</div>
+      <div class="vid" id="v-id">벤더사 ID : —</div>
+    </div>
+  </div>
+  <nav class="v-nav">
+    <a class="on" href="dashboard.html">🏠 매출집계</a>
+    <a href="products.html">📦 상품등록(당일배송건)</a>
+    <a href="orders.html">📋 발주현황</a>
+  </nav>
+  <button class="logout" onclick="logout()">↩ 로그아웃</button>
+</aside>
+
+<div class="v-head">
+  <div><h1>매출집계</h1><div class="sub">최근 판매 실적을 한눈에 확인하세요</div></div>
+  <div class="v-crumb" id="today-label"></div>
+</div>
+
+<div class="v-body">
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-top"><span class="kpi-lbl">오늘 매출</span><span class="kpi-ico" style="background:#DCFCE7">📈</span></div>
+      <div class="kpi-val" id="k-today" style="color:#15803D">0<span class="won">원</span></div>
+      <div class="kpi-diff" id="k-today-diff">전일 대비 —</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-top"><span class="kpi-lbl">이번달 매출</span><span class="kpi-ico" style="background:#DBEAFE">📅</span></div>
+      <div class="kpi-val" id="k-month" style="color:#1D4ED8">0<span class="won">원</span></div>
+      <div class="kpi-diff">이번 달 누적 매출</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-top"><span class="kpi-lbl">주문 건수</span><span class="kpi-ico" style="background:#EDE9FE">🧾</span></div>
+      <div class="kpi-val" id="k-orders" style="color:#6D28D9">0<span class="won">건</span></div>
+      <div class="kpi-diff" id="k-orders-diff">전일 대비 —</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div><div class="card-title">매출 최근 순</div><div class="card-sub">최근 30일 · 최신순 자동정렬</div></div>
+      <div class="fbar">
+        <input class="finput" id="srch" placeholder="🔍 날짜 검색 (예: 07-10)" style="width:200px" oninput="renderRows()">
+        <button class="btn btn-outline btn-sm" onclick="downloadCsv()">⬇ 엑셀 다운로드</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>일자</th><th class="t-right">매출금액</th><th class="t-center">주문건수</th><th class="t-center">상품수</th><th class="t-center">비고</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="5" class="empty">🔄 불러오는 중…</td></tr></tbody>
+      </table>
+    </div>
+    <div style="text-align:center;margin-top:14px" id="more-wrap"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+let allRows=[], shown=5;
+function go(u){location.href=u}
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
+function logout(){localStorage.removeItem('mm_access_token');localStorage.removeItem('mm_user_cache');location.href='../login.html'}
+function hdrs(){return{Authorization:'Bearer '+token}}
+function dow(d){return['일','월','화','수','목','금','토'][new Date(d).getDay()]}
+
+(async function(){
+  if(!token){location.href='../login.html';return}
+  try{
+    const r=await fetch(API+'/auth/me',{headers:hdrs()});
+    const d=await r.json();
+    if(!r.ok||!d.user||!d.user.vendor_id){ toast('벤더 권한이 없습니다'); setTimeout(()=>location.href='../login.html',1200); return; }
+    document.documentElement.style.visibility='';
+    loadVendor(); loadSummary(); loadRecent();
+    const t=new Date();document.getElementById('today-label').textContent='📅 '+t.toISOString().slice(0,10)+' ('+dow(t)+')';
+  }catch(e){ location.href='../login.html'; }
+})();
+
+async function loadVendor(){
+  try{
+    const r=await fetch(API+'/vendor/me',{headers:hdrs()});const d=await r.json();
+    if(d.vendor){
+      document.getElementById('v-shop').textContent=d.vendor.vendor_name||'—';
+      document.getElementById('v-id').textContent='벤더사 ID : VENDOR'+String(d.vendor.id).padStart(3,'0');
+      document.getElementById('v-code').textContent='VENDOR'+String(d.vendor.id).padStart(3,'0');
+    }
+  }catch(e){}
+}
+async function loadSummary(){
+  try{
+    const r=await fetch(API+'/vendor/sales/summary',{headers:hdrs()});const d=await r.json();
+    const s=d.summary||{};
+    document.getElementById('k-today').innerHTML=fmt(s.today_sales)+'<span class="won">원</span>';
+    document.getElementById('k-month').innerHTML=fmt(s.month_sales)+'<span class="won">원</span>';
+    document.getElementById('k-orders').innerHTML=fmt(s.today_orders)+'<span class="won">건</span>';
+    const sd=s.sales_diff||0, od=s.orders_diff||0;
+    document.getElementById('k-today-diff').innerHTML='전일 대비 <span class="'+(sd>=0?'up':'down')+'">'+(sd>=0?'▲':'▼')+' '+fmt(Math.abs(sd))+'원</span>';
+    document.getElementById('k-orders-diff').innerHTML='전일 대비 <span class="'+(od>=0?'up':'down')+'">'+(od>=0?'▲':'▼')+' '+fmt(Math.abs(od))+'건</span>';
+  }catch(e){}
+}
+async function loadRecent(){
+  try{
+    const r=await fetch(API+'/vendor/sales/recent?days=30',{headers:hdrs()});const d=await r.json();
+    allRows=d.rows||[]; shown=5; renderRows();
+  }catch(e){ document.getElementById('rows').innerHTML='<tr><td colspan="5" class="empty">❌ 불러오기 실패</td></tr>'; }
+}
+function renderRows(){
+  const q=(document.getElementById('srch').value||'').trim();
+  let list=allRows;
+  if(q) list=allRows.filter(x=>x.date.includes(q));
+  const tb=document.getElementById('rows');
+  if(!list.length){ tb.innerHTML='<tr><td colspan="5" class="empty">매출 데이터가 없습니다</td></tr>'; document.getElementById('more-wrap').innerHTML=''; return; }
+  const view=q?list:list.slice(0,shown);
+  tb.innerHTML=view.map(x=>`<tr>
+    <td>${x.date} (${dow(x.date)})</td>
+    <td class="t-right" style="font-weight:700">${fmt(x.amount)}원</td>
+    <td class="t-center">${x.orders}건</td>
+    <td class="t-center">${x.items}개</td>
+    <td class="t-center" style="color:#9CA3AF">—</td></tr>`).join('');
+  const mw=document.getElementById('more-wrap');
+  mw.innerHTML=(!q && list.length>shown)?'<button class="btn btn-ghost btn-sm" onclick="shown+=5;renderRows()">더보기 ⌄</button>':'';
+}
+function downloadCsv(){
+  if(!allRows.length){toast('내보낼 데이터가 없습니다');return}
+  const head='일자,매출금액,주문건수,상품수\n';
+  const body=allRows.map(x=>`${x.date},${x.amount},${x.orders},${x.items}`).join('\n');
+  const blob=new Blob(['﻿'+head+body],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='매출집계_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+</script>
+</body></html>

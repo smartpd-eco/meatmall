@@ -28,6 +28,7 @@ body{background:#0F0F0F;display:flex;align-items:center;justify-content:center;m
   var accessToken  = params.get('accessToken');
   var refreshToken = params.get('refreshToken');
   var needsPhone   = params.get('needsPhone');
+  var isVendor     = params.get('vendor');
   var error        = params.get('error');
 
   if (error || !accessToken) {
@@ -39,7 +40,7 @@ body{background:#0F0F0F;display:flex;align-items:center;justify-content:center;m
     if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
     window.location.href = (needsPhone === 'true')
       ? base + '/pages/phone-verify.html'
-      : base + '/index.html';
+      : (isVendor === '1' ? base + '/vendor/dashboard.html' : base + '/index.html');
   }
 })();
 </script>

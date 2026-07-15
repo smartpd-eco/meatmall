@@ -13,7 +13,7 @@ async function resolveSocialUser({ provider, providerId, email, name }) {
   // 1. 이미 이 소셜 계정으로 연동된 유저가 있으면 정상 로그인
   const { data: existing } = await supabase
     .from('social_accounts')
-    .select('user_id, users(id, email, name, phone, grade, point, is_admin, is_active)')
+    .select('user_id, users(id, email, name, phone, grade, point, is_admin, is_active, vendor_id, role)')
     .eq('provider', provider)
     .eq('provider_id', String(providerId))
     .single();
@@ -81,7 +81,7 @@ async function resolveSocialUser({ provider, providerId, email, name }) {
 
   const { data: user } = await supabase
     .from('users')
-    .select('id, email, name, phone, grade, point, is_admin, is_active')
+    .select('id, email, name, phone, grade, point, is_admin, is_active, vendor_id, role')
     .eq('id', userId)
     .single();
 
@@ -105,7 +105,8 @@ async function finishSocialLogin(res, user) {
     name:  user.name  || '',
     grade: user.grade || 'BASIC',
     point: String(user.point || 0),
-    needsPhone: (!user.phone) ? 'true' : 'false'
+    needsPhone: (!user.phone) ? 'true' : 'false',
+    vendor: user.vendor_id ? '1' : ''
   });
   res.redirect(`${FRONTEND}/pages/social-callback.html?${params}`);
 }
@@ -139,7 +140,7 @@ async function handleRelinkCallback(res, linkToken, reauthProvider, reauthProvid
 
   const { data: user } = await supabase
     .from('users')
-    .select('id, email, name, phone, grade, point, is_admin, is_active')
+    .select('id, email, name, phone, grade, point, is_admin, is_active, vendor_id, role')
     .eq('id', payload.existingUserId)
     .single();
 

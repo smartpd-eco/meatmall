@@ -9,7 +9,7 @@ const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
 // ── Access Token 발급 (단기, 7일)
 function signAccessToken(user) {
   return jwt.sign(
-    { sub: user.id, email: user.email, name: user.name, grade: user.grade, is_admin: user.is_admin },
+    { sub: user.id, email: user.email, name: user.name, grade: user.grade, is_admin: user.is_admin, vendor_id: user.vendor_id || null, role: user.role || 'customer' },
     SECRET,
     { expiresIn: EXPIRES }
   );

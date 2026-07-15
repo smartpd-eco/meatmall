@@ -153,6 +153,69 @@ router.get('/best', async (req, res) => {
 });
 
 // ====================================================
+// GET /api/products/same-day?dong=XXX
+// 고객 배송지 '동' 기준 당일배송 가능 상품만 노출 (MD2 지역매칭)
+//  - 해당 동을 담당하는 활성 벤더의 is_same_day 상품만 반환
+//  - 담당 벤더/권역 없으면 빈 배열(= 배송불가 숨김)
+// ====================================================
+
+router.get('/same-day', optionalAuth, async (req, res) => {
+  try {
+    const dong = (req.query.dong || '').trim();
+    if (!dong) return res.json({ ok: true, dong: '', products: [], reason: 'no_dong' });
+
+    // 1) 권역(delivery_zones + vendor_zones) 기반 담당 벤더
+    let zoneVendorIds = [];
+    const { data: zones } = await supabase
+      .from('delivery_zones').select('id').eq('dong', dong);
+    const zoneIds = (zones || []).map(z => z.id);
+    if (zoneIds.length) {
+      const { data: vz } = await supabase
+        .from('vendor_zones').select('vendor_id').in('zone_id', zoneIds);
+      zoneVendorIds = (vz || []).map(v => v.vendor_id);
+    }
+
+    // 2) 폴백: 권역 매핑이 없어도 벤더 자체 주소(동)가 일치하면 노출
+    const { data: dongVendors } = await supabase
+      .from('vendors').select('id').eq('dong', dong);
+    const dongVendorIds = (dongVendors || []).map(v => v.id);
+
+    const vendorIds = [...new Set([...zoneVendorIds, ...dongVendorIds])];
+    if (!vendorIds.length) return res.json({ ok: true, dong, products: [], reason: 'no_vendor' });
+
+    // 3) 활성 벤더만
+    const { data: vs } = await supabase
+      .from('vendors').select('id, vendor_name').in('id', vendorIds).eq('is_active', true);
+    const activeIds = (vs || []).map(v => v.id);
+    if (!activeIds.length) return res.json({ ok: true, dong, products: [], reason: 'no_active_vendor' });
+    const vendorNameMap = Object.fromEntries((vs || []).map(v => [v.id, v.vendor_name]));
+
+    // 4) 해당 벤더의 당일배송 상품 (재고>0, 활성)
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('*')
+      .in('vendor_id', activeIds)
+      .eq('is_same_day', true)
+      .eq('is_active', true)
+      .gt('stock', 0)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+
+    const formatted = (products || []).map(p => ({
+      ...p,
+      category_name: p.category,
+      same_day: true,
+      vendor_name: vendorNameMap[p.vendor_id] || null
+    }));
+
+    res.json({ ok: true, dong, products: formatted });
+  } catch (err) {
+    console.error('[products/same-day]', err);
+    res.status(500).json({ error: err.message || '당일배송 상품 조회 오류' });
+  }
+});
+
+// ====================================================
 // GET /api/products/:id
 // ====================================================
 

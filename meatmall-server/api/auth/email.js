@@ -80,7 +80,7 @@ router.post('/login', async (req, res) => {
     // 사용자 조회
     const { data: user } = await supabase
       .from('users')
-      .select('id, email, name, password_hash, grade, point, is_admin, is_active')
+      .select('id, email, name, password_hash, grade, point, is_admin, is_active, vendor_id, role')
       .eq('email', email)
       .single();
 
@@ -196,7 +196,7 @@ router.get('/me', requireAuth, async (req, res) => {
   try {
     const { data: user } = await supabase
       .from('users')
-      .select('id, email, name, phone, grade, point, is_admin, marketing_agree, push_agree, created_at')
+      .select('id, email, name, phone, grade, point, is_admin, vendor_id, role, marketing_agree, push_agree, created_at')
       .eq('id', req.user.sub)
       .single();
 

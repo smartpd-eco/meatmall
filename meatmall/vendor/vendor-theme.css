@@ -1,0 +1,139 @@
+/* ═══════════════════════════════════════════════
+   정육본가 벤더사 포털 공통 테마 (라이트 + 그린)
+   ═══════════════════════════════════════════════ */
+:root{
+  --v-green:#16A34A; --v-green-d:#15803D; --v-green-l:#ECFDF5;
+  --bg:#F4F6F8; --card:#fff; --line:#E5E7EB;
+  --txt:#1F2937; --sub:#6B7280; --muted:#9CA3AF;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Noto Sans KR',sans-serif;font-size:14px;min-height:100vh;padding-left:240px}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+a{text-decoration:none;color:inherit}
+
+/* ── 사이드바 ── */
+.v-side{position:fixed;left:0;top:0;width:240px;height:100vh;background:#fff;border-right:1px solid var(--line);z-index:500;display:flex;flex-direction:column;overflow-y:auto}
+.v-brand{display:flex;align-items:center;gap:11px;padding:20px 18px;border-bottom:1px solid #F0F0F0}
+.v-brand .ico{width:44px;height:44px;border-radius:11px;background:var(--v-green-l);display:flex;align-items:center;justify-content:center;font-size:1.35rem;flex-shrink:0}
+.v-brand .code{font-size:1.02rem;font-weight:800;color:var(--v-green-d);line-height:1.2}
+.v-brand .shop{font-size:.8rem;color:var(--txt);font-weight:600;margin-top:2px}
+.v-brand .vid{font-size:.66rem;color:var(--muted);margin-top:2px}
+.v-nav{display:flex;flex-direction:column;padding:14px 0;flex:1}
+.v-nav a{display:flex;align-items:center;gap:11px;padding:13px 20px;font-size:.9rem;font-weight:600;color:#4B5563;border-left:3px solid transparent}
+.v-nav a:hover{background:#F3F4F6;color:var(--v-green-d)}
+.v-nav a.on{background:var(--v-green);color:#fff;border-left-color:var(--v-green-d);font-weight:700}
+.v-side .logout{margin:0 16px 20px;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#6B7280;font-size:.86rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+.v-side .logout:hover{background:#F9FAFB;color:#DC2626}
+
+/* ── 헤더/타이틀 ── */
+.v-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:28px 32px 8px;flex-wrap:wrap}
+.v-head h1{font-size:1.5rem;font-weight:800;color:#111827}
+.v-head .sub{font-size:.86rem;color:var(--sub);margin-top:4px}
+.v-crumb{font-size:.8rem;color:var(--muted)}
+.v-body{padding:12px 32px 60px;max-width:1180px}
+
+/* ── KPI 카드 ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.kpi-top{display:flex;align-items:center;justify-content:space-between}
+.kpi-lbl{font-size:.84rem;color:var(--sub);font-weight:600}
+.kpi-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.kpi-val{font-size:1.7rem;font-weight:800;margin-top:14px}
+.kpi-val .won{font-size:1rem;font-weight:700;color:var(--sub);margin-left:2px}
+.kpi-diff{font-size:.78rem;margin-top:8px;color:var(--sub)}
+.kpi-diff .up{color:var(--v-green);font-weight:700}
+.kpi-diff .down{color:#DC2626;font-weight:700}
+
+/* ── 카드 ── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.card-title{font-size:1.02rem;font-weight:700;color:#111827}
+.card-sub{font-size:.8rem;color:var(--sub);margin-top:3px}
+
+/* ── 테이블 ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:#F9FAFB;color:var(--sub);font-size:.78rem;font-weight:700;padding:12px 14px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
+tbody td{padding:13px 14px;border-bottom:1px solid #F3F4F6;font-size:.86rem;color:#374151;vertical-align:middle}
+tbody tr:hover td{background:#F9FAFB}
+tbody tr:last-child td{border-bottom:none}
+.t-center{text-align:center}
+.t-right{text-align:right}
+
+/* ── 배지 ── */
+.bdg{display:inline-block;padding:4px 11px;border-radius:20px;font-size:.74rem;font-weight:700;white-space:nowrap}
+.bdg-green{background:#DCFCE7;color:#15803D}
+.bdg-blue{background:#DBEAFE;color:#1D4ED8}
+.bdg-amber{background:#FEF3C7;color:#B45309}
+.bdg-gray{background:#F3F4F6;color:#6B7280}
+.bdg-red{background:#FEE2E2;color:#DC2626}
+.bdg-teal{background:#CCFBF1;color:#0F766E}
+
+/* ── 버튼 ── */
+.btn{padding:9px 18px;border-radius:8px;border:none;font-size:.86rem;font-weight:700;white-space:nowrap;transition:opacity .15s}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-green{background:var(--v-green);color:#fff}
+.btn-outline{background:#fff;border:1px solid var(--v-green);color:var(--v-green-d)}
+.btn-outline:hover{background:var(--v-green-l);opacity:1}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:#4B5563}
+.btn-ghost:hover{background:#F9FAFB;opacity:1}
+.btn-danger{background:#fff;border:1px solid #FCA5A5;color:#DC2626}
+.btn-sm{padding:5px 11px;font-size:.76rem;border-radius:6px}
+
+/* ── 폼 ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+.form-grid.c1{grid-template-columns:1fr}
+.fgrp{display:flex;flex-direction:column;gap:6px}
+.fgrp.full{grid-column:1/-1}
+.flbl{font-size:.82rem;color:#374151;font-weight:600}
+.flbl .req{color:#DC2626;margin-left:2px}
+.finput,.fselect{background:#fff;border:1px solid #D1D5DB;color:#111827;padding:10px 12px;border-radius:8px;font-size:.9rem;outline:none;width:100%}
+.finput:focus,.fselect:focus{border-color:var(--v-green)}
+textarea.finput{resize:vertical;min-height:82px}
+.finput-row{display:flex;gap:8px}
+.ferr{font-size:.76rem;color:#DC2626;display:none;margin-top:2px}
+.ferr.show{display:block}
+.sec-title{font-size:.92rem;font-weight:700;color:var(--v-green-d);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* 이미지 업로드 */
+.img-area{border:2px dashed #D1D5DB;border-radius:10px;padding:34px 20px;text-align:center;cursor:pointer;background:#FAFAFA;transition:all .2s}
+.img-area:hover{border-color:var(--v-green);background:var(--v-green-l)}
+.img-area.has-img{border-style:solid;border-color:var(--v-green);padding:0;overflow:hidden;position:relative}
+.img-area.has-img img{width:100%;height:210px;object-fit:cover;display:block}
+.img-ico{font-size:2.2rem;color:var(--muted)}
+.img-txt{font-size:.82rem;color:var(--sub);margin-top:8px;line-height:1.5}
+.img-rm{position:absolute;top:8px;right:8px;width:28px;height:28px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;font-size:.85rem}
+input[type=file]{display:none}
+
+/* 라디오/상태 */
+.radio-row{display:flex;gap:10px}
+.radio-chip{flex:1;border:1.5px solid #D1D5DB;border-radius:9px;padding:11px;text-align:center;font-size:.86rem;font-weight:600;color:#6B7280;cursor:pointer}
+.radio-chip.on{border-color:var(--v-green);background:var(--v-green-l);color:var(--v-green-d)}
+
+/* 필터바 */
+.fbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fbar .finput,.fbar .fselect{width:auto}
+
+/* 상태/빈영역/탭 */
+.empty{text-align:center;padding:56px 20px;color:var(--muted);font-size:.9rem}
+.v-tabs{display:flex;gap:4px;padding:0 32px;border-bottom:1px solid var(--line)}
+.v-tab{padding:13px 20px;font-size:.9rem;font-weight:700;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-1px;cursor:pointer}
+.v-tab.on{color:var(--v-green-d);border-bottom-color:var(--v-green)}
+
+/* 저장바 */
+.save-bar{display:flex;gap:12px;justify-content:flex-end;padding:16px 0 0;border-top:1px solid var(--line);margin-top:6px}
+
+/* 토스트 */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);background:#111827;color:#fff;padding:12px 22px;border-radius:9px;font-size:.86rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:860px){
+  body{padding-left:0}
+  .v-side{transform:translateX(-100%);transition:transform .2s}
+  .v-side.open{transform:translateX(0)}
+  .kpi-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .v-head,.v-body,.v-tabs{padding-left:18px;padding-right:18px}
+}

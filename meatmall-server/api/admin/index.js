@@ -309,7 +309,7 @@ router.patch('/cs/:id', async (req, res) => {
 // ════════════════════════════════════════════════════
 router.patch('/users/:id', async (req, res) => {
   try {
-    const { grade, is_active } = req.body;
+    const { grade, is_active, vendor_id, role } = req.body;
     const GRADES = ['normal', 'bronze', 'silver', 'gold', 'vip'];
     const patch = { updated_at: new Date().toISOString() };
     if (grade !== undefined) {
@@ -317,12 +317,18 @@ router.patch('/users/:id', async (req, res) => {
       patch.grade = grade;
     }
     if (is_active !== undefined) patch.is_active = !!is_active;
+    // 벤더 권한 부여/해제
+    if (vendor_id !== undefined) patch.vendor_id = vendor_id === null || vendor_id === '' ? null : Number(vendor_id);
+    if (role !== undefined) {
+      if (!['customer', 'vendor', 'admin'].includes(role)) return res.status(400).json({ error: '유효하지 않은 역할입니다' });
+      patch.role = role;
+    }
 
     const { data: user, error } = await supabase
       .from('users')
       .update(patch)
       .eq('id', req.params.id)
-      .select('id, name, email, phone, grade, point, is_active, is_admin, created_at')
+      .select('id, name, email, phone, grade, point, is_active, is_admin, vendor_id, role, created_at')
       .single();
     if (error) throw error;
     res.json({ ok: true, user });

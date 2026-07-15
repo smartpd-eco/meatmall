@@ -135,6 +135,7 @@ app.use('/api/admin/vendors', require('./api/admin/vendors'));
 app.use('/api/admin/assignments', require('./api/admin/assignments'));
 app.use('/api/admin/vendor-inventory', require('./api/admin/vendor-inventory'));
 app.use('/api/admin', require('./api/admin/index'));
+app.use('/api/vendor', require('./api/vendor/index'));
 app.use('/api/notify', require('./api/notify/index'));
 app.use('/api/upload', require('./api/upload/index'));
 app.use('/api/crm/segments',     require('./api/crm/segments'));

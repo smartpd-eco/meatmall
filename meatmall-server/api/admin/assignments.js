@@ -141,12 +141,15 @@ router.post('/auto', async (req, res) => {
         await supabase.from('orders').update({ status: 'preparing' }).eq('id', order.id);
 
         const orderNumber = `VO-${order.id.slice(0, 8).toUpperCase()}`;
+        // 당일배송 발주 → 납품요청일 = KST 오늘
+        const deliveryDate = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
         await supabase.from('vendor_orders').insert({
           order_id: order.id,
           vendor_id: best.vendor_id,
           order_number: orderNumber,
           total_amount: order.final_amount || 0,
           status: 'pending',
+          delivery_date: deliveryDate,
           items: order.order_items || []
         });
 

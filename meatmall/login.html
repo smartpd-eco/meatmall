@@ -81,7 +81,7 @@ const API='https://api.meatbonga.com/api';
 function go(u){window.location.href=u}
 document.addEventListener('DOMContentLoaded',()=>{const p=document.getElementById('pw');if(p)p.value=''});
 const cached=JSON.parse(localStorage.getItem('mm_user_cache')||'{}')||{};
-if(localStorage.getItem('mm_access_token')&&cached.name)go('index.html');
+if(localStorage.getItem('mm_access_token')&&cached.name)go(cached.is_admin?'admin/dashboard.html':(cached.vendor_id?'vendor/dashboard.html':'index.html'));
 async function doLogin(){
   const email=document.getElementById('email').value.trim();
   const pw=document.getElementById('pw').value;
@@ -109,7 +109,9 @@ async function doLogin(){
     localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
     localStorage.setItem('mm_last_active',String(Date.now()));
     if(d.user?.is_admin)sessionStorage.setItem('mm_admin','true');
-    go(d.user?.is_admin?'admin/dashboard.html':'index.html');
+    const dest = d.user?.is_admin ? 'admin/dashboard.html'
+               : (d.user?.vendor_id ? 'vendor/dashboard.html' : 'index.html');
+    go(dest);
   }catch(e){err.textContent='❌ '+e.message;err.style.display='block';btn.textContent='로그인';btn.disabled=false}
 }
 function doSocial(p){window.location.href=API+'/auth/'+p}
