@@ -151,6 +151,67 @@ router.post('/:id/zones', async (req, res) => {
   }
 });
 
+// ── 벤더 계정 연결 ─────────────────────────────────────
+// GET /api/admin/vendors/:id/accounts — 이 거래처에 연결된 회원 목록
+router.get('/:id/accounts', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email, phone, role, is_active')
+      .eq('vendor_id', req.params.id);
+    if (error) throw error;
+    res.json({ ok: true, accounts: data || [] });
+  } catch (err) {
+    console.error('[vendors GET/:id/accounts]', err);
+    res.status(500).json({ error: '연결 계정 조회 오류' });
+  }
+});
+
+// POST /api/admin/vendors/:id/link-account — 이메일 회원에 벤더 권한 부여
+router.post('/:id/link-account', async (req, res) => {
+  try {
+    const email = (req.body.email || '').trim();
+    if (!email) return res.status(400).json({ error: '이메일을 입력해주세요' });
+
+    const { data: user } = await supabase
+      .from('users').select('id, email, name').eq('email', email).single();
+    if (!user) return res.status(404).json({ error: '해당 이메일의 회원이 없습니다. 먼저 회원가입이 필요합니다.' });
+
+    const { data, error } = await supabase
+      .from('users')
+      .update({ vendor_id: Number(req.params.id), role: 'vendor', updated_at: new Date().toISOString() })
+      .eq('id', user.id)
+      .select('id, name, email, role, vendor_id')
+      .single();
+    if (error) throw error;
+    res.json({ ok: true, user: data });
+  } catch (err) {
+    console.error('[vendors POST/:id/link-account]', err);
+    res.status(500).json({ error: '계정 연결 오류' });
+  }
+});
+
+// POST /api/admin/vendors/:id/unlink-account — 벤더 권한 해제
+router.post('/:id/unlink-account', async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ error: 'user_id가 필요합니다' });
+
+    const { data, error } = await supabase
+      .from('users')
+      .update({ vendor_id: null, role: 'customer', updated_at: new Date().toISOString() })
+      .eq('id', user_id)
+      .eq('vendor_id', req.params.id)
+      .select('id, name, email')
+      .single();
+    if (error) throw error;
+    res.json({ ok: true, user: data });
+  } catch (err) {
+    console.error('[vendors POST/:id/unlink-account]', err);
+    res.status(500).json({ error: '연결 해제 오류' });
+  }
+});
+
 // GET /api/admin/vendors/:id/scores
 router.get('/:id/scores', async (req, res) => {
   try {
