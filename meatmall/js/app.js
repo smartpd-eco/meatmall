@@ -30,6 +30,20 @@ const Store = {
       this.cart      = JSON.parse(localStorage.getItem('mm_cart') || '[]');
       this.wishlist  = JSON.parse(localStorage.getItem('mm_wishlist') || '[]');
     } catch(e) {}
+    // ── 계정 경계 격리: 로그인 사용자가 바뀌면 장바구니/찜 초기화 ──
+    //   (전역 mm_cart 가 이전 계정/게스트 담긴 채 신규 계정에 노출되는 문제 방지)
+    try {
+      const cache    = JSON.parse(localStorage.getItem('mm_user_cache') || 'null');
+      const curOwner = (cache && cache.id) ? String(cache.id) : '';
+      const saved    = localStorage.getItem('mm_cart_owner');
+      if (saved === null || saved !== curOwner) {
+        this.cart = [];
+        this.wishlist = [];
+        localStorage.setItem('mm_cart', '[]');
+        localStorage.setItem('mm_wishlist', '[]');
+        localStorage.setItem('mm_cart_owner', curOwner);
+      }
+    } catch(e) {}
   },
   save() {
     localStorage.setItem('mm_user',     JSON.stringify(this.user));
@@ -59,8 +73,13 @@ const Store = {
   // 로그아웃
   logout() {
     this.user = null;
+    this.cart = [];
+    this.wishlist = [];
     localStorage.removeItem('mm_user');
     localStorage.removeItem('mm_addresses');
+    localStorage.setItem('mm_cart', '[]');
+    localStorage.setItem('mm_wishlist', '[]');
+    localStorage.removeItem('mm_cart_owner');
     toast('로그아웃 되었습니다');
   }
 };
