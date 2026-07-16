@@ -16,9 +16,9 @@ a{text-decoration:none;color:inherit}
 .v-side{position:fixed;left:0;top:0;width:240px;height:100vh;background:#fff;border-right:1px solid var(--line);z-index:500;display:flex;flex-direction:column;overflow-y:auto}
 .v-brand{display:flex;align-items:center;gap:11px;padding:20px 18px;border-bottom:1px solid #F0F0F0}
 .v-brand .ico{width:44px;height:44px;border-radius:11px;background:var(--v-green-l);display:flex;align-items:center;justify-content:center;font-size:1.35rem;flex-shrink:0}
-.v-brand .code{font-size:1.02rem;font-weight:800;color:var(--v-green-d);line-height:1.2}
-.v-brand .shop{font-size:.8rem;color:var(--txt);font-weight:600;margin-top:2px}
-.v-brand .vid{font-size:.66rem;color:var(--muted);margin-top:2px}
+.v-brand .code{display:none}
+.v-brand .vid{display:none}
+.v-brand .shop{font-size:1.6rem;color:var(--v-green-d);font-weight:800;line-height:1.25;word-break:keep-all}
 .v-nav{display:flex;flex-direction:column;padding:14px 0;flex:1}
 .v-nav a{display:flex;align-items:center;gap:11px;padding:13px 20px;font-size:.9rem;font-weight:600;color:#4B5563;border-left:3px solid transparent}
 .v-nav a:hover{background:#F3F4F6;color:var(--v-green-d)}
