@@ -18,7 +18,7 @@ a{text-decoration:none;color:inherit}
 .v-brand .ico{width:44px;height:44px;border-radius:11px;background:var(--v-green-l);display:flex;align-items:center;justify-content:center;font-size:1.35rem;flex-shrink:0}
 .v-brand .code{display:none}
 .v-brand .vid{display:none}
-.v-brand .shop{font-size:1.6rem;color:var(--v-green-d);font-weight:800;line-height:1.25;word-break:keep-all}
+.v-brand .shop{font-size:1.02rem;color:var(--v-green-d);font-weight:800;line-height:1.25;word-break:keep-all}
 .v-nav{display:flex;flex-direction:column;padding:14px 0;flex:1}
 .v-nav a{display:flex;align-items:center;gap:11px;padding:13px 20px;font-size:.9rem;font-weight:600;color:#4B5563;border-left:3px solid transparent}
 .v-nav a:hover{background:#F3F4F6;color:var(--v-green-d)}
