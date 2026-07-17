@@ -6,6 +6,29 @@ const { kakaoGeocode } = require('../../lib/geocode');
 
 router.use(requireAdmin);
 
+// POST /api/admin/vendors/geocode-all — 전 거래처 주소 → 좌표 일괄 생성
+//  body: { force?: boolean }  force=true면 좌표 있어도 재생성
+//  (KAKAO_REST_API_KEY 필요. 없으면 전부 실패로 표시)
+router.post('/geocode-all', async (req, res) => {
+  try {
+    const force = req.body && req.body.force === true;
+    const { data: vendors } = await supabase.from('vendors').select('id, address, lat, lng');
+    let updated = 0, skipped = 0, failed = 0;
+    for (const v of (vendors || [])) {
+      if (!v.address) { skipped++; continue; }
+      if (!force && v.lat != null && v.lng != null) { skipped++; continue; }
+      const g = await kakaoGeocode(v.address);
+      if (!g) { failed++; continue; }
+      await supabase.from('vendors').update({ lat: g.lat, lng: g.lng, updated_at: new Date().toISOString() }).eq('id', v.id);
+      updated++;
+    }
+    res.json({ ok: true, updated, skipped, failed, total: (vendors || []).length });
+  } catch (err) {
+    console.error('[vendors geocode-all]', err);
+    res.status(500).json({ error: '좌표 일괄 생성 오류' });
+  }
+});
+
 // GET /api/admin/vendors
 router.get('/', async (req, res) => {
   try {
