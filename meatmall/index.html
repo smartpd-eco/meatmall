@@ -169,8 +169,9 @@ async function fetchRetry(url, tries){
   let lastErr;
   for(let i=0;i<tries;i++){
     // 홀수 시도는 대체 API 도메인으로 (사내망 등 특정 도메인 차단 우회)
+    // 재시도(홀수 회차)는 대체 도메인으로 — iOS/WeChat 등에서 api.meatbonga.com 차단 시 우회
     const u = (i % 2 === 1)
-      ? url.replace('meatmall-server.vercel.app', 'meatmall.vercel.app')
+      ? url.replace('api.meatbonga.com', 'meatmall.vercel.app').replace('meatmall-server.vercel.app', 'meatmall.vercel.app')
       : url;
     try{
       const r = await fetch(u);
