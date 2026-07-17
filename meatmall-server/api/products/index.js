@@ -80,6 +80,9 @@ router.get('/', optionalAuth, async (req, res) => {
     // 일반 사용자는 활성 상품만 조회
     if (!isAdmin) {
       query = query.eq('is_active', true);
+      // 전국 노출 = 본사 상품(vendor_id NULL)만. 로컬 정육점 상품은 홈/전국 목록에 노출 안 함
+      //  (로컬 상품은 /api/products/same-day 에서 배송지 '동'·좌표 매칭 회원에게만 노출)
+      query = query.is('vendor_id', null);
     }
 
     if (category_id) query = query.eq('category_id', Number(category_id));
@@ -134,6 +137,7 @@ router.get('/best', async (req, res) => {
       .from('products')
       .select('*')
       .eq('is_active', true)
+      .is('vendor_id', null)   // 베스트도 본사 상품만 (로컬 상품 제외)
       .order('created_at', { ascending: false })
       .limit(8);
 
