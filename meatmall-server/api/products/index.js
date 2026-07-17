@@ -306,6 +306,57 @@ router.get('/same-day', optionalAuth, async (req, res) => {
   }
 });
 
+// 로컬(벤더) 상품을 이 회원이 볼 수 있는가 (당일배송 매칭 여부) — 상세 직접진입 가드용
+//  로그인 + 기본배송지 '동'이 해당 벤더 권역 + 벤더 당일배송 활성 + 마감 전 + (좌표 시)반경 이내
+async function localProductAllowed(req, vendorId) {
+  try {
+    if (!req.user || !req.user.sub) return false;
+    const { data: addr } = await supabase
+      .from('addresses').select('address1, latitude, longitude')
+      .eq('user_id', req.user.sub)
+      .order('is_default', { ascending: false })
+      .limit(1).maybeSingle();
+    if (!addr) return false;
+    const m = (addr.address1 || '').match(/([가-힣A-Za-z0-9]+동)(?![가-힣])/);
+    const dong = m ? m[1] : '';
+    if (!dong) return false;
+
+    const { data: v } = await supabase
+      .from('vendors')
+      .select('dong, lat, lng, is_active, same_day_enabled, same_day_radius_km, same_day_cutoff')
+      .eq('id', vendorId).single();
+    if (!v || !v.is_active || v.same_day_enabled === false) return false;
+
+    // 마감시간(KST)
+    const hhmmss = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(11, 19);
+    const cutoff = (v.same_day_cutoff || '14:00:00').slice(0, 8).padEnd(8, ':00');
+    if (hhmmss >= cutoff) return false;
+
+    // 동 매칭 (벤더 자체 동 또는 권역 매핑)
+    let dongOk = v.dong === dong;
+    if (!dongOk) {
+      const { data: zs } = await supabase.from('delivery_zones').select('id').eq('dong', dong);
+      const zoneIds = (zs || []).map(z => z.id);
+      if (zoneIds.length) {
+        const { data: vz } = await supabase.from('vendor_zones')
+          .select('vendor_id').eq('vendor_id', vendorId).in('zone_id', zoneIds).limit(1);
+        dongOk = !!(vz && vz.length);
+      }
+    }
+    if (!dongOk) return false;
+
+    // 반경컷 (양쪽 좌표 있을 때만)
+    if (addr.latitude != null && addr.longitude != null && v.lat != null && v.lng != null) {
+      const km = haversineKm(addr.latitude, addr.longitude, v.lat, v.lng);
+      if (km > Number(v.same_day_radius_km || 8)) return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('[localProductAllowed]', e.message);
+    return false; // 오류 시 안전하게 숨김
+  }
+}
+
 // ====================================================
 // GET /api/products/:id
 // ====================================================
@@ -323,6 +374,12 @@ router.get('/:id', optionalAuth, async (req, res) => {
       return res.status(404).json({
         error: '상품을 찾을 수 없습니다'
       });
+    }
+
+    // 로컬(벤더) 상품은 당일배송 매칭 회원에게만 상세 노출 (타지역/미로그인 = 숨김)
+    if (product.vendor_id) {
+      const allowed = await localProductAllowed(req, product.vendor_id);
+      if (!allowed) return res.status(404).json({ error: '상품을 찾을 수 없습니다' });
     }
 
     res.json({
