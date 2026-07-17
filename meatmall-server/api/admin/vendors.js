@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../../lib/supabase');
 const { requireAdmin } = require('../../middleware/auth');
+const { kakaoGeocode } = require('../../lib/geocode');
 
 router.use(requireAdmin);
 
@@ -72,12 +73,26 @@ router.get('/:id', async (req, res) => {
 // POST /api/admin/vendors
 router.post('/', async (req, res) => {
   try {
-    const { vendor_name, owner_name, phone, address, city, district, dong, lat, lng, business_hours } = req.body;
+    const { vendor_name, owner_name, phone, address, city, district, dong, business_hours,
+      same_day_enabled, same_day_radius_km, same_day_cutoff, daily_order_limit } = req.body;
     if (!vendor_name) return res.status(400).json({ error: '거래처명은 필수입니다' });
+
+    // 주소 → 좌표 (키 있을 때만; 없으면 null)
+    let { lat, lng } = req.body;
+    if ((lat == null || lng == null) && address) {
+      const geo = await kakaoGeocode(address);
+      if (geo) { lat = geo.lat; lng = geo.lng; }
+    }
+
+    const row = { vendor_name, owner_name, phone, address, city, district, dong, lat, lng, business_hours };
+    if (same_day_enabled   !== undefined) row.same_day_enabled   = !!same_day_enabled;
+    if (same_day_radius_km !== undefined) row.same_day_radius_km = Number(same_day_radius_km);
+    if (same_day_cutoff    !== undefined) row.same_day_cutoff    = same_day_cutoff;
+    if (daily_order_limit  !== undefined) row.daily_order_limit  = Number(daily_order_limit);
 
     const { data, error } = await supabase
       .from('vendors')
-      .insert({ vendor_name, owner_name, phone, address, city, district, dong, lat, lng, business_hours })
+      .insert(row)
       .select()
       .single();
     if (error) throw error;
@@ -92,9 +107,16 @@ router.post('/', async (req, res) => {
 // PUT /api/admin/vendors/:id
 router.put('/:id', async (req, res) => {
   try {
-    const allowed = ['vendor_name', 'owner_name', 'phone', 'address', 'city', 'district', 'dong', 'lat', 'lng', 'business_hours', 'is_active'];
+    const allowed = ['vendor_name', 'owner_name', 'phone', 'address', 'city', 'district', 'dong', 'lat', 'lng', 'business_hours', 'is_active',
+      'same_day_enabled', 'same_day_radius_km', 'same_day_cutoff', 'daily_order_limit'];
     const update = { updated_at: new Date().toISOString() };
     allowed.forEach(k => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
+
+    // 주소가 바뀌었는데 좌표를 직접 주지 않았으면 재지오코딩
+    if (update.address !== undefined && req.body.lat === undefined && req.body.lng === undefined) {
+      const geo = await kakaoGeocode(update.address);
+      if (geo) { update.lat = geo.lat; update.lng = geo.lng; }
+    }
 
     const { data, error } = await supabase
       .from('vendors')

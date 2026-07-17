@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../../lib/supabase');
 const { requireAdmin, optionalAuth } = require('../../middleware/auth');
+const { kakaoGeocode, haversineKm } = require('../../lib/geocode');
 
 // ── 상품 목록 캐시 (60초 TTL, 관리자 우회) ───────────────
 const _pc = new Map();
@@ -153,62 +154,148 @@ router.get('/best', async (req, res) => {
 });
 
 // ====================================================
-// GET /api/products/same-day?dong=XXX
-// 고객 배송지 '동' 기준 당일배송 가능 상품만 노출 (MD2 지역매칭)
-//  - 해당 동을 담당하는 활성 벤더의 is_same_day 상품만 반환
-//  - 담당 벤더/권역 없으면 빈 배열(= 배송불가 숨김)
+// GET /api/products/same-day?dong=XXX&address_id=YYY
+// 고객 배송지 기준 당일배송 매칭 (설계서 규칙 반영)
+//  판정: 동/권역 1차 → 벤더 당일배송 on + 마감 전 + 일일한도 미초과
+//        → (좌표 있으면) 직선 반경컷 → 재고·당일수량 → 랭킹(동우선·priority·평점)
+//  좌표(거리컷)는 KAKAO_REST_API_KEY 설정 시 자동 활성화, 없으면 건너뜀
 // ====================================================
 
 router.get('/same-day', optionalAuth, async (req, res) => {
   try {
     const dong = (req.query.dong || '').trim();
+    const addressId = req.query.address_id;
     if (!dong) return res.json({ ok: true, dong: '', products: [], reason: 'no_dong' });
 
-    // 1) 권역(delivery_zones + vendor_zones) 기반 담당 벤더
-    let zoneVendorIds = [];
-    const { data: zones } = await supabase
-      .from('delivery_zones').select('id').eq('dong', dong);
+    // ── 회원 배송지 좌표 (있으면 반경컷에 사용, 없으면 생략) ──
+    let userCoords = null;
+    if (addressId && req.user?.sub) {
+      const { data: addr } = await supabase
+        .from('addresses').select('id, address1, address2, latitude, longitude')
+        .eq('id', addressId).eq('user_id', req.user.sub).single();
+      if (addr) {
+        if (addr.latitude != null && addr.longitude != null) {
+          userCoords = { lat: addr.latitude, lng: addr.longitude };
+        } else {
+          const geo = await kakaoGeocode(addr.address1);
+          if (geo) {
+            userCoords = geo;
+            await supabase.from('addresses')
+              .update({ latitude: geo.lat, longitude: geo.lng, geocoded_at: new Date().toISOString() })
+              .eq('id', addr.id);
+          }
+        }
+      }
+    }
+
+    // ── 1차 후보: 권역(vendor_zones) ∪ 동 일치 벤더 ──
+    let zonePri = {}; // vendor_id -> min priority
+    const { data: zones } = await supabase.from('delivery_zones').select('id').eq('dong', dong);
     const zoneIds = (zones || []).map(z => z.id);
     if (zoneIds.length) {
       const { data: vz } = await supabase
-        .from('vendor_zones').select('vendor_id').in('zone_id', zoneIds);
-      zoneVendorIds = (vz || []).map(v => v.vendor_id);
+        .from('vendor_zones').select('vendor_id, priority').in('zone_id', zoneIds);
+      (vz || []).forEach(v => {
+        const cur = zonePri[v.vendor_id];
+        zonePri[v.vendor_id] = cur == null ? (v.priority ?? 1) : Math.min(cur, v.priority ?? 1);
+      });
+    }
+    const { data: dongVendors } = await supabase.from('vendors').select('id').eq('dong', dong);
+    (dongVendors || []).forEach(v => { if (zonePri[v.id] == null) zonePri[v.id] = 99; });
+
+    const candIds = Object.keys(zonePri).map(Number);
+    if (!candIds.length) return res.json({ ok: true, dong, products: [], reason: 'no_vendor' });
+
+    // ── 후보 벤더 상세 ──
+    const { data: vendors } = await supabase
+      .from('vendors')
+      .select('id, vendor_name, dong, address, lat, lng, score, is_active, same_day_enabled, same_day_radius_km, same_day_cutoff, daily_order_limit')
+      .in('id', candIds);
+
+    // KST 현재 시각/일자
+    const nowKst = new Date(Date.now() + 9 * 3600 * 1000);
+    const hhmmss = nowKst.toISOString().slice(11, 19);      // 'HH:MM:SS'
+    const todayKst = nowKst.toISOString().slice(0, 10);      // 'YYYY-MM-DD'
+
+    const reasons = { closed: 0, limit: 0, out_of_range: 0, disabled: 0 };
+    const eligible = [];
+
+    for (const v of (vendors || [])) {
+      if (!v.is_active || v.same_day_enabled === false) { reasons.disabled++; continue; }
+
+      // 마감시간
+      const cutoff = (v.same_day_cutoff || '14:00:00').slice(0, 8).padEnd(8, ':00');
+      if (hhmmss >= cutoff) { reasons.closed++; continue; }
+
+      // 일일 주문한도
+      const { count: todayCnt } = await supabase
+        .from('vendor_orders').select('id', { count: 'exact', head: true })
+        .eq('vendor_id', v.id).neq('status', 'cancelled').gte('created_at', todayKst);
+      if ((todayCnt || 0) >= (v.daily_order_limit || 50)) { reasons.limit++; continue; }
+
+      // 거리 반경컷 (좌표 있을 때만)
+      let km = null;
+      if (userCoords) {
+        let vlat = v.lat, vlng = v.lng;
+        if ((vlat == null || vlng == null) && v.address) {
+          const g = await kakaoGeocode(v.address);
+          if (g) { vlat = g.lat; vlng = g.lng; await supabase.from('vendors').update({ lat: g.lat, lng: g.lng }).eq('id', v.id); }
+        }
+        if (vlat != null && vlng != null) {
+          km = haversineKm(userCoords.lat, userCoords.lng, vlat, vlng);
+          if (km > Number(v.same_day_radius_km || 8)) { reasons.out_of_range++; continue; }
+        }
+      }
+
+      eligible.push({
+        id: v.id, name: v.vendor_name,
+        dongExact: v.dong === dong ? 0 : 1,
+        priority: zonePri[v.id] ?? 99,
+        score: Number(v.score || 0),
+        km
+      });
     }
 
-    // 2) 폴백: 권역 매핑이 없어도 벤더 자체 주소(동)가 일치하면 노출
-    const { data: dongVendors } = await supabase
-      .from('vendors').select('id').eq('dong', dong);
-    const dongVendorIds = (dongVendors || []).map(v => v.id);
+    if (!eligible.length) {
+      // 대표 사유 결정 (거리 > 마감 > 한도 순)
+      let reason = 'no_vendor';
+      if (reasons.out_of_range) reason = 'out_of_range';
+      else if (reasons.closed) reason = 'closed';
+      else if (reasons.limit) reason = 'limit';
+      return res.json({ ok: true, dong, products: [], reason });
+    }
 
-    const vendorIds = [...new Set([...zoneVendorIds, ...dongVendorIds])];
-    if (!vendorIds.length) return res.json({ ok: true, dong, products: [], reason: 'no_vendor' });
+    // ── 랭킹: 동 우선 → priority → 평점 → 거리 ──
+    eligible.sort((a, b) =>
+      a.dongExact - b.dongExact ||
+      a.priority - b.priority ||
+      b.score - a.score ||
+      ((a.km ?? 1e9) - (b.km ?? 1e9))
+    );
+    const rank = Object.fromEntries(eligible.map((e, i) => [e.id, i]));
+    const nameMap = Object.fromEntries(eligible.map(e => [e.id, e.name]));
+    const kmMap = Object.fromEntries(eligible.map(e => [e.id, e.km]));
 
-    // 3) 활성 벤더만
-    const { data: vs } = await supabase
-      .from('vendors').select('id, vendor_name').in('id', vendorIds).eq('is_active', true);
-    const activeIds = (vs || []).map(v => v.id);
-    if (!activeIds.length) return res.json({ ok: true, dong, products: [], reason: 'no_active_vendor' });
-    const vendorNameMap = Object.fromEntries((vs || []).map(v => [v.id, v.vendor_name]));
-
-    // 4) 해당 벤더의 당일배송 상품 (재고>0, 활성)
+    // ── 당일배송 상품 (재고>0, 당일수량>0) ──
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
-      .in('vendor_id', activeIds)
+      .in('vendor_id', eligible.map(e => e.id))
       .eq('is_same_day', true)
       .eq('is_active', true)
       .gt('stock', 0)
-      .order('created_at', { ascending: false });
+      .gt('same_day_qty', 0);
     if (error) throw error;
 
     const formatted = (products || []).map(p => ({
       ...p,
       category_name: p.category,
       same_day: true,
-      vendor_name: vendorNameMap[p.vendor_id] || null
-    }));
+      vendor_name: nameMap[p.vendor_id] || null,
+      distance_km: kmMap[p.vendor_id] != null ? Math.round(kmMap[p.vendor_id] * 10) / 10 : null
+    })).sort((a, b) => (rank[a.vendor_id] ?? 99) - (rank[b.vendor_id] ?? 99));
 
-    res.json({ ok: true, dong, products: formatted });
+    res.json({ ok: true, dong, products: formatted, reason: formatted.length ? null : 'no_stock' });
   } catch (err) {
     console.error('[products/same-day]', err);
     res.status(500).json({ error: err.message || '당일배송 상품 조회 오류' });

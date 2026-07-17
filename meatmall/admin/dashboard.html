@@ -883,6 +883,16 @@ function openVendorForm(id){
     <div class="fgrp"><label class="flbl">시</label><input class="finput" id="vf-city" value="${v?.city||''}" placeholder="안산시"></div>
     <div class="fgrp"><label class="flbl">구</label><input class="finput" id="vf-district" value="${v?.district||''}" placeholder="단원구"></div>
     <div class="fgrp"><label class="flbl">동</label><input class="finput" id="vf-dong" value="${v?.dong||''}" placeholder="고잔동"></div>
+  </div>
+  <div class="form-row c1"><div class="fgrp"><label class="flbl" style="font-weight:700;color:#15803D">🚚 당일배송 설정 <span style="color:#9CA3AF;font-weight:400">(반경은 카카오 API 키 설정 시 적용)</span></label></div></div>
+  <div class="form-row c3">
+    <div class="fgrp"><label class="flbl">당일배송 운영</label>
+      <select class="finput" id="vf-sdenabled"><option value="true" ${v?.same_day_enabled!==false?'selected':''}>ON</option><option value="false" ${v?.same_day_enabled===false?'selected':''}>OFF</option></select></div>
+    <div class="fgrp"><label class="flbl">허용 반경(km)</label><input class="finput" id="vf-radius" type="number" step="0.5" value="${v?.same_day_radius_km ?? 8}"></div>
+    <div class="fgrp"><label class="flbl">주문 마감(KST)</label><input class="finput" id="vf-cutoff" type="time" value="${(v?.same_day_cutoff||'14:00').slice(0,5)}"></div>
+  </div>
+  <div class="form-row c3">
+    <div class="fgrp"><label class="flbl">일일 주문한도</label><input class="finput" id="vf-limit" type="number" value="${v?.daily_order_limit ?? 50}"></div>
   </div>`, '저장', async () => {
     const name = document.getElementById('vf-name').value.trim();
     if (!name){ toast('상호명을 입력해주세요'); return; }
@@ -895,6 +905,10 @@ function openVendorForm(id){
       city:           document.getElementById('vf-city').value.trim(),
       district:       document.getElementById('vf-district').value.trim(),
       dong:           document.getElementById('vf-dong').value.trim(),
+      same_day_enabled:   document.getElementById('vf-sdenabled').value === 'true',
+      same_day_radius_km: Number(document.getElementById('vf-radius').value) || 8,
+      same_day_cutoff:    document.getElementById('vf-cutoff').value || '14:00',
+      daily_order_limit:  Number(document.getElementById('vf-limit').value) || 50,
     };
     try {
       if (id) await api('/admin/vendors/' + id, { method: 'PUT', body: JSON.stringify(body) });

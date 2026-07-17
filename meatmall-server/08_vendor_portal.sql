@@ -27,8 +27,13 @@ ALTER TABLE vendor_orders ADD COLUMN IF NOT EXISTS note          TEXT;
 ALTER TABLE vendor_orders ADD COLUMN IF NOT EXISTS created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW();
 ALTER TABLE vendor_orders ADD COLUMN IF NOT EXISTS updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
--- ── 4. (수동) 특정 회원계정을 벤더로 지정하는 예시 ─────────
---   아래는 참고용. 실제 실행 시 이메일/vendor_id를 맞게 바꿔 실행하세요.
--- UPDATE users
---   SET role = 'vendor', vendor_id = 1
---   WHERE email = 'vendor001@example.com';
+-- ── 4. 벤더 계정 연결 방법 안내 ────────────────────────────
+--   이 SQL(컬럼 추가)만 실행하면 됩니다. 실제 "회원계정 ↔ 거래처" 연결은
+--   수동 SQL이 아니라 관리자 페이지에서 처리합니다:
+--     관리자 대시보드 → 거래처관리 → 해당 거래처 [계정] 버튼
+--       → 회원 이메일 입력 후 [연결]  (users.vendor_id·role 자동 세팅)
+--       → [연결해제]로 권한 회수
+--   (백엔드 API: POST /api/admin/vendors/:id/link-account · unlink-account)
+--
+--   ※ 아래는 비상시 참고용 수동 쿼리(평소엔 사용하지 마세요):
+--   -- UPDATE users SET role='vendor', vendor_id=1 WHERE email='vendor001@example.com';

@@ -237,12 +237,22 @@ async function loadSameDay(){
     const ad=await ar.json(); const addrs=ad.addresses||[]; if(!addrs.length) return;
     const def=addrs.find(a=>a.is_default)||addrs[0];
     const dong=parseDong(def.address1); if(!dong) return;
-    const r=await fetch(API+'/products/same-day?dong='+encodeURIComponent(dong));
+    const r=await fetch(API+'/products/same-day?dong='+encodeURIComponent(dong)+'&address_id='+encodeURIComponent(def.id),{headers:{Authorization:'Bearer '+tok}});
     if(!r.ok) return;
-    const d=await r.json(); const prods=d.products||[]; if(!prods.length) return;
+    const d=await r.json(); const prods=d.products||[];
+    const sec=document.getElementById('sameday-sec');
     document.getElementById('sameday-dong').textContent='· '+dong;
-    document.getElementById('sameday-grid').innerHTML=prods.slice(0,6).map(sameDayCard).join('');
-    document.getElementById('sameday-sec').style.display='block';
+    if(prods.length){
+      document.getElementById('sameday-grid').innerHTML=prods.slice(0,6).map(sameDayCard).join('');
+      sec.style.display='block';
+      return;
+    }
+    // 상품 없음 → 사유별 안내 (권역밖/마감만 노출)
+    const msg={out_of_range:'현재 배송지는 당일배송 권역 밖입니다.',closed:'오늘 당일배송 주문이 마감되었습니다.',limit:'당일배송 주문이 많아 마감되었습니다.'}[d.reason];
+    if(msg){
+      document.getElementById('sameday-grid').innerHTML='<div style="grid-column:1/-1;padding:16px;border:1px solid rgba(201,168,76,.2);border-radius:10px;color:#9CA3AF;font-size:.82rem;text-align:center">'+msg+'<br><span style="font-size:.72rem">일반배송으로 주문하실 수 있습니다.</span></div>';
+      sec.style.display='block';
+    }
   }catch(e){}
 }
 loadSameDay();
