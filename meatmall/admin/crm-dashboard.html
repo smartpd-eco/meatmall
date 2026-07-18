@@ -139,7 +139,7 @@ textarea.finput{resize:vertical;min-height:90px}
 .ai-discount{font-size:1.1rem;font-weight:800;color:#C9A84C}
 </style>
 <script>window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()})</script>
-<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){if(/iP(hone|ad|od)/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&(navigator.maxTouchPoints||0)>1)){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)}return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
 </head>
 <body>
 <div class="adm">

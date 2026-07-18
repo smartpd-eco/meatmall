@@ -1,9 +1,16 @@
-/* ── API 도메인 폴백: api.meatbonga.com 미전파/실패 시 기존 vercel 도메인으로 자동 재시도 (무중단 전환용) ── */
+/* ── API 도메인 폴백: api.meatbonga.com 미전파/실패 시 기존 vercel 도메인으로 자동 재시도 (무중단 전환용)
+   iOS/iPadOS는 커스텀 도메인(api.meatbonga.com)에서 상품 로딩 실패 사례가 있어(엄격한 SSL/도메인 처리)
+   처음부터 meatmall.vercel.app로 요청. 안드로이드/기타는 기존 동작 유지(api 우선 → 실패 시 vercel). ── */
 (function(){
   if (window.__mmFetchPatched) return; window.__mmFetchPatched = true;
+  var ua = navigator.userAgent || '';
+  var IS_IOS = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
   var orig = window.fetch.bind(window);
   window.fetch = function(u, opt){
     if (typeof u === 'string' && u.indexOf('api.meatbonga.com') > -1){
+      if (IS_IOS){
+        return orig(u.replace('api.meatbonga.com','meatmall.vercel.app'), opt);
+      }
       return orig(u, opt).catch(function(){
         return orig(u.replace('api.meatbonga.com','meatmall.vercel.app'), opt);
       });

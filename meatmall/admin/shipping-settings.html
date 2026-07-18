@@ -29,7 +29,7 @@ body{background:var(--bg);color:var(--txt);min-height:100vh}
 .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#222;border:1px solid var(--gold);color:#fff;padding:11px 20px;border-radius:24px;font-size:.86rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:100}
 .toast.show{opacity:1}
 </style>
-<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){if(/iP(hone|ad|od)/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&(navigator.maxTouchPoints||0)>1)){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)}return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
 <style>
 /* ===== LIGHT THEME + FIXED SIDEBAR ===== */
 :root{--gold:#16A34A;--bg:#F4F6F8;--card:#fff;--line:#E5E7EB;--txt:#1F2937;--sub:#6B7280}
