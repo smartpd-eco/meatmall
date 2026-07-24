@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>관리자 모바일 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#2F80ED;--ink:#111827;--muted:#6B7280;--line:#EEF0F4;--panel:#fff;--bg:#FAFAFB}
+body{min-height:100vh;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}
+button{border:0;background:none;cursor:pointer}
+a{text-decoration:none;color:inherit}
+.app{min-height:100vh;padding:14px 18px calc(92px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto;background:linear-gradient(180deg,#fff 0%,#FAFAFB 48%,#F8F9FB 100%)}
+.topbar{height:62px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;border-bottom:1px solid var(--line);margin:0 -18px;padding:0 18px;background:rgba(255,255,255,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(14px)}
+.icon-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;color:#1F2937;transition:transform .15s,background .15s}
+.icon-btn:active{transform:scale(.96);background:#F3F4F6}
+.hamb{display:grid;gap:5px;width:22px}.hamb span{display:block;height:2px;background:#1F2937;border-radius:99px}
+.brand{display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;font-weight:800;letter-spacing:-.01em}
+.brand img{width:34px;height:34px;object-fit:contain}
+.bell{position:relative;font-size:1.45rem}.badge-dot{position:absolute;right:3px;top:4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:white;font-size:.68rem;font-weight:800;display:grid;place-items:center;border:2px solid #fff}
+.hero{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:28px 0 18px}
+.hello h1{font-size:1.45rem;line-height:1.25;font-weight:800;letter-spacing:-.02em}
+.hello p{margin-top:8px;color:#4B5563;font-size:1rem;font-weight:500}
+.date-btn{display:inline-flex;align-items:center;gap:6px;padding:11px 14px;border:1px solid #E5E7EB;border-radius:11px;background:#fff;color:#374151;font-weight:700;box-shadow:0 5px 16px rgba(17,24,39,.04);white-space:nowrap}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:28px}
+.kpi{min-height:118px;border-radius:12px;padding:16px 8px 13px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;box-shadow:0 10px 28px rgba(17,24,39,.05)}
+.kpi:nth-child(1){background:linear-gradient(135deg,#EEF6FF,#F8FBFF)}
+.kpi:nth-child(2){background:linear-gradient(135deg,#ECFFF6,#F7FFFB)}
+.kpi:nth-child(3){background:linear-gradient(135deg,#F6F0FF,#FCFAFF)}
+.kpi:nth-child(4){background:linear-gradient(135deg,#FFF6EA,#FFFDFC)}
+.kpi-ico{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:1.25rem;background:rgba(255,255,255,.66);box-shadow:inset 0 0 0 1px rgba(255,255,255,.65)}
+.kpi-lbl{font-size:.82rem;color:#4B5563;font-weight:600}
+.kpi-val{font-size:1.05rem;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.kpi-sub{font-size:.78rem;color:#6B7280;font-weight:700}.up{color:#10B981}.down{color:#EF4444}
+.section{background:var(--panel);border:1px solid #F0F1F4;border-radius:14px;box-shadow:0 10px 26px rgba(17,24,39,.045);padding:20px;margin-bottom:22px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.section-title{font-size:1.08rem;font-weight:800;letter-spacing:-.01em}
+.pill{padding:7px 10px;border-radius:999px;background:#F8FAFC;color:#6B7280;font-size:.78rem;font-weight:700}
+.link-more{display:inline-flex;align-items:center;gap:4px;color:#6B7280;font-weight:600;font-size:.9rem}
+.quick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.quick{display:grid;justify-items:center;gap:9px;min-width:0}
+.quick-box{width:50px;height:50px;border:1px solid #E9EDF3;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:1.45rem;color:#374151;box-shadow:0 8px 18px rgba(17,24,39,.04)}
+.quick span{font-size:.82rem;font-weight:700;white-space:nowrap}
+.order-list,.notice-list{display:grid;gap:0}
+.order{display:grid;grid-template-columns:minmax(88px,1.05fr) minmax(0,1.7fr) auto auto 14px;gap:9px;align-items:center;padding:14px 0;border-bottom:1px solid #EEF0F4}
+.order:last-child{border-bottom:0}
+.ord-no{font-size:.74rem;font-weight:800;color:#4F8FEF;word-break:break-all}
+.ord-name{font-size:.73rem;color:#6B7280;margin-top:4px}
+.prod{font-size:.8rem;font-weight:700;color:#20242C;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.amount{font-size:.84rem;font-weight:800;white-space:nowrap}
+.chev{color:#9CA3AF;font-size:1.15rem}
+.status{padding:6px 9px;border-radius:9px;font-size:.74rem;font-weight:800;white-space:nowrap}
+.st-paid,.st-delivered{background:#DFF8EC;color:#059669}.st-shipping{background:#E7F1FF;color:#2563EB}.st-preparing{background:#F3E8FF;color:#7C3AED}.st-pending{background:#FFF4CC;color:#B45309}.st-cancelled{background:#FEE2E2;color:#DC2626}
+.notice{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #EEF0F4}
+.notice:last-child{border-bottom:0}
+.notice-tag{padding:7px 10px;border-radius:9px;background:#EEF5FF;color:#367AE6;font-size:.78rem;font-weight:800}
+.notice-tag.gray{background:#F3F4F6;color:#6B7280}
+.notice-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notice-date{color:#6B7280;font-size:.85rem;white-space:nowrap}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid #E8EBF0;backdrop-filter:blur(16px);padding:7px max(14px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-right));box-shadow:0 -8px 24px rgba(17,24,39,.04)}
+.bottom-inner{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.nav-item{display:grid;justify-items:center;gap:4px;color:#111827;font-size:.75rem;font-weight:700;padding:6px 0;border-radius:12px}
+.nav-item b{font-size:1.25rem;line-height:1}.nav-item.on{color:var(--blue)}
+.drawer{position:fixed;inset:0;z-index:50;display:none}.drawer.show{display:block}.shade{position:absolute;inset:0;background:rgba(17,24,39,.32)}.drawer-panel{position:absolute;left:0;top:0;bottom:0;width:min(82vw,320px);background:#fff;padding:22px 18px;box-shadow:18px 0 40px rgba(17,24,39,.16);transform:translateX(-100%);transition:transform .2s}.drawer.show .drawer-panel{transform:translateX(0)}
+.drawer-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.2rem;margin-bottom:22px}.drawer-brand img{width:32px;height:32px}.drawer a,.drawer button{width:100%;display:flex;align-items:center;gap:10px;padding:14px 10px;border-radius:12px;font-weight:700;color:#374151}.drawer a:active,.drawer button:active{background:#F3F4F6}
+.empty{padding:18px 0;text-align:center;color:#9CA3AF;font-weight:600}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(8px);background:#111827;color:#fff;border-radius:999px;padding:10px 16px;font-size:.84rem;font-weight:700;opacity:0;transition:.2s;z-index:60;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:769px){.app{border-left:1px solid #EEF0F4;border-right:1px solid #EEF0F4}.bottom-nav{display:none}}
+@media(max-width:390px){.app{padding-left:14px;padding-right:14px}.topbar{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}.kpis{gap:8px}.kpi{padding-left:5px;padding-right:5px}.kpi-val{font-size:.96rem}.quick-grid{gap:8px}.quick-box{width:46px;height:46px}.order{grid-template-columns:minmax(82px,1fr) minmax(0,1.35fr) auto}.amount{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <button class="icon-btn" onclick="openDrawer()" aria-label="관리자 메뉴 열기"><i class="hamb"><span></span><span></span><span></span></i></button>
+    <div class="brand"><img src="../images/logo.png" alt="">정육본가</div>
+    <button class="icon-btn bell" onclick="toast('새 알림을 확인했습니다')" aria-label="알림">🔔<span class="badge-dot" id="bell-count">3</span></button>
+  </header>
+
+  <section class="hero">
+    <div class="hello">
+      <h1>안녕하세요, 관리자님 👋</h1>
+      <p>오늘도 스마트한 운영을 시작해보세요.</p>
+    </div>
+    <button class="date-btn" onclick="refreshMobile()">오늘⌄</button>
+  </section>
+
+  <section class="kpis">
+    <article class="kpi"><div class="kpi-ico">📄</div><div class="kpi-lbl">오늘 주문</div><div class="kpi-val" id="kpi-orders">-</div><div class="kpi-sub">▲ 12%</div></article>
+    <article class="kpi"><div class="kpi-ico">₩</div><div class="kpi-lbl">오늘 매출</div><div class="kpi-val" id="kpi-sales">-</div><div class="kpi-sub up">▲ 8%</div></article>
+    <article class="kpi"><div class="kpi-ico">📦</div><div class="kpi-lbl">배송중</div><div class="kpi-val" id="kpi-shipping">-</div><div class="kpi-sub">-</div></article>
+    <article class="kpi"><div class="kpi-ico">👥</div><div class="kpi-lbl">신규 회원</div><div class="kpi-val" id="kpi-users">-</div><div class="kpi-sub down">▲ 16%</div></article>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2 class="section-title">빠른 메뉴</h2><span class="pill">관리자 전용</span></div>
+    <div class="quick-grid">
+      <a class="quick" href="dashboard.html?tab=orders&desktop=1"><span class="quick-box">📋</span><span>주문 관리</span></a>
+      <a class="quick" href="products.html"><span class="quick-box">📦</span><span>상품 관리</span></a>
+      <a class="quick" href="dashboard.html?tab=vendors&desktop=1"><span class="quick-box">🏪</span><span>벤더 관리</span></a>
+      <a class="quick" href="shipping-settings.html"><span class="quick-box">🚚</span><span>배송 관리</span></a>
+      <a class="quick" href="dashboard.html?tab=revenue&desktop=1"><span class="quick-box">📊</span><span>매출 통계</span></a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2 class="section-title">최근 주문</h2><a class="link-more" href="dashboard.html?tab=orders&desktop=1">전체 보기 ›</a></div>
+    <div class="order-list" id="recent-orders"><div class="empty">주문을 불러오는 중입니다.</div></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2 class="section-title">공지사항</h2><a class="link-more" href="dashboard.html?tab=cs&desktop=1">전체 보기 ›</a></div>
+    <div class="notice-list">
+      <div class="notice"><span class="notice-tag">공지</span><div class="notice-title">7월 정기 점검 안내</div><time class="notice-date">2026-07-25</time></div>
+      <div class="notice"><span class="notice-tag gray">업데이트</span><div class="notice-title">관리자 모바일 UI 적용</div><time class="notice-date">2026-07-25</time></div>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom-nav" aria-label="관리자 모바일 하단 메뉴">
+  <div class="bottom-inner">
+    <a class="nav-item on" href="mobile-dashboard.html"><b>🏠</b><span>대시보드</span></a>
+    <a class="nav-item" href="dashboard.html?tab=orders&desktop=1"><b>📋</b><span>주문</span></a>
+    <a class="nav-item" href="products.html"><b>📦</b><span>상품</span></a>
+    <a class="nav-item" href="dashboard.html?tab=revenue&desktop=1"><b>📊</b><span>통계</span></a>
+    <a class="nav-item" href="pwa-settings.html"><b>⚙️</b><span>설정</span></a>
+  </div>
+</nav>
+
+<aside class="drawer" id="drawer">
+  <div class="shade" onclick="closeDrawer()"></div>
+  <div class="drawer-panel">
+    <div class="drawer-brand"><img src="../images/logo.png" alt="">정육본가 관리자</div>
+    <a href="mobile-dashboard.html">🏠 모바일 대시보드</a>
+    <a href="dashboard.html?desktop=1">💻 PC 관리자 보기</a>
+    <a href="../index.html">🛒 쇼핑몰 바로가기</a>
+    <button onclick="logout()">🚪 로그아웃</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='https://api.meatbonga.com/api';
+let TOKEN='';
+function go(u){ location.href=u; }
+function fmt(n){ return Number(n||0).toLocaleString('ko-KR'); }
+function money(n){ return fmt(n)+'원'; }
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2300); }
+function hdrs(){ return { Authorization:'Bearer '+TOKEN, 'Content-Type':'application/json' }; }
+async function api(path,opts={}){ const r=await fetch(API+path,{headers:{...hdrs(),...(opts.headers||{})},...opts}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||d.message||'API 오류 '+r.status); return d; }
+function openDrawer(){ document.getElementById('drawer').classList.add('show'); }
+function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); }
+function logout(){ if(!confirm('로그아웃 하시겠습니까?')) return; ['mm_access_token','mm_user_cache','mm_last_active','mm_admin'].forEach(k=>localStorage.removeItem(k)); go('../login.html'); }
+function itemName(o){ return (o.order_items||[]).map(i=>i.name).filter(Boolean).join(', ') || o.product_name || '-'; }
+function statusClass(s){ return ({pending:'st-pending',preparing:'st-preparing',shipping:'st-shipping',delivered:'st-delivered',cancelled:'st-cancelled'}[s]||'st-paid'); }
+function statusLabel(o){
+  if(o.status==='preparing'&&o.payment_status==='paid') return '결제완료';
+  return ({pending:'대기',preparing:'준비중',shipping:'배송중',delivered:'배송완료',cancelled:'취소'}[o.status]||o.status||'확인');
+}
+function isToday(v){
+  if(!v) return false;
+  const d=new Date(v);
+  if(Number.isNaN(d.getTime())) return false;
+  const now=new Date();
+  return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()&&d.getDate()===now.getDate();
+}
+function renderOrders(list){
+  const box=document.getElementById('recent-orders');
+  if(!list.length){ box.innerHTML='<div class="empty">최근 주문이 없습니다.</div>'; return; }
+  box.innerHTML=list.slice(0,3).map(o=>`
+    <a class="order" href="dashboard.html?tab=orders&desktop=1">
+      <div><div class="ord-no">${o.order_number||'-'}</div><div class="ord-name">${o.recipient||o.name||'-'}</div></div>
+      <div class="prod">${itemName(o)}</div>
+      <span class="status ${statusClass(o.status)}">${statusLabel(o)}</span>
+      <strong class="amount">${money(o.final_amount||o.total_amount||0)}</strong>
+      <span class="chev">›</span>
+    </a>`).join('');
+}
+async function refreshMobile(){
+  toast('새로고침 중입니다');
+  await loadMobile();
+}
+async function loadMobile(){
+  try{
+    TOKEN=localStorage.getItem('mm_access_token')||'';
+    if(!TOKEN){ go('../login.html'); return; }
+    const me=await api('/auth/me');
+    if(!me.user||!me.user.is_admin){ go('../login.html'); return; }
+    const [ordersRes,usersRes]=await Promise.all([
+      api('/admin/orders?limit=50').catch(()=>({orders:[],total:0})),
+      api('/admin/users?limit=200').catch(()=>({users:[],total:0}))
+    ]);
+    const orders=ordersRes.orders||[];
+    const todayOrders=orders.filter(o=>isToday(o.created_at));
+    const todayUsers=(usersRes.users||[]).filter(u=>isToday(u.created_at));
+    const todaySales=todayOrders.reduce((sum,o)=>sum+Number(o.final_amount||o.total_amount||0),0);
+    const shipping=orders.filter(o=>o.status==='shipping').length;
+    document.getElementById('kpi-orders').textContent=todayOrders.length+'건';
+    document.getElementById('kpi-sales').textContent=money(todaySales);
+    document.getElementById('kpi-shipping').textContent=shipping+'건';
+    document.getElementById('kpi-users').textContent=todayUsers.length+'명';
+    renderOrders(orders);
+  }catch(e){
+    document.getElementById('recent-orders').innerHTML='<div class="empty">데이터를 불러오지 못했습니다.</div>';
+    toast(e.message||'데이터 오류');
+  }
+}
+loadMobile();
+</script>
+</body>
+</html>
