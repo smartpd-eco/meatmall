@@ -274,7 +274,6 @@ window.getCachedImage = (url) => {
   function doLogout(){
     if(!isLoggedIn()) return;
     clearSession();
-    try{ alert('장시간 활동이 없어 자동 로그아웃되었습니다. 다시 로그인해주세요.'); }catch(e){}
     location.href = location.pathname.indexOf('/meatmall/') === 0 ? '/meatmall/login.html' : '/login.html';
   }
   function reset(){
