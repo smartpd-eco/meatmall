@@ -125,6 +125,16 @@ window.addEventListener('pageshow', function(e){
       </div>
     </div>
 
+    <!-- 배송방식 -->
+    <div>
+      <div style="font-size:1.0625rem;font-weight:700;color:var(--dark);margin-bottom:4px">🚚 배송방식</div>
+      <div class="pay-methods" id="ship-methods">
+        <div class="pay-chip" id="dtype-same" onclick="selDelivery('same_day')">⚡ 당일배송</div>
+        <div class="pay-chip on" id="dtype-std" onclick="selDelivery('standard')">📦 일반배송</div>
+      </div>
+      <div id="dtype-desc" style="font-size:.8125rem;color:var(--gray-txt);margin-top:6px;line-height:1.55"></div>
+    </div>
+
     <!-- 결제수단 -->
     <div>
       <div style="font-size:1.0625rem;font-weight:700;color:var(--dark);margin-bottom:4px">💳 결제수단</div>
@@ -210,11 +220,17 @@ Store.load(); updateCartBadge();
 
 // 결제 설정 API에서 동적 로드
 let payConfig = {
-  clientKey: '',   // 서버 /payment/config에서 주입. 하드코딩 테스트 키 제거(폴백 실패 시 카드결제 비활성화가 안전)
+  clientKey: 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq',
   isTest: true,
   vbank: { bank:'기업은행', account:'123-456789-01-001', holder:'(주)정육본가' },
-  freeShipping: 50000, deliveryFee: 3500,
+  freeShipping: 50000, deliveryFee: 3500, freeAll: false,
 };
+// 배송비 계산 — 서버 배송비 정책(freeAll/freeShipping/deliveryFee) 기반
+function calcShip(selTotal){
+  if(!selTotal || selTotal<=0) return 0;
+  if(payConfig.freeAll) return 0;
+  return selTotal >= (payConfig.freeShipping||50000) ? 0 : (payConfig.deliveryFee||3500);
+}
 // 토스페이먼츠 결제창(Payment Window) 인스턴스
 let tossPayments=null, tossPayment=null;
 function ensurePayment(){
@@ -243,6 +259,25 @@ function ensurePayment(){
 
 let selected = new Set(Store.cart.map(c=>c.productId));
 let payMode = 'WIDGET';   // 'WIDGET'(카드·간편결제) | 'VBANK'(무통장)
+// 배송방식: 'same_day'(당일, 오전9~오후5시 발주) | 'standard'(일반 택배)
+let deliveryType = 'standard';
+function kstHour(){ try{ return Number(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul',hour:'2-digit',hour12:false})); }catch(e){ return new Date().getHours(); } }
+function sameDayOpen(){ const h=kstHour(); return h>=9 && h<17; }
+function selDelivery(t){
+  deliveryType=t;
+  const same=document.getElementById('dtype-same'), std=document.getElementById('dtype-std'), d=document.getElementById('dtype-desc');
+  if(same) same.classList.toggle('on', t==='same_day');
+  if(std) std.classList.toggle('on', t==='standard');
+  if(d) d.innerHTML = t==='same_day'
+    ? '⚡ 오전 9시~오후 5시 발주 건은 제휴 정육점이 <b>당일 배송</b>합니다. (서비스 지역 한정)'
+    : '📦 좋은축산에서 택배로 발송합니다. 발주 후 <b>1~2일</b> 소요.';
+}
+function initDelivery(){
+  const same=document.getElementById('dtype-same');
+  if(sameDayOpen()){ if(same) same.style.display=''; }
+  else { if(same) same.style.display='none'; deliveryType='standard'; }  // 시간외: 당일배송 숨김
+  selDelivery(deliveryType);
+}
 let userPoint = 0;
 let selectedAddr = null;
 
@@ -319,7 +354,7 @@ function selectAddr(i){
 function renderCart(){
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
   const selTotal=selItems.reduce((s,c)=>s+c.price*c.qty,0);
-  const delivery=selTotal>=50000?0:(selTotal>0?3500:0);
+  const delivery=calcShip(selTotal);
   document.getElementById('cart-cnt').textContent=`(${Store.cart.length}개)`;
 
   if(Store.cart.length===0){
@@ -359,7 +394,11 @@ function renderCart(){
     </div>
     <div class="cart-del" onclick="removeItem('${c.productId}')">✕</div>
   </div>`).join('')}
-  ${selTotal>0&&selTotal<50000?`<div style="padding:12px 18px;background:#FFFBF5;font-size:.8125rem;color:var(--secondary)">🚚 <strong>${fmt(50000-selTotal)}원</strong> 더 담으면 무료배송!</div>`:selTotal>=50000?`<div style="padding:12px 18px;background:var(--green-light);font-size:.8125rem;color:var(--green);font-weight:700">✅ 무료배송 혜택 적용!</div>`:''}
+  ${(()=>{ const th=payConfig.freeAll?0:(payConfig.freeShipping||50000);
+    if(payConfig.freeAll) return `<div style="padding:12px 18px;background:var(--green-light);font-size:.8125rem;color:var(--green);font-weight:700">✅ 전 상품 무료배송!</div>`;
+    if(selTotal>0&&selTotal<th) return `<div style="padding:12px 18px;background:#FFFBF5;font-size:.8125rem;color:var(--secondary)">🚚 <strong>${fmt(th-selTotal)}원</strong> 더 담으면 무료배송!</div>`;
+    if(selTotal>=th) return `<div style="padding:12px 18px;background:var(--green-light);font-size:.8125rem;color:var(--green);font-weight:700">✅ 무료배송 혜택 적용!</div>`;
+    return ''; })()}
   <div class="order-summary">
     <div class="sum-row"><span>상품금액 (${selItems.length}개)</span><span>${fmt(selTotal)}원</span></div>
     <div class="sum-row"><span>배송비</span><span>${delivery===0?'<span style="color:var(--green)">무료</span>':fmt(delivery)+'원'}</span></div>
@@ -402,6 +441,7 @@ function openCheckout(){
   document.getElementById('vbank-section').style.display='none';
   document.getElementById('toss-widget-section').style.display='block';
   document.getElementById('point-use').value='';
+  initDelivery();   // 배송방식 초기화(시간외 당일 숨김)
   calcFinal();
   document.getElementById('pay-overlay').classList.add('open');
   paySheet.classList.add('open');
@@ -430,7 +470,7 @@ function selPayMode(el,mode){
 function useAllPoint(){
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
   const selTotal=selItems.reduce((s,c)=>s+c.price*c.qty,0);
-  const delivery=selTotal>=50000?0:3500;
+  const delivery=calcShip(selTotal);
   document.getElementById('point-use').value=Math.max(0,Math.min(userPoint,selTotal+delivery-100));
   calcFinal();
 }
@@ -438,13 +478,12 @@ function useAllPoint(){
 function calcFinal(){
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
   const selTotal=selItems.reduce((s,c)=>s+c.price*c.qty,0);
-  const delivery=selTotal>=50000?0:3500;
+  const delivery=calcShip(selTotal);
   const pt=Math.min(Number(document.getElementById('point-use').value)||0,userPoint,selTotal+delivery-100);
   const final=Math.max(0,selTotal+delivery-pt);
   document.getElementById('sh-point').textContent=`-${fmt(pt)}원`;
   document.getElementById('sh-final').textContent=fmt(final)+'원';
   document.getElementById('pay-btn-text').textContent=`${fmt(final)}원 결제하기`;
-  return final;
 }
 
 function showPayNotice(){
@@ -538,6 +577,7 @@ async function doPay(){
         deliveryNote: selectedAddr.deliveryNote||'',
         pointUse:     pt,
         paymentMethod:payMode==='VBANK'?'VBANK':'CARD',
+        deliveryType: deliveryType,
         depositorName:payMode==='VBANK'?document.getElementById('depositor-name').value.trim():null,
         bankName:     payMode==='VBANK'?document.getElementById('bank-name').value:null,
       })
