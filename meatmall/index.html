@@ -84,14 +84,6 @@
     <div class="vvip-chip"><span class="i">📞</span>1:1 전담 CS</div>
   </div>
 
-  <div id="sameday-sec" style="display:none">
-    <div style="display:flex;align-items:baseline;justify-content:space-between;padding:16px 14px 6px">
-      <div class="dk-title" style="margin:0">🚀 우리동네 당일배송 <span id="sameday-dong" style="font-size:.72rem;color:var(--gold);font-weight:700"></span></div>
-    </div>
-    <div style="font-size:.72rem;color:#9CA3AF;padding:0 14px 8px">오전 9시~오후 5시 주문 시 지역 정육점에서 당일 배송</div>
-    <div class="prd-grid" id="sameday-grid"></div>
-  </div>
-
   <div class="cat-tabs" id="cat-tabs">
     <div class="cat-tab on" onclick="selCat('',this)">전체</div>
   </div>
@@ -145,7 +137,7 @@ function render(list){
   grid.innerHTML=avail.map(p=>{
     const disc=p.origin_price?Math.round((1-p.price/p.origin_price)*100):0;
     return `<div class="pcard" onclick="go('pages/product.html?id=${p.id}')">
-    <div class="pcard-thumb">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px 8px 0 0;" loading="lazy" onerror="this.parentElement.innerHTML='<div style=position:absolute;inset:0;background:#2a2a2a;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center><span style=color:#555;font-size:11px>이미지 준비중</span></div>'">`:`<div style="position:absolute;inset:0;background:#2a2a2a;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;"><span style="color:#555;font-size:11px;">이미지 준비중</span></div>`}
+    <div class="pcard-thumb">${p.thumbnail_url?`<img src="${mmImg(p.thumbnail_url,400,70)}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px 8px 0 0;" loading="lazy" onerror="this.parentElement.innerHTML='<div style=position:absolute;inset:0;background:#2a2a2a;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center><span style=color:#555;font-size:11px>이미지 준비중</span></div>'">`:`<div style="position:absolute;inset:0;background:#2a2a2a;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;"><span style="color:#555;font-size:11px;">이미지 준비중</span></div>`}
       ${disc>0?`<div class="disc-badge">${disc}%</div>`:''}
       ${p.haccp?`<div style="position:absolute;top:7px;right:7px;background:rgba(0,0,0,.7);border:1px solid var(--gold-bdr);color:var(--gold);font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px">HACCP</div>`:''}
     </div>
@@ -169,9 +161,8 @@ async function fetchRetry(url, tries){
   let lastErr;
   for(let i=0;i<tries;i++){
     // 홀수 시도는 대체 API 도메인으로 (사내망 등 특정 도메인 차단 우회)
-    // 재시도(홀수 회차)는 대체 도메인으로 — iOS/WeChat 등에서 api.meatbonga.com 차단 시 우회
     const u = (i % 2 === 1)
-      ? url.replace('api.meatbonga.com', 'meatmall.vercel.app').replace('meatmall-server.vercel.app', 'meatmall.vercel.app')
+      ? url.replace('meatmall-server.vercel.app', 'meatmall.vercel.app')
       : url;
     try{
       const r = await fetch(u);
@@ -211,52 +202,6 @@ async function loadCats(){
   }catch(e){}
 }
 Promise.all([loadPrds(''),loadCats()]);
-
-/* ── 우리동네 당일배송 (MD2 동단위 노출) ── */
-function parseDong(a){const m=(a||'').match(/([가-힣A-Za-z0-9]+동)(?![가-힣])/);return m?m[1]:''}
-function sameDayCard(p){
-  const disc=p.origin_price?Math.round((1-p.price/p.origin_price)*100):0;
-  return `<div class="pcard" onclick="go('pages/product.html?id=${p.id}')">
-    <div class="pcard-thumb">${p.thumbnail_url?`<img src="${p.thumbnail_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px 8px 0 0" loading="lazy">`:`<div style="position:absolute;inset:0;background:#2a2a2a;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center"><span style="color:#555;font-size:11px">이미지 준비중</span></div>`}
-      <div style="position:absolute;top:7px;left:7px;background:#16A34A;color:#fff;font-size:.6rem;font-weight:800;padding:3px 7px;border-radius:5px">당일배송</div>
-    </div>
-    <div class="pcard-info">
-      <div class="pcard-cat">${p.vendor_name||p.category_name||CAT[p.category]||p.category||''}</div>
-      <div class="pcard-name">${p.name}</div>
-      <div class="pcard-weight">${p.origin||'국내산'} · ${p.weight_g||0}g</div>
-      <div style="display:flex;align-items:baseline;gap:5px">
-        <span style="font-size:1rem;font-weight:800;color:var(--white)">${fmt(p.price)}원</span>
-        ${disc>0?`<span style="font-size:.72rem;font-weight:700;color:var(--gold)">${disc}%↓</span>`:''}
-      </div>
-    </div></div>`;
-}
-async function loadSameDay(){
-  const tok=localStorage.getItem('mm_access_token'); if(!tok) return;
-  try{
-    const ar=await fetch(API+'/addresses',{headers:{Authorization:'Bearer '+tok}});
-    if(!ar.ok) return;
-    const ad=await ar.json(); const addrs=ad.addresses||[]; if(!addrs.length) return;
-    const def=addrs.find(a=>a.is_default)||addrs[0];
-    const dong=parseDong(def.address1); if(!dong) return;
-    const r=await fetch(API+'/products/same-day?dong='+encodeURIComponent(dong)+'&address_id='+encodeURIComponent(def.id),{headers:{Authorization:'Bearer '+tok}});
-    if(!r.ok) return;
-    const d=await r.json(); const prods=d.products||[];
-    const sec=document.getElementById('sameday-sec');
-    document.getElementById('sameday-dong').textContent='· '+dong;
-    if(prods.length){
-      document.getElementById('sameday-grid').innerHTML=prods.slice(0,6).map(sameDayCard).join('');
-      sec.style.display='block';
-      return;
-    }
-    // 상품 없음 → 사유별 안내 (권역밖/마감만 노출)
-    const msg={out_of_range:'현재 배송지는 당일배송 권역 밖입니다.',closed:'오늘 당일배송 주문이 마감되었습니다.',limit:'당일배송 주문이 많아 마감되었습니다.'}[d.reason];
-    if(msg){
-      document.getElementById('sameday-grid').innerHTML='<div style="grid-column:1/-1;padding:16px;border:1px solid rgba(201,168,76,.2);border-radius:10px;color:#9CA3AF;font-size:.82rem;text-align:center">'+msg+'<br><span style="font-size:.72rem">일반배송으로 주문하실 수 있습니다.</span></div>';
-      sec.style.display='block';
-    }
-  }catch(e){}
-}
-loadSameDay();
 </script>
 <script>
 /* ── PWA 설치 UI는 js/pwa-install.js(플로팅 버튼)로 이관 (MD_031) ── */

@@ -1,16 +1,9 @@
-/* ── API 도메인 폴백: api.meatbonga.com 미전파/실패 시 기존 vercel 도메인으로 자동 재시도 (무중단 전환용)
-   iOS/iPadOS는 커스텀 도메인(api.meatbonga.com)에서 상품 로딩 실패 사례가 있어(엄격한 SSL/도메인 처리)
-   처음부터 meatmall.vercel.app로 요청. 안드로이드/기타는 기존 동작 유지(api 우선 → 실패 시 vercel). ── */
+/* ── API 도메인 폴백: api.meatbonga.com 미전파/실패 시 기존 vercel 도메인으로 자동 재시도 (무중단 전환용) ── */
 (function(){
   if (window.__mmFetchPatched) return; window.__mmFetchPatched = true;
-  var ua = navigator.userAgent || '';
-  var IS_IOS = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
   var orig = window.fetch.bind(window);
   window.fetch = function(u, opt){
     if (typeof u === 'string' && u.indexOf('api.meatbonga.com') > -1){
-      if (IS_IOS){
-        return orig(u.replace('api.meatbonga.com','meatmall.vercel.app'), opt);
-      }
       return orig(u, opt).catch(function(){
         return orig(u.replace('api.meatbonga.com','meatmall.vercel.app'), opt);
       });
@@ -36,20 +29,6 @@ const Store = {
       this.user      = JSON.parse(localStorage.getItem('mm_user') || 'null');
       this.cart      = JSON.parse(localStorage.getItem('mm_cart') || '[]');
       this.wishlist  = JSON.parse(localStorage.getItem('mm_wishlist') || '[]');
-    } catch(e) {}
-    // ── 계정 경계 격리: 로그인 사용자가 바뀌면 장바구니/찜 초기화 ──
-    //   (전역 mm_cart 가 이전 계정/게스트 담긴 채 신규 계정에 노출되는 문제 방지)
-    try {
-      const cache    = JSON.parse(localStorage.getItem('mm_user_cache') || 'null');
-      const curOwner = (cache && cache.id) ? String(cache.id) : '';
-      const saved    = localStorage.getItem('mm_cart_owner');
-      if (saved === null || saved !== curOwner) {
-        this.cart = [];
-        this.wishlist = [];
-        localStorage.setItem('mm_cart', '[]');
-        localStorage.setItem('mm_wishlist', '[]');
-        localStorage.setItem('mm_cart_owner', curOwner);
-      }
     } catch(e) {}
   },
   save() {
@@ -80,13 +59,8 @@ const Store = {
   // 로그아웃
   logout() {
     this.user = null;
-    this.cart = [];
-    this.wishlist = [];
     localStorage.removeItem('mm_user');
     localStorage.removeItem('mm_addresses');
-    localStorage.setItem('mm_cart', '[]');
-    localStorage.setItem('mm_wishlist', '[]');
-    localStorage.removeItem('mm_cart_owner');
     toast('로그아웃 되었습니다');
   }
 };
@@ -224,12 +198,25 @@ if (document.readyState === 'loading') {
   showAdminBtn();
 }
 
+// ── 상품 이미지 URL 최적화 (Supabase Storage 이미지 리사이즈) ──
+// 원본(object/public, ~450KB)을 render/image/public 변환 엔드포인트로 바꿔
+// 화면 크기에 맞게 축소·압축(~40KB)해 전송 → 이미지 출력 지연 제거.
+// data:/외부 URL 또는 변환 대상이 아니면 원본 그대로 반환(안전).
+function mmImg(url, width, quality) {
+  if (!url || typeof url !== 'string') return url;
+  if (!url.includes('/storage/v1/object/public/')) return url;
+  const rendered = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+  const sep = rendered.includes('?') ? '&' : '?';
+  return rendered + sep + 'width=' + (width || 400) + '&quality=' + (quality || 70);
+}
+window.mmImg = mmImg;
+
 // ── 상품 이미지 프리로드 (뷰포트 근접 2개만 — lazy loading 강화) ──
 function preloadProductImages(products) {
   (products || []).slice(0, 2).forEach(p => {
     if (p.thumbnail_url) {
       const img = new Image();
-      img.src = p.thumbnail_url;
+      img.src = mmImg(p.thumbnail_url, 400, 70);
     }
   });
 }
@@ -261,45 +248,3 @@ window.getCachedImage = (url) => {
   if (!_imgCache.has(url)) _imgCache.set(url, url);
   return _imgCache.get(url);
 };
-
-// ── 자동 로그아웃: 10분 무동작 시 세션 종료 ──────────────────
-(function idleLogout(){
-  var IDLE_MS = 10 * 60 * 1000;            // 10분
-  var LAST_KEY = 'mm_last_active';
-  var timer = null;
-  function isLoggedIn(){ return !!localStorage.getItem('mm_access_token'); }
-  function clearSession(){
-    ['mm_access_token','mm_user_cache','mm_user','mm_token',LAST_KEY].forEach(function(k){ localStorage.removeItem(k); });
-  }
-  function doLogout(){
-    if(!isLoggedIn()) return;
-    clearSession();
-    location.href = location.pathname.indexOf('/meatmall/') === 0 ? '/meatmall/login.html' : '/login.html';
-  }
-  function reset(){
-    clearTimeout(timer);
-    if(!isLoggedIn()) return;
-    try{ localStorage.setItem(LAST_KEY, String(Date.now())); }catch(e){}
-    timer = setTimeout(doLogout, IDLE_MS);
-  }
-  // 다른 탭/재방문 시 마지막 활동 기준으로 만료 판정
-  function checkExpiredOnLoad(){
-    if(!isLoggedIn()) return;
-    var last = Number(localStorage.getItem(LAST_KEY) || 0);
-    if(!last){
-      try{ localStorage.setItem(LAST_KEY, String(Date.now())); }catch(e){}
-      return;
-    }
-    if(last && (Date.now() - last) >= IDLE_MS){ doLogout(); }
-  }
-  ['mousemove','mousedown','keydown','scroll','touchstart','click','wheel'].forEach(function(ev){
-    window.addEventListener(ev, reset, { passive:true });
-  });
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden){ checkExpiredOnLoad(); reset(); } });
-  // 다른 탭에서 로그아웃되면 이 탭도 로그인 화면으로
-  window.addEventListener('storage', function(e){
-    if(e.key==='mm_access_token' && !e.newValue && !isLoggedIn()){ /* 로그아웃 동기화 */ }
-  });
-  checkExpiredOnLoad();
-  reset();
-})();
