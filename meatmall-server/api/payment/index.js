@@ -9,26 +9,14 @@ const { notifyOrderComplete, notifyAdminNewOrder, notifyAdmins } = require('../n
 // ══════════════════════════════════════════════════
 // 나이스페이먼츠 설정 — 키값만 Vercel 환경변수에 등록하면 됨
 // ══════════════════════════════════════════════════
-// ── 토스페이먼츠(TossPayments) — 클라이언트/시크릿 키는 Vercel 환경변수에 등록
-//    TOSS_CLIENT_KEY (test_ck_* / live_ck_*) : 프론트에 전달(브라우저 노출 OK)
-//    TOSS_SECRET_KEY (test_sk_* / live_sk_*) : 서버 전용, 절대 노출 금지
-// 테스트 키 폴백은 "개발 환경 전용"입니다.
-// Vercel Production(VERCEL_ENV==='production')에서는 폴백을 쓰지 않고,
-// 환경변수(TOSS_CLIENT_KEY/TOSS_SECRET_KEY)가 없으면 빈 값 → 결제 비활성화하여
-// 실서비스가 테스트 키로 잘못 동작하는 것을 원천 차단합니다.
-const IS_PROD = process.env.VERCEL_ENV === 'production';
-const DEV_TOSS_CLIENT_KEY = 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq'; // 개발 전용
-const DEV_TOSS_SECRET_KEY = 'test_sk_zXLkKEypNArWmo50nX3lmeaxYG5R'; // 개발 전용
+// 토스페이먼츠(TossPayments) — 환경변수 미설정 시 공개 문서 테스트 키로 폴백(테스트 전용)
+// ⚠️ 라이브 전환 시 Vercel 환경변수에 실키 등록. 실 시크릿 키는 절대 코드에 넣지 말 것.
 const TOSS = {
-  clientKey: process.env.TOSS_CLIENT_KEY || (IS_PROD ? '' : DEV_TOSS_CLIENT_KEY),
-  secretKey: process.env.TOSS_SECRET_KEY || (IS_PROD ? '' : DEV_TOSS_SECRET_KEY),
+  clientKey: process.env.TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq',
+  secretKey: process.env.TOSS_SECRET_KEY || 'test_sk_zXLkKEypNArWmo50nX3lmeaxYG5R',
   baseURL:   'https://api.tosspayments.com/v1',
 };
-// live_ 키가 아니면 테스트로 간주(빈 값 포함) → 프론트가 보수적으로 테스트 배너 노출
-TOSS.isTest = !/^live_/.test(TOSS.secretKey);
-if (IS_PROD && (!process.env.TOSS_CLIENT_KEY || !process.env.TOSS_SECRET_KEY)) {
-  console.error('[payment] ⚠️ 프로덕션에 TOSS 라이브 키 환경변수가 없습니다. 카드 결제가 비활성화됩니다.');
-}
+TOSS.isTest = /^test_/.test(TOSS.secretKey);
 
 // 무통장 계좌 정보 — 환경변수로 관리
 const VBANK = {
@@ -46,18 +34,54 @@ function makeOrderNo() {
   return `ORD-${d}-${uuidv4().slice(0,6).toUpperCase()}`;
 }
 
+// ── 배송비 정책 (shipping_settings 테이블, 60초 캐시, 테이블 없거나 오류 시 기본값 폴백)
+let _shipCache = null, _shipAt = 0;
+async function getShipping() {
+  if (_shipCache && Date.now() - _shipAt < 60000) return _shipCache;
+  let s = { mode: 'free50', base_fee: 3500 };
+  try {
+    const { data } = await supabase.from('shipping_settings').select('mode, base_fee').eq('id', 1).maybeSingle();
+    if (data) s = { mode: data.mode || 'free50', base_fee: Number(data.base_fee ?? 3500) };
+  } catch (e) { /* 테이블 미생성 등 → 기본값 사용 */ }
+  _shipCache = s; _shipAt = Date.now();
+  return s;
+}
+// 무료 기준 금액(0 = 전상품 무료)
+function shipThreshold(mode) { return mode === 'free30' ? 30000 : mode === 'free50' ? 50000 : 0; }
+// 실제 부과 배송비 계산
+function shipFee(s, productTotal) {
+  if (s.mode === 'freeall') return 0;
+  return productTotal >= shipThreshold(s.mode) ? 0 : Number(s.base_fee || 0);
+}
+
+// ── 무통장 계좌 (vbank_settings 테이블, 60초 캐시, 미설정 시 VBANK 기본값)
+let _vbCache = null, _vbAt = 0;
+async function getVbank() {
+  if (_vbCache && Date.now() - _vbAt < 60000) return _vbCache;
+  let v = { bank: VBANK.bank, account: VBANK.account, holder: VBANK.holder };
+  try {
+    const { data } = await supabase.from('vbank_settings').select('bank,account,holder').eq('id', 1).maybeSingle();
+    if (data) v = { bank: data.bank || v.bank, account: data.account || v.account, holder: data.holder || v.holder };
+  } catch (e) {}
+  _vbCache = v; _vbAt = Date.now();
+  return v;
+}
+
 // ══════════════════════════════════════════════════
 // GET /api/payment/config  — 프론트에 결제 설정 전달
 // ══════════════════════════════════════════════════
-router.get('/config', (req, res) => {
+router.get('/config', async (req, res) => {
+  const s = await getShipping();
   res.json({
     ok: true,
     clientKey: TOSS.clientKey,
     isTest: TOSS.isTest,
-    vbank: VBANK,
-    methods: ['WIDGET','VBANK'],
-    freeShipping: 50000,
-    deliveryFee: 3500,
+    vbank: await getVbank(),
+    methods: ['CARD','KAKAO','NAVER','TOSS','VBANK','PHONE'],
+    shippingMode: s.mode,
+    freeAll: s.mode === 'freeall',
+    freeShipping: shipThreshold(s.mode),
+    deliveryFee: s.base_fee,
   });
 });
 
@@ -69,8 +93,10 @@ router.post('/ready', requireAuth, async (req, res) => {
     const {
       items, recipient, phone, zipCode, address1, address2,
       deliveryNote, couponId, pointUse=0,
-      paymentMethod='CARD', depositorName, bankName
+      paymentMethod='CARD', depositorName, bankName,
+      deliveryType='standard'
     } = req.body;
+    const deliveryTypeV = deliveryType === 'same_day' ? 'same_day' : 'standard';
 
     if (!items?.length) return res.status(400).json({ error:'주문 상품이 없습니다' });
     if (!recipient || !phone || !zipCode || !address1)
@@ -78,14 +104,22 @@ router.post('/ready', requireAuth, async (req, res) => {
 
     const userId = req.user.sub;
 
-    // 계정에 전화번호 등록이 안 된 경우 주문 자체를 막음 (프론트 우회 방지, 서버측 필수 검증)
-    const { data: acctUser } = await supabase.from('users').select('phone').eq('id', userId).single();
-    if (!acctUser?.phone) {
-      return res.status(403).json({ error: '전화번호 등록이 필요합니다. 마이페이지에서 전화번호를 등록해주세요', code: 'PHONE_REQUIRED' });
-    }
+    // 계정에 전화번호가 없으면, 배송지에 입력한 번호를 계정에 자동 등록(별도 인증 단계 불필요).
+    // 배송지 저장 시 이미 번호를 받으므로 주문을 막지 않고 진행한다.
+    try {
+      const { data: acctUser } = await supabase.from('users').select('phone').eq('id', userId).single();
+      if (!acctUser?.phone && phone) {
+        // 다른 계정이 이미 쓰는 번호면 자동등록 생략(중복 방지) — 주문 자체는 배송지 번호로 진행
+        const { data: dupe } = await supabase.from('users').select('id').eq('phone', phone).neq('id', userId).limit(1);
+        if (!dupe || !dupe.length) {
+          await supabase.from('users').update({ phone, updated_at: new Date().toISOString() }).eq('id', userId);
+        }
+      }
+    } catch (e) { console.error('[ready 계정 전화번호 자동등록 오류]', e.message); }
 
     const productTotal = items.reduce((s,i) => s + i.price * i.qty, 0);
-    const deliveryFee  = productTotal >= 50000 ? 0 : 3500;
+    const deliveryFee  = shipFee(await getShipping(), productTotal);
+    const vb           = await getVbank();
     const couponDisc   = 0; // 쿠폰 추후 적용
     const finalAmount  = Math.max(100, productTotal + deliveryFee - couponDisc - Number(pointUse));
     const isVbank      = paymentMethod === 'VBANK';
@@ -98,6 +132,7 @@ router.post('/ready', requireAuth, async (req, res) => {
       status:          isVbank ? 'pending_deposit' : 'pending',
       recipient, phone, zip_code: zipCode, address1, address2: address2||null,
       delivery_note:   deliveryNote||null,
+      delivery_type:   deliveryTypeV,
       product_total:   productTotal,
       delivery_fee:    deliveryFee,
       discount_amount: couponDisc,
@@ -110,7 +145,7 @@ router.post('/ready', requireAuth, async (req, res) => {
     // 무통장 컬럼은 존재할 때만 추가 (스키마 마이그레이션 전 호환)
     if (isVbank) {
       try {
-        orderData.bank_name        = bankName || VBANK.bank;
+        orderData.bank_name        = bankName || vb.bank;
         orderData.depositor_name   = depositorName || null;
         orderData.deposit_deadline = new Date(Date.now()+3*86400000).toISOString();
       } catch(e) {}
@@ -160,9 +195,9 @@ router.post('/ready', requireAuth, async (req, res) => {
         paymentMethod, isVbank,
         ...(isVbank && {
           bankInfo: {
-            bank:     bankName || VBANK.bank,
-            account:  VBANK.account,
-            holder:   VBANK.holder,
+            bank:     bankName || vb.bank,
+            account:  vb.account,
+            holder:   vb.holder,
             deadline: new Date(Date.now()+3*86400000).toLocaleDateString('ko-KR'),
             amount:   finalAmount,
           }
@@ -194,17 +229,16 @@ router.post('/confirm', requireAuth, async (req, res) => {
     if (order.payment_status === 'paid') return res.status(400).json({ error:'이미 결제된 주문' });
     if (order.final_amount !== Number(amount)) return res.status(400).json({ error:'결제 금액 불일치' });
 
-    // 토스페이먼츠 결제 승인 (테스트 키도 실제 승인 API 호출)
-    // 금액은 위에서 서버 저장 금액(order.final_amount)과 일치 확인 완료
+    // 토스페이먼츠 결제 승인 (테스트 키도 실제 승인 API 호출). 금액은 위에서 서버 저장값과 검증 완료.
     if (TOSS.secretKey) {
       const tr = await fetch(`${TOSS.baseURL}/payments/confirm`, {
         method:'POST',
         headers:{ Authorization: tossAuth(), 'Content-Type':'application/json' },
-        body: JSON.stringify({ paymentKey, orderId, amount: Number(amount) })
+        body: JSON.stringify({ paymentKey, orderId, amount:Number(amount) })
       });
       const td = await tr.json();
       if (!tr.ok)
-        return res.status(400).json({ error: td.message || '결제 승인 실패', code: td.code });
+        return res.status(400).json({ error: td.message||'결제 승인 실패', code: td.code });
     }
 
     await supabase.from('orders').update({
@@ -330,7 +364,7 @@ router.post('/cancel', requireAuth, async (req, res) => {
         body: JSON.stringify({ cancelReason: reason, ...(cancelAmt ? { cancelAmount: Number(cancelAmt) } : {}) })
       });
       const td = await tr.json();
-      if (!tr.ok) return res.status(400).json({ error: td.message || '취소 실패' });
+      if (!tr.ok) return res.status(400).json({ error: td.message||'취소 실패' });
     }
 
     await supabase.from('orders').update({
@@ -373,7 +407,7 @@ router.post('/partial-cancel', requireAdmin, async (req, res) => {
         body: JSON.stringify({ cancelReason: reason, cancelAmount: Number(cancelAmt) })
       });
       const td = await tr.json();
-      if (!tr.ok) return res.status(400).json({ error: td.message || '부분 취소 실패' });
+      if (!tr.ok) return res.status(400).json({ error: td.message||'부분 취소 실패' });
     }
 
     await supabase.from('orders').update({
@@ -426,8 +460,7 @@ router.get('/orders/:orderId', requireAuth, async (req, res) => {
 
 // ══════════════════════════════════════════════════
 // POST /api/payment/toss-webhook  — 토스페이먼츠 웹훅 (서버→서버)
-// PAYMENT_STATUS_CHANGED 등. 서명 헤더 없음 → 안전상 최소 처리만.
-// (카드 결제 확정은 successUrl→/confirm에서 이미 완료됨. 웹훅은 보조 안전망)
+// PAYMENT_STATUS_CHANGED 등. 카드 확정은 successUrl→/confirm에서 완료됨(보조 안전망).
 // ══════════════════════════════════════════════════
 router.post('/toss-webhook', async (req, res) => {
   try {
@@ -447,120 +480,6 @@ router.post('/toss-webhook', async (req, res) => {
     res.json({ ok:true });
   } catch(err) {
     res.status(500).json({ error:'웹훅 처리 오류' });
-  }
-});
-
-// ══════════════════════════════════════════════════
-// POST /api/payment/return-request  — 소비자 반품 신청 (배송완료 주문)
-// body: { orderId, reason }
-// ══════════════════════════════════════════════════
-router.post('/return-request', requireAuth, async (req, res) => {
-  try {
-    const { orderId, reason } = req.body;
-    const rsn = String(reason || '').trim();
-    if (!rsn) return res.status(400).json({ error:'반품 사유를 입력해주세요' });
-
-    const { data:order } = await supabase.from('orders')
-      .select('id,status,user_id,return_status').eq('order_number', orderId).single();
-    if (!order) return res.status(404).json({ error:'주문 없음' });
-    if (order.user_id !== req.user.sub) return res.status(403).json({ error:'권한 없음' });
-    if (order.status !== 'delivered')
-      return res.status(400).json({ error:'배송완료된 주문만 반품 신청할 수 있습니다' });
-    if (order.return_status === 'requested')
-      return res.status(400).json({ error:'이미 반품 신청이 접수됐습니다' });
-
-    await supabase.from('orders').update({
-      status:'refund_req',
-      return_status:'requested',
-      return_reason: rsn.slice(0,500),
-      return_requested_at: new Date().toISOString(),
-      return_note: null,
-      return_processed_at: null,
-    }).eq('order_number', orderId);
-
-    res.json({ ok:true, message:'반품 신청이 접수됐습니다. 관리자 확인 후 처리됩니다.' });
-  } catch(err) {
-    res.status(500).json({ error:'반품 신청 처리 오류' });
-  }
-});
-
-// ══════════════════════════════════════════════════
-// POST /api/payment/return-approve  — 관리자 반품 승인 → 환불
-// 카드: 나이스페이 승인취소 자동 / 무통장: 상태만 환불 처리(계좌이체 수동)
-// body: { orderId, note }
-// ══════════════════════════════════════════════════
-router.post('/return-approve', requireAdmin, async (req, res) => {
-  try {
-    const { orderId, note } = req.body;
-    const { data:order } = await supabase.from('orders')
-      .select('id,order_number,payment_key,payment_status,payment_method,final_amount,user_id,point_used,return_status')
-      .eq('order_number', orderId).single();
-    if (!order) return res.status(404).json({ error:'주문 없음' });
-    if (order.return_status !== 'requested')
-      return res.status(400).json({ error:'반품 신청 상태가 아닙니다' });
-
-    // 카드결제(무통장 외) + 결제완료 → 나이스페이 승인취소
-    const isCard = order.payment_method !== 'VBANK';
-    if (isCard && order.payment_status === 'paid' && TOSS.secretKey && order.payment_key) {
-      const tr = await fetch(`${TOSS.baseURL}/payments/${order.payment_key}/cancel`, {
-        method:'POST',
-        headers:{ Authorization: tossAuth(), 'Content-Type':'application/json' },
-        body: JSON.stringify({ cancelReason: note || '반품 승인' })
-      });
-      const td = await tr.json();
-      if (!tr.ok) return res.status(400).json({ error: td.message || '카드 취소 실패' });
-    }
-
-    await supabase.from('orders').update({
-      status:'refunded',
-      payment_status:'refunded',
-      return_status:'approved',
-      return_note: note ? String(note).slice(0,500) : null,
-      return_processed_at: new Date().toISOString(),
-    }).eq('order_number', orderId);
-
-    // 포인트 사용분 환불
-    if (order.point_used > 0) {
-      await supabase.from('point_logs').insert({
-        user_id: order.user_id, amount: order.point_used,
-        reason: `주문 ${order.order_number} 반품 포인트 환불`, order_id: order.id,
-      });
-    }
-
-    const manual = order.payment_method === 'VBANK';
-    res.json({
-      ok:true,
-      manualRefund: manual,
-      message: manual ? '반품 승인 완료 — 무통장은 계좌 환불을 수동으로 진행하세요.' : '반품 승인 및 카드 취소 완료',
-    });
-  } catch(err) {
-    res.status(500).json({ error:'반품 승인 처리 오류' });
-  }
-});
-
-// ══════════════════════════════════════════════════
-// POST /api/payment/return-reject  — 관리자 반품 거절 → 배송완료 복귀
-// body: { orderId, note }
-// ══════════════════════════════════════════════════
-router.post('/return-reject', requireAdmin, async (req, res) => {
-  try {
-    const { orderId, note } = req.body;
-    const { data:order } = await supabase.from('orders')
-      .select('id,return_status').eq('order_number', orderId).single();
-    if (!order) return res.status(404).json({ error:'주문 없음' });
-    if (order.return_status !== 'requested')
-      return res.status(400).json({ error:'반품 신청 상태가 아닙니다' });
-
-    await supabase.from('orders').update({
-      status:'delivered',
-      return_status:'rejected',
-      return_note: note ? String(note).slice(0,500) : null,
-      return_processed_at: new Date().toISOString(),
-    }).eq('order_number', orderId);
-
-    res.json({ ok:true, message:'반품 신청을 거절했습니다' });
-  } catch(err) {
-    res.status(500).json({ error:'반품 거절 처리 오류' });
   }
 });
 
