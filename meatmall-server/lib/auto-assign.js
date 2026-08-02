@@ -1,4 +1,7 @@
 const supabase = require('./supabase');
+const { evalCapacity } = require('./vendor-capacity');
+// 레이어2(특허): 가공여력 기반 출고거점 선정 — 기본 OFF(플래그 ON일 때만 동작, 기존 무영향)
+const CAPACITY_ON = process.env.VENDOR_CAPACITY_ROUTING === 'true' || process.env.VENDOR_CAPACITY_ROUTING === '1';
 
 function haversine(lat1, lng1, lat2, lng2) {
   const R = 6371;
@@ -93,7 +96,21 @@ async function findBestVendor(supabaseClient, zoneId, orderQty, productId) {
 
     if (ss < 0 || ls < 0) continue;
 
-    const total = ds + ss + ls + rs;
+    // ── 레이어2(특허): 가공여력 평가 (플래그 OFF면 미적용, 기존과 동일) ──
+    let capScore = 0, capAvail = null;
+    if (CAPACITY_ON) {
+      let vc = {};
+      const { data: vcRow, error: vcErr } = await supabaseClient
+        .from('vendors')
+        .select('same_day_cutoff, daily_order_limit, avg_prep_min, prep_parallel')
+        .eq('id', vendor.id).single();
+      if (!vcErr && vcRow) vc = vcRow;
+      const cap = evalCapacity({ ...vc, todayCount: todayOrders || 0 });
+      if (cap.exclude) continue;   // 마감 내 처리불가 → 배정 제외(실시간 재배정)
+      capScore = cap.score; capAvail = cap.available;
+    }
+
+    const total = ds + ss + ls + rs + capScore;
     if (total > bestScore) {
       bestScore = total;
       best = {
@@ -105,6 +122,8 @@ async function findBestVendor(supabaseClient, zoneId, orderQty, productId) {
           stock_score: ss,
           load_score: ls,
           rating_score: rs,
+          capacity_score: capScore,
+          capacity_available: capAvail,
           dist_km: Math.round(distKm * 10) / 10
         }
       };
