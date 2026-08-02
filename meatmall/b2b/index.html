@@ -46,7 +46,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
 <div class="wrap">
   <div class="hdr">
     <h1>정육본가 <span>B2B 거래소</span></h1>
-    <a href="my.html">내 거래</a>
+    <div style="display:flex;gap:14px;align-items:center">
+      <a href="#" id="bell" onclick="openAlerts(event)" style="position:relative;font-size:1.15rem">🔔<span id="nbadge" style="display:none;position:absolute;top:-6px;right:-9px;background:#B42318;color:#fff;font-size:.6rem;font-weight:800;border-radius:999px;padding:1px 5px">0</span></a>
+      <a href="my.html">내 거래</a>
+    </div>
+  </div>
+  <div id="alerts" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100" onclick="if(event.target.id==='alerts')this.style.display='none'">
+    <div style="max-width:430px;margin:0 auto;background:#fff;height:100%;overflow:auto">
+      <div style="padding:14px 16px;border-bottom:2px solid var(--gold);display:flex;justify-content:space-between;align-items:center"><b>알림</b><span onclick="document.getElementById('alerts').style.display='none'" style="cursor:pointer">✕</span></div>
+      <div id="alist" style="padding:6px 16px 30px"></div>
+    </div>
   </div>
   <div class="bar">
     <div class="search">
@@ -68,7 +77,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
 </div>
 <script>
 const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
 let postKind='';
+async function loadAlerts(){
+  if(!token)return;
+  try{const r=await fetch(API+'/b2b/notifications',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    if(!r.ok)return;window._noti=d.notifications||[];const b=document.getElementById('nbadge');
+    if(d.unread>0){b.textContent=d.unread;b.style.display=''}else b.style.display='none';
+  }catch(e){}
+}
+function openAlerts(e){e.preventDefault();if(!token){alert('로그인이 필요합니다');return}
+  const ns=window._noti||[];const list=document.getElementById('alist');
+  list.innerHTML=ns.length?ns.map(n=>`<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div style="font-weight:700;font-size:.9rem">${n.title||''}</div><div style="font-size:.8rem;color:var(--sub);margin-top:2px">${n.body||''} · ${(n.created_at||'').slice(0,10)}</div>${n.listing_id?`<a href="listing.html?id=${n.listing_id}" style="font-size:.78rem;color:#A8862A;font-weight:700">게시글 보기 →</a>`:''}</div>`).join(''):'<div style="padding:40px;text-align:center;color:var(--sub)">알림이 없습니다.</div>';
+  document.getElementById('alerts').style.display='block';
+  fetch(API+'/b2b/notifications/read',{method:'PATCH',headers:{Authorization:'Bearer '+token}}).then(()=>{document.getElementById('nbadge').style.display='none'}).catch(()=>{});
+}
 const DT={surplus:'잉여재고',clearance:'⚡ 임박덤핑',urgent:'긴급재고',special:'특가',group_delivery:'공동배송',group_buy:'공동구매'};
 function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
 function setKind(el,t){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');postKind=t;load()}
@@ -90,8 +113,9 @@ async function load(){
       const img=(it.images&&it.images[0])?`style="background-image:url('${it.images[0]}')"`:'';
       const emoji=(it.images&&it.images[0])?'':'🥩';
       const isSell=(it.post_kind||'sell')==='sell';
-      const priceHtml=isSell?`<div class="unit">${fmt(it.unit_price)}<small>원/${it.unit}</small></div>`
-        :`<div class="unit" style="font-size:1rem;color:#A8862A">${it.post_kind==='buy_request'?'구매 희망':'단가 문의'}</div>`;
+      const priceHtml=(!isSell)?`<div class="unit" style="font-size:1rem;color:#A8862A">${it.post_kind==='buy_request'?'구매 희망':'단가 문의'}</div>`
+        :it.price_hidden?`<div class="unit" style="font-size:1rem;color:#A8862A">🔒 가격 문의</div>`
+        :`<div class="unit">${fmt(it.unit_price)}<small>원/${it.unit}</small></div>`;
       const metaHtml=isSell?`${it.item_name} · ${it.region||'지역미지정'} · 남은수량 ${fmt(it.qty_remaining)}${it.unit}`
         :`${it.item_name} · ${it.region||'지역미지정'}${it.qty_total?' · 희망 '+fmt(it.qty_total)+it.unit:''}`;
       return `<div class="card" onclick="location.href='listing.html?id=${it.id}'">
@@ -105,6 +129,7 @@ async function load(){
   }catch(e){el.innerHTML='<div class="empty">불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>'}
 }
 load();
+loadAlerts();
 </script>
 </body>
 </html>

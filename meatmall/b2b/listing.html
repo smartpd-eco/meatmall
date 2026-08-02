@@ -67,7 +67,7 @@ async function boot(){
     <div class="hero" ${img}>${emoji}${badge(L.deal_type)}</div>
     <div class="sec">
       <div class="title">${L.title||L.item_name}</div>
-      <div class="price">${fmt(L.unit_price)}<small> 원/${L.unit}</small></div>
+      <div class="price">${L.price_hidden?'🔒 가격 문의':fmt(L.unit_price)+'<small> 원/'+L.unit+'</small>'}</div>
       <div class="row"><span class="k">품목</span><span class="v">${L.item_name}${L.origin?' · '+L.origin:''}</span></div>
       <div class="row"><span class="k">거래유형</span><span class="v">${dtLabel(L.deal_type)}</span></div>
       <div class="row"><span class="k">남은수량</span><span class="v">${fmt(L.qty_remaining)}${L.unit} / 총 ${fmt(L.qty_total)}${L.unit}</span></div>
@@ -102,6 +102,10 @@ async function boot(){
     if((L.post_kind||'sell')!=='sell'){
       const bs=document.getElementById('buysec'); if(bs) bs.style.display='none';
       document.getElementById('buyBtn').textContent=L.post_kind==='buy_request'?'판매 제안 · 연락하기':'단가 회신 · 연락하기';
+    } else if(L.price_hidden){
+      // 단가 비공개(문의/선택업체 미대상): 금액계산 숨기고 문의로 전환
+      const bs=document.getElementById('buysec'); if(bs) bs.style.display='none';
+      document.getElementById('buyBtn').textContent='가격 문의 · 연락하기';
     } else if(L.status!=='open'){
       document.getElementById('buyBtn').classList.add('muted');
       document.getElementById('buyBtn').textContent=L.status==='soldout'?'품절':'거래마감';
@@ -109,9 +113,10 @@ async function boot(){
   }catch(e){document.getElementById('main').innerHTML='<div class="sec">불러오지 못했습니다.</div>'}
 }
 async function requestDeal(){
-  if(L && (L.post_kind||'sell')!=='sell'){
+  if(L && ((L.post_kind||'sell')!=='sell' || L.price_hidden)){
     const s=L.seller||{};
-    alert('게시자에게 연락해 '+(L.post_kind==='buy_request'?'판매를 제안':'단가를 회신')+'하세요.\n\n'+(s.company_name||'')+'\n연락처: '+(s.contact_phone||'미등록'));
+    const act=(L.post_kind==='buy_request')?'판매를 제안':(L.post_kind==='price_inquiry'||L.price_hidden)?'단가를 문의':'거래를 문의';
+    alert('게시자에게 연락해 '+act+'하세요.\n\n'+(s.company_name||'')+'\n연락처: '+(s.contact_phone||'미등록'));
     return;
   }
   if(!token){alert('로그인이 필요합니다');location.href='../../login.html';return}

@@ -5,11 +5,32 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../../lib/supabase');
-const { requireAuth, requireAdmin } = require('../../middleware/auth');
+const { requireAuth, requireAdmin, optionalAuth } = require('../../middleware/auth');
 const { issueTaxInvoice } = require('../../lib/tax-invoice');
 const { kakaoGeocode } = require('../../lib/geocode'); // 업체 주소 → 좌표(거리매칭)
 
 const VAT_RATE = 0.1;
+
+// ── 공개범위/단가공개 유틸 ──
+function canView(l, m) {
+  const v = l.visibility || 'public';
+  if (v === 'public') return true;
+  if (!m) return false;
+  if (l.seller_id === m.id) return true;
+  if (v === 'selected') return (l.allowed_members || []).map(Number).includes(m.id);
+  return false; // private
+}
+function priceHidden(l, m) {
+  const pv = l.price_visibility || 'public';
+  if (pv === 'public') return false;
+  if (pv === 'inquiry') return true;
+  if (!m) return true;                       // selected
+  if (l.seller_id === m.id) return false;
+  return !(l.allowed_members || []).map(Number).includes(m.id);
+}
+function maskPrice(l, m) {
+  return priceHidden(l, m) ? { ...l, unit_price: null, price_hidden: true } : { ...l, price_hidden: false };
+}
 
 function dealNo() {
   const d = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -74,9 +95,10 @@ router.patch('/members/:id', requireAdmin, async (req, res) => {
 //  게시판(판매글)
 // ════════════════════════════════════════════════════
 
-// 목록 (공개, open 우선) — 검색/카테고리/거래유형 필터
-router.get('/listings', async (req, res) => {
+// 목록 — 공개범위(전체/선택업체/본인)만 노출 + 단가 가림
+router.get('/listings', optionalAuth, async (req, res) => {
   try {
+    const member = req.user ? await currentMember(req) : null;
     const { q, category, deal_type, post_kind, status = 'open', page = 1, limit = 20 } = req.query;
     const p = Number(page) || 1, l = Math.min(Number(limit) || 20, 50);
     let query = supabase.from('b2b_listings')
@@ -88,21 +110,26 @@ router.get('/listings', async (req, res) => {
     if (deal_type) query = query.eq('deal_type', deal_type);
     if (post_kind) query = query.eq('post_kind', post_kind);
     if (q) query = query.ilike('item_name', `%${q}%`);
+    // 공개범위: 회원이면 전체공개 ∪ 본인 ∪ 선택대상, 비회원이면 전체공개만 (비공개=초안은 항상 숨김)
+    if (member) query = query.or(`visibility.eq.public,seller_id.eq.${member.id},and(visibility.eq.selected,allowed_members.cs.{${member.id}})`);
+    else query = query.eq('visibility', 'public');
     const { data, count, error } = await query;
     if (error) throw error;
-    res.json({ ok: true, listings: data || [], total: count, page: p });
+    res.json({ ok: true, listings: (data || []).map(x => maskPrice(x, member)), total: count, page: p });
   } catch (err) { console.error('[b2b/listings]', err); res.status(500).json({ error: err.message || '목록 조회 오류' }); }
 });
 
-// 상세 (업체정보·거래유형·배송정보) + 조회수 증가
-router.get('/listings/:id', async (req, res) => {
+// 상세 — 공개범위 접근제어 + 단가 가림 + 조회수
+router.get('/listings/:id', optionalAuth, async (req, res) => {
   try {
+    const member = req.user ? await currentMember(req) : null;
     const { data, error } = await supabase.from('b2b_listings')
       .select('*, seller:b2b_members(id, company_name, ceo_name, biz_type, biz_item, address, contact_phone)')
       .eq('id', req.params.id).single();
     if (error || !data) return res.status(404).json({ error: '게시글을 찾을 수 없습니다' });
+    if (!canView(data, member)) return res.status(404).json({ error: '게시글을 찾을 수 없습니다' }); // 비공개/미대상
     supabase.from('b2b_listings').update({ view_count: (data.view_count || 0) + 1 }).eq('id', data.id).then(() => {});
-    res.json({ ok: true, listing: data });
+    res.json({ ok: true, listing: maskPrice(data, member) });
   } catch (err) { res.status(500).json({ error: err.message || '상세 조회 오류' }); }
 });
 
@@ -117,6 +144,9 @@ router.post('/listings', requireAuth, async (req, res) => {
     if (kind === 'sell' && (!b.qty_total || !b.unit_price))
       return res.status(400).json({ error: '판매글은 수량·단가가 필수입니다' });
     const qty = Number(b.qty_total) || 0;
+    const visibility = ['public', 'private', 'selected'].includes(b.visibility) ? b.visibility : 'public';
+    const priceVis = ['public', 'inquiry', 'selected'].includes(b.price_visibility) ? b.price_visibility : 'public';
+    const allowed = Array.isArray(b.allowed_members) ? b.allowed_members.map(Number).filter(Boolean) : [];
     const { data, error } = await supabase.from('b2b_listings').insert({
       seller_id: m.id, post_kind: kind, title: b.title, item_name: b.item_name, category: b.category || null,
       deal_type: b.deal_type || (kind === 'sell' ? 'surplus' : kind), qty_total: qty, qty_remaining: qty,
@@ -124,9 +154,30 @@ router.post('/listings', requireAuth, async (req, res) => {
       expiry_at: b.expiry_at || null, storage: b.storage || null,
       delivery_type: b.delivery_type || null, delivery_info: b.delivery_info || null,
       region: b.region || null, description: b.description || null,
-      images: Array.isArray(b.images) ? b.images : [], status: 'open'
+      images: Array.isArray(b.images) ? b.images : [], status: 'open',
+      visibility, price_visibility: priceVis, allowed_members: allowed
     }).select().single();
     if (error) throw error;
+
+    // ── 알림: 전체공개=전체 승인회원 / 선택업체=선택대상 / 비공개=없음 (본인 제외) ──
+    try {
+      let targets = [];
+      if (visibility === 'public') {
+        const { data: all } = await supabase.from('b2b_members').select('id').eq('status', 'approved').neq('id', m.id);
+        targets = (all || []).map(x => x.id);
+      } else if (visibility === 'selected') {
+        const { data: appr } = await supabase.from('b2b_members').select('id').eq('status', 'approved').in('id', allowed.length ? allowed : [-1]);
+        targets = (appr || []).map(x => x.id).filter(id => id !== m.id);
+      }
+      if (targets.length) {
+        const kindLabel = kind === 'buy_request' ? '구매요청' : kind === 'price_inquiry' ? '단가문의' : '판매';
+        await supabase.from('b2b_notifications').insert(targets.map(mid => ({
+          member_id: mid, listing_id: data.id, type: 'new_listing',
+          title: `[${kindLabel}] ${data.title}`, body: `${data.item_name} · ${m.company_name}`
+        })));
+      }
+    } catch (e) { console.error('[b2b 알림 생성]', e.message); }
+
     res.status(201).json({ ok: true, listing: data });
   } catch (err) { console.error('[b2b/listings POST]', err); res.status(500).json({ error: err.message || '등록 오류' }); }
 });
@@ -276,6 +327,35 @@ router.post('/deals/:id/tax-invoice', requireAuth, async (req, res) => {
     const { data: saved } = await supabase.from('b2b_tax_invoices').update(upd).eq('id', inv.id).select().single();
     res.json({ ok: result.ok, pending: !!result.pending, invoice: saved, message: result.message });
   } catch (err) { console.error('[b2b/tax-invoice]', err); res.status(500).json({ error: err.message || '세금계산서 처리 오류' }); }
+});
+
+// ── 선택업체 공개용: 승인 회원 목록(피커) ──
+router.get('/members-list', requireAuth, async (req, res) => {
+  try {
+    const me = await currentMember(req);
+    if (!isApproved(me)) return res.status(403).json({ error: '승인된 B2B 회원만 조회할 수 있습니다' });
+    const { data } = await supabase.from('b2b_members').select('id, company_name')
+      .eq('status', 'approved').neq('id', me.id).order('company_name');
+    res.json({ ok: true, members: data || [] });
+  } catch (err) { res.status(500).json({ error: err.message || '조회 오류' }); }
+});
+
+// ── 내 알림 (앱 내) ──
+router.get('/notifications', requireAuth, async (req, res) => {
+  try {
+    const m = await currentMember(req);
+    if (!m) return res.json({ ok: true, notifications: [], unread: 0 });
+    const { data } = await supabase.from('b2b_notifications').select('*')
+      .eq('member_id', m.id).order('created_at', { ascending: false }).limit(50);
+    res.json({ ok: true, notifications: data || [], unread: (data || []).filter(n => !n.is_read).length });
+  } catch (err) { res.status(500).json({ error: err.message || '알림 조회 오류' }); }
+});
+router.patch('/notifications/read', requireAuth, async (req, res) => {
+  try {
+    const m = await currentMember(req);
+    if (m) await supabase.from('b2b_notifications').update({ is_read: true }).eq('member_id', m.id).eq('is_read', false);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message || '처리 오류' }); }
 });
 
 // ── (관리자) B2B 회원 전체 목록 — 승인 관리용 ──

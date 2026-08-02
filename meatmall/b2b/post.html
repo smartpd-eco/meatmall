@@ -45,6 +45,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
         <option value="group_delivery">공동배송</option>
         <option value="group_buy">공동구매</option>
       </select></div>
+    <div class="grp"><label>공개 범위</label>
+      <select id="visibility" onchange="visChange()">
+        <option value="public">전체공개 (전 B2B 회원 노출 + 알림)</option>
+        <option value="selected">선택업체 공개 (지정 업체만 + 알림)</option>
+        <option value="private">비공개 (나만 보기·초안, 알림 없음)</option>
+      </select></div>
+    <div class="grp"><label>단가 공개</label>
+      <select id="price_visibility">
+        <option value="public">전체공개</option>
+        <option value="inquiry">문의 (단가 숨김)</option>
+        <option value="selected">선택업체만 단가공개</option>
+      </select></div>
+    <div class="grp" id="pick-wrap" style="display:none"><label>공개 대상 업체</label>
+      <div id="pick" style="max-height:170px;overflow:auto;border:1.5px solid var(--line);border-radius:10px;padding:8px">불러오는 중…</div></div>
     <div class="grp"><label>제목 <span class="req">*</span></label><input id="title" placeholder="예: 국내산 냉장 삼겹 1톤 급처"></div>
     <div class="grp"><label>품목 <span class="req">*</span></label><input id="item_name" placeholder="예: 삼겹살"></div>
     <div class="two">
@@ -73,6 +87,17 @@ const token=localStorage.getItem('mm_access_token');
 let postKind='sell';
 function pkSel(el){document.querySelectorAll('#pk .s').forEach(s=>s.classList.remove('on'));el.classList.add('on');postKind=el.dataset.v;
   document.getElementById('dt-wrap').style.display=postKind==='sell'?'':'none';}
+let allowed=[];
+function visChange(){const v=document.getElementById('visibility').value;document.getElementById('pick-wrap').style.display=v==='selected'?'':'none';if(v==='selected')loadMembers();}
+async function loadMembers(){
+  const box=document.getElementById('pick');box.textContent='불러오는 중…';
+  try{const r=await fetch(API+'/b2b/members-list',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    if(!r.ok){box.textContent=d.error||'조회 실패';return}
+    const ms=d.members||[];
+    box.innerHTML=ms.length?ms.map(m=>`<label style="display:flex;gap:8px;align-items:center;padding:5px 0;font-size:.88rem"><input type="checkbox" value="${m.id}" ${allowed.includes(m.id)?'checked':''} onchange="togglePick(${m.id},this.checked)">${m.company_name}</label>`).join(''):'승인된 다른 업체가 없습니다.';
+  }catch(e){box.textContent='불러오지 못했습니다.'}
+}
+function togglePick(id,on){id=Number(id);if(on){if(!allowed.includes(id))allowed.push(id)}else allowed=allowed.filter(x=>x!==id);}
 (async function(){
   if(!token){document.getElementById('note').textContent='로그인이 필요합니다.';setTimeout(()=>location.href='../../login.html',800);return}
   try{const r=await fetch(API+'/b2b/members/me',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
@@ -83,7 +108,10 @@ async function submit(){
   const g=id=>document.getElementById(id).value.trim();
   if(!g('title')||!g('item_name')){alert('제목·품목은 필수입니다');return}
   if(postKind==='sell'&&(!g('qty_total')||!g('unit_price'))){alert('판매글은 수량·단가가 필수입니다');return}
+  const vis=document.getElementById('visibility').value;
   const body={post_kind:postKind,deal_type:postKind==='sell'?document.getElementById('deal_type').value:postKind,
+    visibility:vis,price_visibility:document.getElementById('price_visibility').value,
+    allowed_members:vis==='selected'?allowed:[],
     title:g('title'),item_name:g('item_name'),category:g('category'),origin:g('origin'),
     qty_total:Number(g('qty_total'))||0,unit:g('unit'),unit_price:Number(g('unit_price'))||0,storage:g('storage'),
     expiry_at:g('expiry_at')||null,region:g('region'),delivery_type:g('delivery_type'),delivery_info:g('delivery_info'),description:g('description')};
