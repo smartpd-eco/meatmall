@@ -3,6 +3,9 @@ const router = express.Router();
 const supabase = require('../../lib/supabase');
 const { requireAdmin, optionalAuth } = require('../../middleware/auth');
 const { kakaoGeocode, haversineKm } = require('../../lib/geocode');
+const { productWasteRisk } = require('../../lib/lot-risk');
+// 레이어1(특허): 로트 폐기위험 기반 당일배송 우선순위 — 기본 OFF(플래그 ON일 때만 동작, 기존 무영향)
+const LOTRISK_ON = process.env.SAMEDAY_LOTRISK === 'true' || process.env.SAMEDAY_LOTRISK === '1';
 
 // ── 상품 목록 캐시 (60초 TTL, 관리자 우회) ───────────────
 const _pc = new Map();
@@ -291,13 +294,34 @@ router.get('/same-day', optionalAuth, async (req, res) => {
       .gt('same_day_qty', 0);
     if (error) throw error;
 
-    const formatted = (products || []).map(p => ({
+    let formatted = (products || []).map(p => ({
       ...p,
       category_name: p.category,
       same_day: true,
       vendor_name: nameMap[p.vendor_id] || null,
       distance_km: kmMap[p.vendor_id] != null ? Math.round(kmMap[p.vendor_id] * 10) / 10 : null
-    })).sort((a, b) => (rank[a.vendor_id] ?? 99) - (rank[b.vendor_id] ?? 99));
+    }));
+
+    // ── 레이어1(특허): 폐기위험 높은 로트를 우선 노출(우선 소진). 플래그 OFF면 기존 정렬 그대로 ──
+    if (LOTRISK_ON && formatted.length) {
+      let lotsByProduct = {};
+      try {
+        const ids = formatted.map(p => p.id);
+        const { data: lots } = await supabase
+          .from('product_lots')
+          .select('product_id, expiry_at, qty_remaining, status')
+          .in('product_id', ids).eq('status', 'active');
+        (lots || []).forEach(l => { (lotsByProduct[l.product_id] = lotsByProduct[l.product_id] || []).push(l); });
+      } catch (e) { /* product_lots 미생성 등 → expiry_days 근사로 폴백 */ }
+      formatted = formatted
+        .map(p => ({ ...p, waste_risk: productWasteRisk(p, lotsByProduct[p.id]) }))
+        .sort((a, b) =>
+          (b.waste_risk - a.waste_risk) ||                              // 폐기위험 높은 순
+          ((rank[a.vendor_id] ?? 99) - (rank[b.vendor_id] ?? 99))       // 동률 시 기존 벤더 랭킹
+        );
+    } else {
+      formatted = formatted.sort((a, b) => (rank[a.vendor_id] ?? 99) - (rank[b.vendor_id] ?? 99));
+    }
 
     res.json({ ok: true, dong, products: formatted, reason: formatted.length ? null : 'no_stock' });
   } catch (err) {
