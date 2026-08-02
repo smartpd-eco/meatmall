@@ -60,7 +60,8 @@ async function boot(){
         <div><div class="l">여신한도</div><div class="v">${fmt(m.credit_limit)}</div></div>
         <div><div class="l">미수(사용)</div><div class="v" style="color:#B42318">${fmt(m.credit_used)}</div></div>
         <div><div class="l">잔여여신</div><div class="v" style="color:#1B7F3B">${fmt(Number(m.credit_limit)-Number(m.credit_used))}</div></div>
-      </div>`:''}</div>`;
+      </div>
+      <a href="contracts.html" style="display:block;margin-top:12px;text-align:center;color:#A8862A;font-weight:800;text-decoration:none;font-size:.88rem">📋 거래처 · 계약단가 관리 →</a>`:''}</div>`;
   }catch(e){}
   loadDeals();
 }

@@ -32,6 +32,30 @@ function maskPrice(l, m) {
   return priceHidden(l, m) ? { ...l, unit_price: null, price_hidden: true } : { ...l, price_hidden: false };
 }
 
+// ── 단가 우선순위 엔진: 계약단가 > 등급단가 > 행사단가 > 기본단가 ──
+async function resolvePrice({ sellerId, buyerId, itemName, qty = 0, basePrice = null, grade = 'basic' }) {
+  const today = new Date().toISOString().slice(0, 10);
+  // 1) 계약단가 (거래처별, min_qty·유효기간)
+  if (sellerId && buyerId && itemName) {
+    const { data: cp } = await supabase.from('b2b_contract_prices')
+      .select('unit_price, min_qty, valid_from, valid_to')
+      .eq('seller_id', sellerId).eq('buyer_id', buyerId).eq('item_name', itemName).eq('active', true)
+      .lte('min_qty', qty || 0).order('min_qty', { ascending: false }).limit(10);
+    const valid = (cp || []).filter(r => (!r.valid_from || r.valid_from <= today) && (!r.valid_to || r.valid_to >= today));
+    if (valid.length) return { price: Number(valid[0].unit_price), tier: 'contract' };
+  }
+  // 2) 등급단가
+  if (sellerId && grade && itemName) {
+    const { data: gp } = await supabase.from('b2b_grade_prices')
+      .select('unit_price').eq('seller_id', sellerId).eq('grade', grade).eq('item_name', itemName).eq('active', true).limit(1);
+    if (gp && gp.length) return { price: Number(gp[0].unit_price), tier: 'grade' };
+  }
+  // 3) 행사단가 — (미구현, 추후 promo 테이블)
+  // 4) 기본단가
+  if (basePrice != null && basePrice !== '') return { price: Number(basePrice), tier: 'base' };
+  return { price: null, tier: 'none' };
+}
+
 function dealNo() {
   const d = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const r = Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -327,6 +351,98 @@ router.post('/deals/:id/tax-invoice', requireAuth, async (req, res) => {
     const { data: saved } = await supabase.from('b2b_tax_invoices').update(upd).eq('id', inv.id).select().single();
     res.json({ ok: result.ok, pending: !!result.pending, invoice: saved, message: result.message });
   } catch (err) { console.error('[b2b/tax-invoice]', err); res.status(500).json({ error: err.message || '세금계산서 처리 오류' }); }
+});
+
+// ════════════════════════════════════════════════════
+//  계약단가 엔진 (거래처 계약 · 계약단가 · 단가조회)
+// ════════════════════════════════════════════════════
+
+// 거래처 계약 등록(판매자↔거래처). 이미 있으면 조건 갱신.
+router.post('/contracts', requireAuth, async (req, res) => {
+  try {
+    const me = await currentMember(req);
+    if (!isApproved(me)) return res.status(403).json({ error: '승인된 B2B 회원만 가능합니다', code: 'NOT_APPROVED' });
+    const { buyer_id, payment_terms, moq, note, status } = req.body || {};
+    if (!buyer_id || Number(buyer_id) === me.id) return res.status(400).json({ error: '거래처(구매자)를 선택해주세요' });
+    const { data, error } = await supabase.from('b2b_contracts').upsert({
+      seller_id: me.id, buyer_id: Number(buyer_id),
+      payment_terms: payment_terms || null, moq: moq != null && moq !== '' ? Number(moq) : null,
+      note: note || null, status: status || 'active', updated_at: new Date().toISOString()
+    }, { onConflict: 'seller_id,buyer_id' }).select().single();
+    if (error) throw error;
+    res.status(201).json({ ok: true, contract: data });
+  } catch (err) { console.error('[b2b/contracts POST]', err); res.status(500).json({ error: err.message || '계약 등록 오류' }); }
+});
+
+// 내 계약 목록 (기본 판매자 기준, ?role=buyer 이면 구매처로서)
+router.get('/contracts', requireAuth, async (req, res) => {
+  try {
+    const me = await currentMember(req);
+    if (!me) return res.json({ ok: true, contracts: [] });
+    const asBuyer = req.query.role === 'buyer';
+    const col = asBuyer ? 'buyer_id' : 'seller_id';
+    const join = asBuyer ? 'seller:b2b_members!seller_id(id,company_name)'
+                         : 'buyer:b2b_members!buyer_id(id,company_name)';
+    const { data, error } = await supabase.from('b2b_contracts')
+      .select(`*, ${join}`).eq(col, me.id).order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json({ ok: true, contracts: data || [] });
+  } catch (err) { console.error('[b2b/contracts GET]', err); res.status(500).json({ error: err.message || '계약 조회 오류' }); }
+});
+
+// 계약단가 등록/수정(판매자)
+router.post('/contract-prices', requireAuth, async (req, res) => {
+  try {
+    const me = await currentMember(req);
+    if (!isApproved(me)) return res.status(403).json({ error: '승인된 B2B 회원만 가능합니다' });
+    const b = req.body || {};
+    if (!b.buyer_id || !b.item_name || b.unit_price == null || b.unit_price === '')
+      return res.status(400).json({ error: '거래처·품목·단가는 필수입니다' });
+    const { data, error } = await supabase.from('b2b_contract_prices').insert({
+      seller_id: me.id, buyer_id: Number(b.buyer_id), item_name: b.item_name, category: b.category || null,
+      unit_price: Number(b.unit_price), min_qty: Number(b.min_qty) || 0,
+      valid_from: b.valid_from || null, valid_to: b.valid_to || null, active: true
+    }).select().single();
+    if (error) throw error;
+    res.status(201).json({ ok: true, price: data });
+  } catch (err) { console.error('[b2b/contract-prices POST]', err); res.status(500).json({ error: err.message || '계약단가 등록 오류' }); }
+});
+
+// 계약단가 목록(판매자: ?buyer_id= / 구매자: ?role=buyer 로 내게 적용된 단가)
+router.get('/contract-prices', requireAuth, async (req, res) => {
+  try {
+    const me = await currentMember(req);
+    if (!me) return res.json({ ok: true, prices: [] });
+    let q = supabase.from('b2b_contract_prices').select('*').eq('active', true).order('created_at', { ascending: false });
+    if (req.query.role === 'buyer') q = q.eq('buyer_id', me.id);
+    else { q = q.eq('seller_id', me.id); if (req.query.buyer_id) q = q.eq('buyer_id', Number(req.query.buyer_id)); }
+    const { data, error } = await q;
+    if (error) throw error;
+    res.json({ ok: true, prices: data || [] });
+  } catch (err) { res.status(500).json({ error: err.message || '계약단가 조회 오류' }); }
+});
+
+router.delete('/contract-prices/:id', requireAuth, async (req, res) => {
+  try {
+    const me = await currentMember(req);
+    const { data: own } = await supabase.from('b2b_contract_prices').select('seller_id').eq('id', req.params.id).single();
+    if (!own || !me || own.seller_id !== me.id) return res.status(403).json({ error: '본인 단가만 삭제할 수 있습니다' });
+    await supabase.from('b2b_contract_prices').update({ active: false }).eq('id', req.params.id);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message || '삭제 오류' }); }
+});
+
+// 단가 조회(엔진) — 현재 로그인 구매자 기준 적용단가
+router.get('/price-quote', requireAuth, async (req, res) => {
+  try {
+    const me = await currentMember(req);
+    const { seller_id, item_name, qty, base } = req.query;
+    const r = await resolvePrice({
+      sellerId: Number(seller_id) || null, buyerId: me ? me.id : null, itemName: item_name || null,
+      qty: Number(qty) || 0, basePrice: base != null ? Number(base) : null, grade: (me && me.grade) || 'basic'
+    });
+    res.json({ ok: true, ...r });
+  } catch (err) { res.status(500).json({ error: err.message || '단가 조회 오류' }); }
 });
 
 // ── 선택업체 공개용: 승인 회원 목록(피커) ──

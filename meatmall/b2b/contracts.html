@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>거래처 · 계약단가 · B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#ECE7DA;--bg:#F7F5F0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:30px}
+.hdr{position:sticky;top:0;z-index:50;background:#fff;border-bottom:2px solid var(--gold);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.hdr button{background:none;border:none;font-size:1.2rem;cursor:pointer}.hdr h1{font-size:1rem;font-weight:800}
+.sec{background:#fff;margin:12px;border:1px solid var(--line);border-radius:14px;padding:16px}
+.sec h3{font-size:.95rem;font-weight:800;margin-bottom:12px}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+select,input{border:1.5px solid var(--line);border-radius:9px;padding:10px 11px;font-size:.88rem;outline:none;font-family:inherit;background:#fff}
+select:focus,input:focus{border-color:var(--gold)}
+.full{width:100%}
+.btn{border:none;border-radius:9px;font-weight:700;font-size:.85rem;cursor:pointer;padding:10px 14px;background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a}
+.btn-o{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.cust{padding:11px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.cust.on{border-color:var(--gold);background:#FBF7EC}
+.cust .nm{font-weight:700;font-size:.92rem}.cust .tm{font-size:.76rem;color:var(--sub)}
+.pl{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:.86rem}
+.pl .it{font-weight:700}.pl .pr{color:var(--gold-d);font-weight:800}
+.pl .del{color:#B42318;font-size:.78rem;cursor:pointer}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.empty{color:var(--sub);font-size:.85rem;padding:16px 0;text-align:center}
+.hint{font-size:.78rem;color:var(--sub);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr"><button onclick="location.href='my.html'">←</button><h1>거래처 · 계약단가</h1></div>
+
+  <div class="sec">
+    <h3>🏢 거래처 등록</h3>
+    <div class="row"><select class="full" id="buyer"></select></div>
+    <div class="grid2">
+      <input id="c-terms" placeholder="결제조건(예: 월말정산)">
+      <input id="c-moq" type="number" placeholder="계약 MOQ">
+    </div>
+    <div class="row" style="margin-top:8px"><button class="btn full" onclick="addContract()">거래처 계약 추가</button></div>
+    <div class="hint">단가 우선순위: 계약단가 &gt; 등급단가 &gt; 행사단가 &gt; 기본단가</div>
+  </div>
+
+  <div class="sec">
+    <h3>📇 내 거래처</h3>
+    <div id="custs" class="empty">불러오는 중…</div>
+  </div>
+
+  <div class="sec" id="price-sec" style="display:none">
+    <h3>💲 계약단가 — <span id="cur-name"></span></h3>
+    <div class="grid2">
+      <input id="p-item" placeholder="품목(예: 삼겹)">
+      <input id="p-price" type="number" placeholder="단가(원)">
+    </div>
+    <div class="grid2" style="margin-top:8px">
+      <input id="p-minqty" type="number" placeholder="적용 최소수량">
+      <input id="p-to" type="date" title="유효종료일">
+    </div>
+    <div class="row" style="margin-top:8px"><button class="btn full" onclick="addPrice()">계약단가 추가</button></div>
+    <div id="plist" style="margin-top:10px"></div>
+  </div>
+</div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+let curBuyer=null,curName='';
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+async function boot(){
+  if(!token){alert('로그인이 필요합니다');location.href='../../login.html';return}
+  // 거래처 후보(승인 회원)
+  try{const r=await fetch(API+'/b2b/members-list',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    const sel=document.getElementById('buyer');
+    if(r.ok&&d.members&&d.members.length) sel.innerHTML='<option value="">거래처(구매자) 선택</option>'+d.members.map(m=>`<option value="${m.id}">${m.company_name}</option>`).join('');
+    else sel.innerHTML='<option value="">승인된 다른 업체 없음</option>';
+  }catch(e){}
+  loadContracts();
+}
+async function addContract(){
+  const buyer_id=document.getElementById('buyer').value; if(!buyer_id){alert('거래처를 선택해주세요');return}
+  try{const r=await fetch(API+'/b2b/contracts',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({buyer_id,payment_terms:document.getElementById('c-terms').value,moq:document.getElementById('c-moq').value})});
+    const d=await r.json();if(!r.ok){alert(d.error||'등록 실패');return}loadContracts();
+  }catch(e){alert('오류가 발생했습니다')}
+}
+async function loadContracts(){
+  const box=document.getElementById('custs');box.className='empty';box.textContent='불러오는 중…';
+  try{const r=await fetch(API+'/b2b/contracts',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    const cs=d.contracts||[];
+    if(!cs.length){box.textContent='등록된 거래처가 없습니다.';return}
+    box.className='';box.innerHTML=cs.map(c=>{const nm=(c.buyer&&c.buyer.company_name)||('거래처 '+c.buyer_id);
+      return `<div class="cust ${curBuyer==c.buyer_id?'on':''}" onclick="pickBuyer(${c.buyer_id},'${nm.replace(/'/g,"")}' )">
+        <div><div class="nm">${nm}</div><div class="tm">${c.payment_terms||'결제조건 미설정'}${c.moq?' · MOQ '+fmt(c.moq):''}</div></div>
+        <div style="font-size:.8rem;color:var(--gold-d);font-weight:700">계약단가 ›</div></div>`;}).join('');
+  }catch(e){box.textContent='불러오지 못했습니다.'}
+}
+function pickBuyer(id,nm){curBuyer=id;curName=nm;document.getElementById('cur-name').textContent=nm;document.getElementById('price-sec').style.display='';loadContracts();loadPrices();window.scrollTo(0,document.body.scrollHeight)}
+async function addPrice(){
+  if(!curBuyer){alert('거래처를 먼저 선택하세요');return}
+  const item=document.getElementById('p-item').value.trim(),price=document.getElementById('p-price').value;
+  if(!item||!price){alert('품목·단가는 필수입니다');return}
+  try{const r=await fetch(API+'/b2b/contract-prices',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({buyer_id:curBuyer,item_name:item,unit_price:Number(price),min_qty:document.getElementById('p-minqty').value,valid_to:document.getElementById('p-to').value||null})});
+    const d=await r.json();if(!r.ok){alert(d.error||'등록 실패');return}
+    document.getElementById('p-item').value='';document.getElementById('p-price').value='';document.getElementById('p-minqty').value='';loadPrices();
+  }catch(e){alert('오류가 발생했습니다')}
+}
+async function loadPrices(){
+  const box=document.getElementById('plist');box.innerHTML='불러오는 중…';
+  try{const r=await fetch(API+'/b2b/contract-prices?buyer_id='+curBuyer,{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    const ps=d.prices||[];
+    box.innerHTML=ps.length?ps.map(p=>`<div class="pl"><div><div class="it">${p.item_name}</div><div class="tm" style="font-size:.74rem;color:var(--sub)">${p.min_qty?fmt(p.min_qty)+' 이상':'수량무관'}${p.valid_to?' · ~'+p.valid_to:''}</div></div>
+      <div style="display:flex;gap:12px;align-items:center"><span class="pr">${fmt(p.unit_price)}원</span><span class="del" onclick="delPrice(${p.id})">삭제</span></div></div>`).join(''):'<div class="empty">설정된 계약단가가 없습니다.</div>';
+  }catch(e){box.innerHTML='<div class="empty">불러오지 못했습니다.</div>'}
+}
+async function delPrice(id){if(!confirm('삭제할까요?'))return;
+  try{await fetch(API+'/b2b/contract-prices/'+id,{method:'DELETE',headers:{Authorization:'Bearer '+token}});loadPrices();}catch(e){}}
+boot();
+</script>
+</body>
+</html>
