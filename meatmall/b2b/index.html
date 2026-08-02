@@ -54,9 +54,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
       <button onclick="load()">검색</button>
     </div>
     <div class="chips" id="chips">
-      <div class="chip on" data-t="" onclick="setType(this,'')">전체</div>
-      <div class="chip" data-t="surplus" onclick="setType(this,'surplus')">잉여재고</div>
-      <div class="chip" data-t="clearance" onclick="setType(this,'clearance')">⚡임박덤핑</div>
+      <div class="chip on" data-t="" onclick="setKind(this,'')">전체</div>
+      <div class="chip" data-t="sell" onclick="setKind(this,'sell')">판매</div>
+      <div class="chip" data-t="buy_request" onclick="setKind(this,'buy_request')">구매요청</div>
+      <div class="chip" data-t="price_inquiry" onclick="setKind(this,'price_inquiry')">단가문의</div>
     </div>
   </div>
   <div class="cta">
@@ -67,30 +68,38 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
 </div>
 <script>
 const API='https://api.meatbonga.com/api';
-let dealType='';
+let postKind='';
+const DT={surplus:'잉여재고',clearance:'⚡ 임박덤핑',urgent:'긴급재고',special:'특가',group_delivery:'공동배송',group_buy:'공동구매'};
 function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
-function setType(el,t){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');dealType=t;load()}
-function badge(t){return t==='clearance'?'<span class="badge b-clear">⚡ 임박덤핑</span>':'<span class="badge b-surplus">잉여재고</span>'}
+function setKind(el,t){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');postKind=t;load()}
+function badge(it){
+  if(it.post_kind==='buy_request')return '<span class="badge b-surplus">🛒 구매요청</span>';
+  if(it.post_kind==='price_inquiry')return '<span class="badge b-surplus">❓ 단가문의</span>';
+  if(it.deal_type==='clearance'||it.deal_type==='urgent')return `<span class="badge b-clear">⚡ ${DT[it.deal_type]||'임박'}</span>`;
+  return `<span class="badge b-surplus">${DT[it.deal_type]||'잉여재고'}</span>`;
+}
 async function load(){
   const q=document.getElementById('q').value.trim();
   const el=document.getElementById('list');el.innerHTML='<div class="skel"></div><div class="skel"></div>';
   try{
-    const p=new URLSearchParams({status:'open'});if(dealType)p.set('deal_type',dealType);if(q)p.set('q',q);
+    const p=new URLSearchParams({status:'open'});if(postKind)p.set('post_kind',postKind);if(q)p.set('q',q);
     const r=await fetch(API+'/b2b/listings?'+p.toString());const d=await r.json();
     const items=d.listings||[];
     if(!items.length){el.innerHTML='<div class="empty">등록된 판매글이 없습니다.<br>첫 판매글을 등록해보세요.</div>';return}
     el.innerHTML=items.map(it=>{
       const img=(it.images&&it.images[0])?`style="background-image:url('${it.images[0]}')"`:'';
       const emoji=(it.images&&it.images[0])?'':'🥩';
+      const isSell=(it.post_kind||'sell')==='sell';
+      const priceHtml=isSell?`<div class="unit">${fmt(it.unit_price)}<small>원/${it.unit}</small></div>`
+        :`<div class="unit" style="font-size:1rem;color:#A8862A">${it.post_kind==='buy_request'?'구매 희망':'단가 문의'}</div>`;
+      const metaHtml=isSell?`${it.item_name} · ${it.region||'지역미지정'} · 남은수량 ${fmt(it.qty_remaining)}${it.unit}`
+        :`${it.item_name} · ${it.region||'지역미지정'}${it.qty_total?' · 희망 '+fmt(it.qty_total)+it.unit:''}`;
       return `<div class="card" onclick="location.href='listing.html?id=${it.id}'">
-        <div class="thumb" ${img}>${emoji}${badge(it.deal_type)}</div>
+        <div class="thumb" ${img}>${emoji}${badge(it)}</div>
         <div class="body">
           <div class="ttl">${it.title||it.item_name}</div>
-          <div class="meta">${it.item_name} · ${it.region||'지역미지정'} · 남은수량 ${fmt(it.qty_remaining)}${it.unit}</div>
-          <div class="price">
-            <div class="unit">${fmt(it.unit_price)}<small>원/${it.unit}</small></div>
-            <div class="qty">${it.storage||''}</div>
-          </div>
+          <div class="meta">${metaHtml}</div>
+          <div class="price">${priceHtml}<div class="qty">${it.storage||''}</div></div>
         </div></div>`;
     }).join('');
   }catch(e){el.innerHTML='<div class="empty">불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>'}

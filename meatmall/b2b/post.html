@@ -30,11 +30,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
   <div class="hdr"><button onclick="history.back()">←</button><h1>판매글 등록</h1></div>
   <div class="form">
     <div class="note" id="note">승인된 B2B 회원만 등록할 수 있습니다.</div>
-    <div class="grp"><label>거래유형</label>
-      <div class="seg" id="dt">
-        <div class="s on" data-v="surplus" onclick="segSel(this)">잉여재고</div>
-        <div class="s" data-v="clearance" onclick="segSel(this)">⚡ 임박덤핑</div>
+    <div class="grp"><label>게시 유형</label>
+      <div class="seg" id="pk">
+        <div class="s on" data-v="sell" onclick="pkSel(this)">판매</div>
+        <div class="s" data-v="buy_request" onclick="pkSel(this)">구매요청</div>
+        <div class="s" data-v="price_inquiry" onclick="pkSel(this)">단가문의</div>
       </div></div>
+    <div class="grp" id="dt-wrap"><label>판매 세부유형</label>
+      <select id="deal_type">
+        <option value="surplus">잉여재고</option>
+        <option value="clearance">⚡ 임박덤핑</option>
+        <option value="urgent">긴급재고</option>
+        <option value="special">특가</option>
+        <option value="group_delivery">공동배송</option>
+        <option value="group_buy">공동구매</option>
+      </select></div>
     <div class="grp"><label>제목 <span class="req">*</span></label><input id="title" placeholder="예: 국내산 냉장 삼겹 1톤 급처"></div>
     <div class="grp"><label>품목 <span class="req">*</span></label><input id="item_name" placeholder="예: 삼겹살"></div>
     <div class="two">
@@ -60,8 +70,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
 <script>
 const API='https://api.meatbonga.com/api';
 const token=localStorage.getItem('mm_access_token');
-let dealType='surplus';
-function segSel(el){document.querySelectorAll('#dt .s').forEach(s=>s.classList.remove('on'));el.classList.add('on');dealType=el.dataset.v}
+let postKind='sell';
+function pkSel(el){document.querySelectorAll('#pk .s').forEach(s=>s.classList.remove('on'));el.classList.add('on');postKind=el.dataset.v;
+  document.getElementById('dt-wrap').style.display=postKind==='sell'?'':'none';}
 (async function(){
   if(!token){document.getElementById('note').textContent='로그인이 필요합니다.';setTimeout(()=>location.href='../../login.html',800);return}
   try{const r=await fetch(API+'/b2b/members/me',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
@@ -70,9 +81,11 @@ function segSel(el){document.querySelectorAll('#dt .s').forEach(s=>s.classList.r
 })();
 async function submit(){
   const g=id=>document.getElementById(id).value.trim();
-  if(!g('title')||!g('item_name')||!g('qty_total')||!g('unit_price')){alert('제목·품목·수량·단가는 필수입니다');return}
-  const body={deal_type:dealType,title:g('title'),item_name:g('item_name'),category:g('category'),origin:g('origin'),
-    qty_total:Number(g('qty_total')),unit:g('unit'),unit_price:Number(g('unit_price')),storage:g('storage'),
+  if(!g('title')||!g('item_name')){alert('제목·품목은 필수입니다');return}
+  if(postKind==='sell'&&(!g('qty_total')||!g('unit_price'))){alert('판매글은 수량·단가가 필수입니다');return}
+  const body={post_kind:postKind,deal_type:postKind==='sell'?document.getElementById('deal_type').value:postKind,
+    title:g('title'),item_name:g('item_name'),category:g('category'),origin:g('origin'),
+    qty_total:Number(g('qty_total'))||0,unit:g('unit'),unit_price:Number(g('unit_price'))||0,storage:g('storage'),
     expiry_at:g('expiry_at')||null,region:g('region'),delivery_type:g('delivery_type'),delivery_info:g('delivery_info'),description:g('description')};
   try{
     const r=await fetch(API+'/b2b/listings',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});

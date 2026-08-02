@@ -88,7 +88,7 @@ async function boot(){
       ${L.delivery_info?`<div class="desc" style="margin-top:8px">${L.delivery_info}</div>`:''}
     </div>
     ${L.description?`<div class="sec"><h3>📋 상세 설명</h3><div class="desc">${L.description}</div></div>`:''}
-    <div class="sec">
+    <div class="sec" id="buysec">
       <h3>🧮 구매 수량 · 금액</h3>
       <div class="qtybox"><input id="q" type="number" min="1" placeholder="구매 수량" oninput="calc()"><span>${L.unit}</span></div>
       <div class="calc">
@@ -98,10 +98,22 @@ async function boot(){
       </div>
       <div style="font-size:.78rem;color:var(--sub);margin-top:8px">외상/여신 거래 — 수락 시 미수로 잡히고 정산일에 상환합니다. 세금계산서는 판매자가 발행합니다.</div>
     </div>`;
-    if(L.status!=='open') document.getElementById('buyBtn').classList.add('muted'),document.getElementById('buyBtn').textContent=L.status==='soldout'?'품절':'거래마감';
+    // 구매요청·단가문의 글: 거래 대신 게시자 연락
+    if((L.post_kind||'sell')!=='sell'){
+      const bs=document.getElementById('buysec'); if(bs) bs.style.display='none';
+      document.getElementById('buyBtn').textContent=L.post_kind==='buy_request'?'판매 제안 · 연락하기':'단가 회신 · 연락하기';
+    } else if(L.status!=='open'){
+      document.getElementById('buyBtn').classList.add('muted');
+      document.getElementById('buyBtn').textContent=L.status==='soldout'?'품절':'거래마감';
+    }
   }catch(e){document.getElementById('main').innerHTML='<div class="sec">불러오지 못했습니다.</div>'}
 }
 async function requestDeal(){
+  if(L && (L.post_kind||'sell')!=='sell'){
+    const s=L.seller||{};
+    alert('게시자에게 연락해 '+(L.post_kind==='buy_request'?'판매를 제안':'단가를 회신')+'하세요.\n\n'+(s.company_name||'')+'\n연락처: '+(s.contact_phone||'미등록'));
+    return;
+  }
   if(!token){alert('로그인이 필요합니다');location.href='../../login.html';return}
   const q=Number(document.getElementById('q').value)||0;
   if(q<=0){alert('구매 수량을 입력해주세요');return}

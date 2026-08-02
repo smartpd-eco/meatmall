@@ -40,8 +40,11 @@ function formHtml(){return `<div class="form">
   <div class="grp"><label>대표자명</label><input id="ceo_name"></div>
   <div class="two"><div class="grp"><label>업태</label><input id="biz_type" placeholder="도소매"></div>
   <div class="grp"><label>종목</label><input id="biz_item" placeholder="축산물"></div></div>
-  <div class="grp"><label>사업장 주소</label><input id="address"></div>
+  <div class="grp"><label>사업장 주소</label><input id="address" placeholder="주소 입력 시 좌표 자동변환(거리매칭)"></div>
   <div class="grp"><label>연락처</label><input id="contact_phone" placeholder="010-0000-0000"></div>
+  <div class="two"><div class="grp"><label>최소주문(MOQ)</label><input id="moq" type="number" placeholder="예: 100"></div>
+  <div class="grp"><label>배송권역</label><input id="delivery_area" placeholder="예: 수도권"></div></div>
+  <div class="grp"><label>결제조건</label><input id="payment_terms" placeholder="예: 월말정산 / 선결제 / 외상15일"></div>
   <div class="grp"><label>세금계산서 수신 이메일</label><input id="tax_email" type="email" placeholder="tax@company.com"></div>
 </div>`}
 async function boot(){
@@ -63,7 +66,7 @@ async function boot(){
 async function submit(){
   const g=id=>document.getElementById(id).value.trim();
   if(!g('company_name')||!g('biz_reg_no')){alert('상호와 사업자등록번호는 필수입니다');return}
-  const body={company_name:g('company_name'),biz_reg_no:g('biz_reg_no'),ceo_name:g('ceo_name'),biz_type:g('biz_type'),biz_item:g('biz_item'),address:g('address'),contact_phone:g('contact_phone'),tax_email:g('tax_email')};
+  const body={company_name:g('company_name'),biz_reg_no:g('biz_reg_no'),ceo_name:g('ceo_name'),biz_type:g('biz_type'),biz_item:g('biz_item'),address:g('address'),contact_phone:g('contact_phone'),tax_email:g('tax_email'),moq:g('moq')||null,delivery_area:g('delivery_area'),payment_terms:g('payment_terms')};
   try{
     const r=await fetch(API+'/b2b/members/register',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
     const d=await r.json();

@@ -7,6 +7,7 @@ const router = express.Router();
 const supabase = require('../../lib/supabase');
 const { requireAuth, requireAdmin } = require('../../middleware/auth');
 const { issueTaxInvoice } = require('../../lib/tax-invoice');
+const { kakaoGeocode } = require('../../lib/geocode'); // 업체 주소 → 좌표(거리매칭)
 
 const VAT_RATE = 0.1;
 
@@ -31,12 +32,18 @@ router.post('/members/register', requireAuth, async (req, res) => {
     const exist = await currentMember(req);
     if (exist) return res.status(400).json({ error: '이미 B2B 회원 신청/가입 상태입니다', member: exist });
 
+    // 주소 → 좌표(거리매칭용). KAKAO 키 없으면 null.
+    let geo = null;
+    if (b.address) { try { geo = await kakaoGeocode(b.address); } catch (e) {} }
     const { data, error } = await supabase.from('b2b_members').insert({
       user_id: req.user.sub,
       company_name: b.company_name, biz_reg_no: String(b.biz_reg_no).replace(/[^0-9]/g, ''),
       ceo_name: b.ceo_name || null, biz_type: b.biz_type || null, biz_item: b.biz_item || null,
       address: b.address || null, contact_phone: b.contact_phone || null,
       contact_email: b.contact_email || null, tax_email: b.tax_email || b.contact_email || null,
+      moq: b.moq != null && b.moq !== '' ? Number(b.moq) : null,
+      payment_terms: b.payment_terms || null, delivery_area: b.delivery_area || null,
+      lat: geo ? geo.lat : null, lng: geo ? geo.lng : null,
       status: 'pending'
     }).select().single();
     if (error) throw error;
@@ -70,7 +77,7 @@ router.patch('/members/:id', requireAdmin, async (req, res) => {
 // 목록 (공개, open 우선) — 검색/카테고리/거래유형 필터
 router.get('/listings', async (req, res) => {
   try {
-    const { q, category, deal_type, status = 'open', page = 1, limit = 20 } = req.query;
+    const { q, category, deal_type, post_kind, status = 'open', page = 1, limit = 20 } = req.query;
     const p = Number(page) || 1, l = Math.min(Number(limit) || 20, 50);
     let query = supabase.from('b2b_listings')
       .select('*, b2b_members(company_name, region:address)', { count: 'exact' })
@@ -79,6 +86,7 @@ router.get('/listings', async (req, res) => {
     if (status) query = query.eq('status', status);
     if (category) query = query.eq('category', category);
     if (deal_type) query = query.eq('deal_type', deal_type);
+    if (post_kind) query = query.eq('post_kind', post_kind);
     if (q) query = query.ilike('item_name', `%${q}%`);
     const { data, count, error } = await query;
     if (error) throw error;
@@ -104,13 +112,15 @@ router.post('/listings', requireAuth, async (req, res) => {
     const m = await currentMember(req);
     if (!isApproved(m)) return res.status(403).json({ error: '승인된 B2B 회원만 등록할 수 있습니다', code: 'NOT_APPROVED' });
     const b = req.body || {};
-    if (!b.title || !b.item_name || !b.qty_total || !b.unit_price)
-      return res.status(400).json({ error: '제목·품목·수량·단가는 필수입니다' });
-    const qty = Number(b.qty_total);
+    const kind = b.post_kind || 'sell'; // sell | buy_request | price_inquiry
+    if (!b.title || !b.item_name) return res.status(400).json({ error: '제목·품목은 필수입니다' });
+    if (kind === 'sell' && (!b.qty_total || !b.unit_price))
+      return res.status(400).json({ error: '판매글은 수량·단가가 필수입니다' });
+    const qty = Number(b.qty_total) || 0;
     const { data, error } = await supabase.from('b2b_listings').insert({
-      seller_id: m.id, title: b.title, item_name: b.item_name, category: b.category || null,
-      deal_type: b.deal_type || 'surplus', qty_total: qty, qty_remaining: qty,
-      unit: b.unit || 'kg', unit_price: Number(b.unit_price), origin: b.origin || null,
+      seller_id: m.id, post_kind: kind, title: b.title, item_name: b.item_name, category: b.category || null,
+      deal_type: b.deal_type || (kind === 'sell' ? 'surplus' : kind), qty_total: qty, qty_remaining: qty,
+      unit: b.unit || 'kg', unit_price: Number(b.unit_price) || 0, origin: b.origin || null,
       expiry_at: b.expiry_at || null, storage: b.storage || null,
       delivery_type: b.delivery_type || null, delivery_info: b.delivery_info || null,
       region: b.region || null, description: b.description || null,
@@ -150,6 +160,7 @@ router.post('/deals', requireAuth, async (req, res) => {
     const { listing_id, qty } = req.body || {};
     const { data: listing } = await supabase.from('b2b_listings').select('*').eq('id', listing_id).single();
     if (!listing || listing.status !== 'open') return res.status(400).json({ error: '거래 가능한 게시글이 아닙니다' });
+    if ((listing.post_kind || 'sell') !== 'sell') return res.status(400).json({ error: '구매요청·단가문의 글은 직접 거래 대상이 아닙니다. 게시자 연락처로 제안/문의하세요' });
     if (listing.seller_id === buyer.id) return res.status(400).json({ error: '본인 게시글은 구매할 수 없습니다' });
     const q = Number(qty);
     if (!q || q <= 0) return res.status(400).json({ error: '수량을 입력해주세요' });
