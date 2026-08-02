@@ -6,6 +6,10 @@ const { kakaoGeocode, haversineKm } = require('../../lib/geocode');
 const { productWasteRisk } = require('../../lib/lot-risk');
 // 레이어1(특허): 로트 폐기위험 기반 당일배송 우선순위 — 기본 OFF(플래그 ON일 때만 동작, 기존 무영향)
 const LOTRISK_ON = process.env.SAMEDAY_LOTRISK === 'true' || process.env.SAMEDAY_LOTRISK === '1';
+const { predictArrivalTemp, getExternalTempC, estimateEtaMin } = require('../../lib/coldchain');
+// 레이어3(특허): 예상 품온 콜드체인 게이트 — 기본 OFF(플래그+WEATHER_API_KEY 있을 때만 동작)
+const COLDCHAIN_ON = process.env.COLDCHAIN_TEMP_GATE === 'true' || process.env.COLDCHAIN_TEMP_GATE === '1';
+const COLDCHAIN_MAX_C = Number(process.env.COLDCHAIN_MAX_TEMP_C || 10);
 
 // ── 상품 목록 캐시 (60초 TTL, 관리자 우회) ───────────────
 const _pc = new Map();
@@ -224,8 +228,14 @@ router.get('/same-day', optionalAuth, async (req, res) => {
     const hhmmss = nowKst.toISOString().slice(11, 19);      // 'HH:MM:SS'
     const todayKst = nowKst.toISOString().slice(0, 10);      // 'YYYY-MM-DD'
 
-    const reasons = { closed: 0, limit: 0, out_of_range: 0, disabled: 0 };
+    const reasons = { closed: 0, limit: 0, out_of_range: 0, disabled: 0, coldchain: 0 };
     const eligible = [];
+
+    // 레이어3(특허): 콜드체인 게이트용 외기온(배송지 기준, 30분 캐시). 키 없으면 null → 게이트 무력화
+    let extTempC = null;
+    if (COLDCHAIN_ON && userCoords) {
+      try { extTempC = await getExternalTempC(userCoords.lat, userCoords.lng); } catch (e) { extTempC = null; }
+    }
 
     for (const v of (vendors || [])) {
       if (!v.is_active || v.same_day_enabled === false) { reasons.disabled++; continue; }
@@ -251,6 +261,12 @@ router.get('/same-day', optionalAuth, async (req, res) => {
         if (vlat != null && vlng != null) {
           km = haversineKm(userCoords.lat, userCoords.lng, vlat, vlng);
           if (km > Number(v.same_day_radius_km || 8)) { reasons.out_of_range++; continue; }
+
+          // 레이어3(특허): 예상 품온 콜드체인 컷 (플래그 ON + 외기온 확보 시에만)
+          if (COLDCHAIN_ON && extTempC != null) {
+            const arrivalC = predictArrivalTemp({ extTempC, etaMin: estimateEtaMin(km) });
+            if (arrivalC != null && arrivalC > COLDCHAIN_MAX_C) { reasons.coldchain++; continue; }
+          }
         }
       }
 
@@ -264,9 +280,10 @@ router.get('/same-day', optionalAuth, async (req, res) => {
     }
 
     if (!eligible.length) {
-      // 대표 사유 결정 (거리 > 마감 > 한도 순)
+      // 대표 사유 결정 (콜드체인 > 거리 > 마감 > 한도 순)
       let reason = 'no_vendor';
-      if (reasons.out_of_range) reason = 'out_of_range';
+      if (reasons.coldchain) reason = 'coldchain';
+      else if (reasons.out_of_range) reason = 'out_of_range';
       else if (reasons.closed) reason = 'closed';
       else if (reasons.limit) reason = 'limit';
       return res.json({ ok: true, dong, products: [], reason });
