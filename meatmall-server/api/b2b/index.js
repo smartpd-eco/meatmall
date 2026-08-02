@@ -267,4 +267,16 @@ router.post('/deals/:id/tax-invoice', requireAuth, async (req, res) => {
   } catch (err) { console.error('[b2b/tax-invoice]', err); res.status(500).json({ error: err.message || '세금계산서 처리 오류' }); }
 });
 
+// ── (관리자) B2B 회원 전체 목록 — 승인 관리용 ──
+router.get('/admin/members', requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    let q = supabase.from('b2b_members').select('*').order('created_at', { ascending: false });
+    if (status) q = q.eq('status', status);
+    const { data, error } = await q;
+    if (error) throw error;
+    res.json({ ok: true, members: data || [] });
+  } catch (err) { console.error('[b2b/admin/members]', err); res.status(500).json({ error: err.message || '회원 목록 오류' }); }
+});
+
 module.exports = router;

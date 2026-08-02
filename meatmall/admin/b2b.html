@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B2B 회원관리 · 정육본가 ADMIN</title>
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#E5E1D5;--bg:#F4F2EC}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink)}
+.hdr{background:#1A1A1A;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.hdr .t{font-weight:800}.hdr .t b{color:var(--gold)}
+.hdr a{color:#ddd;text-decoration:none;font-size:.85rem}
+.wrap{max-width:960px;margin:0 auto;padding:20px}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tb{padding:8px 16px;border:1.5px solid var(--line);background:#fff;border-radius:999px;font-weight:700;font-size:.85rem;cursor:pointer;color:var(--sub)}
+.tb.on{border-color:var(--gold);background:#FBF7EC;color:var(--gold-d)}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.row1{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.co{font-size:1.05rem;font-weight:800}.biz{font-size:.82rem;color:var(--sub);margin-top:2px}
+.st{font-size:.74rem;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.s-pending{background:#FEF6E7;color:#B45309}.s-approved{background:#E7F6EC;color:#1B7F3B}.s-rejected,.s-suspended{background:#FDEBEC;color:#B42318}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px;font-size:.84rem}
+.grid .k{color:var(--sub)}.grid .v{font-weight:600}
+.actions{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.actions input{width:150px;height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px;font-size:.85rem}
+.actions button{height:38px;padding:0 16px;border:none;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer}
+.b-approve{background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a}
+.b-reject{background:#fff;border:1.5px solid #E5C0C0!important;color:#B42318}
+.empty{text-align:center;color:var(--sub);padding:50px;background:#fff;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="t">정육본가 <b>B2B 회원관리</b></div><a href="dashboard.html">← 대시보드</a></div>
+<div class="wrap">
+  <div class="tabs">
+    <div class="tb on" data-s="" onclick="setTab(this,'')">전체</div>
+    <div class="tb" data-s="pending" onclick="setTab(this,'pending')">승인대기</div>
+    <div class="tb" data-s="approved" onclick="setTab(this,'approved')">승인완료</div>
+  </div>
+  <div id="list" class="empty">불러오는 중…</div>
+</div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+let filter='';
+const STL={pending:'승인대기',approved:'승인완료',rejected:'거절',suspended:'정지'};
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+function setTab(el,s){document.querySelectorAll('.tb').forEach(t=>t.classList.remove('on'));el.classList.add('on');filter=s;load()}
+async function load(){
+  const el=document.getElementById('list');el.className='empty';el.textContent='불러오는 중…';
+  if(!token){el.textContent='관리자 로그인이 필요합니다.';return}
+  try{
+    const r=await fetch(API+'/b2b/admin/members'+(filter?'?status='+filter:''),{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(!r.ok){el.textContent=d.error||'권한이 없습니다(관리자 전용).';return}
+    const ms=d.members||[];
+    if(!ms.length){el.textContent='해당 회원이 없습니다.';return}
+    el.className='';el.innerHTML=ms.map(card).join('');
+  }catch(e){el.textContent='불러오지 못했습니다.'}
+}
+function card(m){
+  const st=`<span class="st s-${m.status}">${STL[m.status]||m.status}</span>`;
+  return `<div class="card"><div class="row1">
+    <div><div class="co">${m.company_name}</div><div class="biz">사업자 ${m.biz_reg_no||'-'} · 대표 ${m.ceo_name||'-'}</div></div>${st}</div>
+    <div class="grid">
+      <div><div class="k">업태/종목</div><div class="v">${m.biz_type||'-'} / ${m.biz_item||'-'}</div></div>
+      <div><div class="k">연락처</div><div class="v">${m.contact_phone||'-'}</div></div>
+      <div><div class="k">세금계산서 이메일</div><div class="v">${m.tax_email||'-'}</div></div>
+      <div><div class="k">여신한도 / 미수</div><div class="v">${fmt(m.credit_limit)} / <span style="color:#B42318">${fmt(m.credit_used)}</span></div></div>
+      <div><div class="k">소재지</div><div class="v">${m.address||'-'}</div></div>
+    </div>
+    <div class="actions">
+      <input type="number" id="cl-${m.id}" placeholder="여신한도(원)" value="${m.credit_limit||0}">
+      <button class="b-approve" onclick="approve(${m.id})">${m.status==='approved'?'한도저장':'승인'}</button>
+      ${m.status!=='rejected'?`<button class="b-reject" onclick="setStatus(${m.id},'rejected')">거절</button>`:''}
+      ${m.status==='approved'?`<button class="b-reject" onclick="setStatus(${m.id},'suspended')">정지</button>`:''}
+    </div></div>`;
+}
+async function approve(id){
+  const cl=Number(document.getElementById('cl-'+id).value)||0;
+  await patch(id,{status:'approved',credit_limit:cl});
+}
+async function setStatus(id,status){ if(!confirm(STL[status]+' 처리할까요?'))return; await patch(id,{status}); }
+async function patch(id,body){
+  try{const r=await fetch(API+'/b2b/members/'+id,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
+    const d=await r.json();if(!r.ok){alert(d.error||'처리 실패');return}load();
+  }catch(e){alert('오류가 발생했습니다')}
+}
+load();
+</script>
+</body>
+</html>

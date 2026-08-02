@@ -63,6 +63,8 @@ body{font-size:.9375rem}.app-wrap{background:var(--light-bg)}
       <div class="lt-menu-arr">›</div>
     </div>
 
+    <div id="b2b-sec"></div>
+
     <div class="menu-sec-label">고객센터</div>
     <div class="lt-menu" onclick="go('../pages/cs.html')" style="border-top:1.5px solid var(--gold)">
       <div class="lt-menu-ico">💬</div>
@@ -96,6 +98,23 @@ const API='https://api.meatbonga.com/api';
 function go(u){window.location.href=u}
 function fmt(n){return Number(n).toLocaleString('ko-KR')}
 Store.load();showAdminBtn();
+// B2B 회원 상태 → 승인 시 거래소 자동 노출(입장), 대기 시 안내, 비회원은 신청 진입
+(async function b2bMenu(){
+  const t=localStorage.getItem('mm_access_token'); if(!t) return;
+  const sec=document.getElementById('b2b-sec'); if(!sec) return;
+  const item=(ico,name,sub,href)=>`<div class="menu-sec-label">B2B 거래소</div>
+    <div class="lt-menu" onclick="go('${href}')" style="border-top:1.5px solid var(--gold);border-bottom:1.5px solid var(--gold)">
+      <div class="lt-menu-ico">${ico}</div>
+      <div><div class="lt-menu-name">${name}</div><div class="lt-menu-sub">${sub}</div></div>
+      <div class="lt-menu-arr">›</div></div>`;
+  try{
+    const r=await fetch(API+'/b2b/members/me',{headers:{Authorization:'Bearer '+t}});
+    const d=await r.json();
+    if(d && d.approved) sec.innerHTML=item('📑','B2B 거래소 입장','잉여·임박 재고 거래 · 내 거래 관리','../b2b/index.html');
+    else if(d && d.member) sec.innerHTML=item('⏳','B2B 승인 대기 중','관리자 승인 후 거래소가 열립니다','../b2b/join.html');
+    else sec.innerHTML=item('🏢','B2B 거래소 회원신청','사업자 잉여·임박 재고 거래','../b2b/join.html');
+  }catch(e){}
+})();
 async function load(){
   const token=localStorage.getItem('mm_access_token');
   if(!token){go('../login.html');return}
