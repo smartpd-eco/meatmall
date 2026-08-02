@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>거래 상세 · B2B 거래소</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#ECE7DA;--bg:#F7F5F0;--white:#fff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);padding-bottom:90px}
+.hdr{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:2px solid var(--gold);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.hdr button{background:none;border:none;font-size:1.2rem;cursor:pointer}
+.hdr h1{font-size:1rem;font-weight:800}
+.hero{height:220px;background:#F0ECE2 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:4rem;position:relative}
+.badge{position:absolute;top:14px;left:14px;padding:5px 12px;border-radius:999px;font-size:.75rem;font-weight:800}
+.b-clear{background:#FDEBEC;color:#B42318}.b-surplus{background:#FBF7EC;color:var(--gold-d)}
+.sec{background:#fff;margin:12px;border:1px solid var(--line);border-radius:14px;padding:16px}
+.title{font-size:1.15rem;font-weight:800;line-height:1.35;margin-bottom:6px}
+.price{font-size:1.5rem;font-weight:800;color:var(--gold-d);margin:8px 0}.price small{font-size:.85rem;color:var(--sub);font-weight:600}
+.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.88rem}
+.row:last-child{border-bottom:none}.row .k{color:var(--sub)}.row .v{font-weight:600;text-align:right}
+.sec h3{font-size:.95rem;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.desc{font-size:.9rem;color:#374151;line-height:1.7;white-space:pre-wrap}
+.calc{background:#FBF7EC;border:1px solid #EBDCAF;border-radius:12px;padding:14px;margin-top:12px}
+.calc .row{border-color:#EBDCAF}
+.qtybox{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.qtybox input{flex:1;height:46px;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;font-size:1rem;outline:none;text-align:right;font-weight:700}
+.qtybox span{font-weight:700;color:var(--sub)}
+.total{font-size:1.25rem;font-weight:800;color:var(--ink)}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--line);padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0));display:flex;gap:10px}
+.bottom button{flex:1;height:52px;border:none;border-radius:12px;font-weight:800;font-size:1rem;cursor:pointer}
+.buy{background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a}
+.muted{opacity:.5;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr"><button onclick="history.back()">←</button><h1>거래 상세</h1></div>
+  <div id="main"><div class="sec">불러오는 중…</div></div>
+</div>
+<div class="bottom"><button class="buy" id="buyBtn" onclick="requestDeal()">구매 요청</button></div>
+<script>
+const API='https://api.meatbonga.com/api';
+const id=new URLSearchParams(location.search).get('id');
+const token=localStorage.getItem('mm_access_token');
+let L=null;
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+function dtLabel(t){return t==='clearance'?'⚡ 유통기한 임박(덤핑)':t==='surplus'?'잉여재고':'일반'}
+function badge(t){return t==='clearance'?'<span class="badge b-clear">⚡ 임박덤핑</span>':'<span class="badge b-surplus">잉여재고</span>'}
+function calc(){
+  const q=Number(document.getElementById('q').value)||0;
+  const supply=Math.round(q*Number(L.unit_price));const vat=Math.round(supply*0.1);
+  document.getElementById('c-supply').textContent=fmt(supply)+'원';
+  document.getElementById('c-vat').textContent=fmt(vat)+'원';
+  document.getElementById('c-total').textContent=fmt(supply+vat)+'원';
+}
+async function boot(){
+  try{
+    const r=await fetch(API+'/b2b/listings/'+id);const d=await r.json();
+    if(!d.ok){document.getElementById('main').innerHTML='<div class="sec">게시글을 찾을 수 없습니다.</div>';return}
+    L=d.listing;const s=L.seller||{};
+    const img=(L.images&&L.images[0])?`style="background-image:url('${L.images[0]}')"`:'';
+    const emoji=(L.images&&L.images[0])?'':'🥩';
+    document.getElementById('main').innerHTML=`
+    <div class="hero" ${img}>${emoji}${badge(L.deal_type)}</div>
+    <div class="sec">
+      <div class="title">${L.title||L.item_name}</div>
+      <div class="price">${fmt(L.unit_price)}<small> 원/${L.unit}</small></div>
+      <div class="row"><span class="k">품목</span><span class="v">${L.item_name}${L.origin?' · '+L.origin:''}</span></div>
+      <div class="row"><span class="k">거래유형</span><span class="v">${dtLabel(L.deal_type)}</span></div>
+      <div class="row"><span class="k">남은수량</span><span class="v">${fmt(L.qty_remaining)}${L.unit} / 총 ${fmt(L.qty_total)}${L.unit}</span></div>
+      <div class="row"><span class="k">보관</span><span class="v">${L.storage||'-'}</span></div>
+      ${L.expiry_at?`<div class="row"><span class="k">유통기한</span><span class="v">${(L.expiry_at||'').slice(0,10)}</span></div>`:''}
+    </div>
+    <div class="sec">
+      <h3>🏢 업체 정보</h3>
+      <div class="row"><span class="k">상호</span><span class="v">${s.company_name||'-'}</span></div>
+      <div class="row"><span class="k">대표</span><span class="v">${s.ceo_name||'-'}</span></div>
+      <div class="row"><span class="k">업태/종목</span><span class="v">${s.biz_type||'-'} / ${s.biz_item||'-'}</span></div>
+      <div class="row"><span class="k">소재지</span><span class="v">${s.address||L.region||'-'}</span></div>
+      <div class="row"><span class="k">연락처</span><span class="v">${s.contact_phone||'-'}</span></div>
+    </div>
+    <div class="sec">
+      <h3>🚚 배송 정보</h3>
+      <div class="row"><span class="k">배송방식</span><span class="v">${L.delivery_type||'-'}</span></div>
+      ${L.delivery_info?`<div class="desc" style="margin-top:8px">${L.delivery_info}</div>`:''}
+    </div>
+    ${L.description?`<div class="sec"><h3>📋 상세 설명</h3><div class="desc">${L.description}</div></div>`:''}
+    <div class="sec">
+      <h3>🧮 구매 수량 · 금액</h3>
+      <div class="qtybox"><input id="q" type="number" min="1" placeholder="구매 수량" oninput="calc()"><span>${L.unit}</span></div>
+      <div class="calc">
+        <div class="row"><span class="k">공급가액</span><span class="v" id="c-supply">0원</span></div>
+        <div class="row"><span class="k">부가세(10%)</span><span class="v" id="c-vat">0원</span></div>
+        <div class="row"><span class="k total">합계</span><span class="v total" id="c-total">0원</span></div>
+      </div>
+      <div style="font-size:.78rem;color:var(--sub);margin-top:8px">외상/여신 거래 — 수락 시 미수로 잡히고 정산일에 상환합니다. 세금계산서는 판매자가 발행합니다.</div>
+    </div>`;
+    if(L.status!=='open') document.getElementById('buyBtn').classList.add('muted'),document.getElementById('buyBtn').textContent=L.status==='soldout'?'품절':'거래마감';
+  }catch(e){document.getElementById('main').innerHTML='<div class="sec">불러오지 못했습니다.</div>'}
+}
+async function requestDeal(){
+  if(!token){alert('로그인이 필요합니다');location.href='../../login.html';return}
+  const q=Number(document.getElementById('q').value)||0;
+  if(q<=0){alert('구매 수량을 입력해주세요');return}
+  if(q>Number(L.qty_remaining)){alert('남은 수량을 초과했습니다');return}
+  if(!confirm(`${fmt(q)}${L.unit} 구매를 요청하시겠어요?\n합계 ${document.getElementById('c-total').textContent} (외상/여신)`))return;
+  try{
+    const r=await fetch(API+'/b2b/deals',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({listing_id:L.id,qty:q})});
+    const d=await r.json();
+    if(!r.ok){alert(d.error||'요청 실패'+(d.code==='NOT_APPROVED'?'\nB2B 회원 승인 후 이용 가능합니다':''));return}
+    alert('구매 요청이 접수됐습니다. 판매자 수락 후 거래가 진행됩니다.\n거래번호: '+d.deal.deal_no);
+    location.href='my.html';
+  }catch(e){alert('요청 중 오류가 발생했습니다')}
+}
+boot();
+</script>
+</body>
+</html>

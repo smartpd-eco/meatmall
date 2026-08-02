@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>B2B 거래소 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#ECE7DA;--bg:#F7F5F0;--white:#fff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column}
+.hdr{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:2px solid var(--gold);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:1.05rem;font-weight:800;letter-spacing:-.02em}.hdr h1 span{color:var(--gold)}
+.hdr a{font-size:.8rem;font-weight:700;color:var(--gold-d);text-decoration:none}
+.bar{padding:12px 16px 4px;background:var(--white);border-bottom:1px solid var(--line)}
+.search{display:flex;gap:8px}
+.search input{flex:1;height:42px;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;font-size:.9rem;outline:none}
+.search input:focus{border-color:var(--gold)}
+.search button{height:42px;padding:0 16px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer}
+.chips{display:flex;gap:8px;padding:12px 0 4px;overflow-x:auto}
+.chip{white-space:nowrap;padding:7px 14px;border:1.5px solid var(--line);border-radius:999px;background:#fff;font-size:.82rem;font-weight:600;color:var(--sub);cursor:pointer}
+.chip.on{border-color:var(--gold);background:#FBF7EC;color:var(--gold-d)}
+.cta{display:flex;gap:8px;padding:12px 16px}
+.cta button{flex:1;height:46px;border-radius:10px;font-weight:800;font-size:.9rem;cursor:pointer;border:none}
+.cta .sell{background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a}
+.cta .join{background:#fff;border:1.5px solid var(--gold)!important;color:var(--gold-d)}
+.list{flex:1;padding:4px 16px 40px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:12px;cursor:pointer;transition:transform .1s}
+.card:active{transform:scale(.99)}
+.card .thumb{height:150px;background:#F0ECE2 center/cover no-repeat;position:relative;display:flex;align-items:center;justify-content:center;font-size:3rem}
+.badge{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:999px;font-size:.72rem;font-weight:800}
+.b-clear{background:#FDEBEC;color:#B42318}.b-surplus{background:#FBF7EC;color:var(--gold-d)}
+.card .body{padding:12px 14px}
+.card .ttl{font-size:.95rem;font-weight:700;margin-bottom:4px;line-height:1.35}
+.meta{font-size:.78rem;color:var(--sub);margin-bottom:8px}
+.price{display:flex;align-items:baseline;justify-content:space-between}
+.price .unit{font-size:1.15rem;font-weight:800;color:var(--ink)}.price .unit small{font-size:.75rem;color:var(--sub);font-weight:600}
+.price .qty{font-size:.8rem;color:var(--gold-d);font-weight:700}
+.empty{text-align:center;color:var(--sub);padding:60px 20px;font-size:.9rem}
+.skel{height:220px;border-radius:14px;background:linear-gradient(90deg,#efeae0,#f6f2ea,#efeae0);background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:12px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <h1>정육본가 <span>B2B 거래소</span></h1>
+    <a href="my.html">내 거래</a>
+  </div>
+  <div class="bar">
+    <div class="search">
+      <input id="q" placeholder="품목 검색 (예: 삼겹, 목살)" onkeydown="if(event.key==='Enter')load()">
+      <button onclick="load()">검색</button>
+    </div>
+    <div class="chips" id="chips">
+      <div class="chip on" data-t="" onclick="setType(this,'')">전체</div>
+      <div class="chip" data-t="surplus" onclick="setType(this,'surplus')">잉여재고</div>
+      <div class="chip" data-t="clearance" onclick="setType(this,'clearance')">⚡임박덤핑</div>
+    </div>
+  </div>
+  <div class="cta">
+    <button class="sell" onclick="location.href='post.html'">＋ 판매글 등록</button>
+    <button class="join" onclick="location.href='join.html'">B2B 회원신청</button>
+  </div>
+  <div class="list" id="list"><div class="skel"></div><div class="skel"></div></div>
+</div>
+<script>
+const API='https://api.meatbonga.com/api';
+let dealType='';
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+function setType(el,t){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');dealType=t;load()}
+function badge(t){return t==='clearance'?'<span class="badge b-clear">⚡ 임박덤핑</span>':'<span class="badge b-surplus">잉여재고</span>'}
+async function load(){
+  const q=document.getElementById('q').value.trim();
+  const el=document.getElementById('list');el.innerHTML='<div class="skel"></div><div class="skel"></div>';
+  try{
+    const p=new URLSearchParams({status:'open'});if(dealType)p.set('deal_type',dealType);if(q)p.set('q',q);
+    const r=await fetch(API+'/b2b/listings?'+p.toString());const d=await r.json();
+    const items=d.listings||[];
+    if(!items.length){el.innerHTML='<div class="empty">등록된 판매글이 없습니다.<br>첫 판매글을 등록해보세요.</div>';return}
+    el.innerHTML=items.map(it=>{
+      const img=(it.images&&it.images[0])?`style="background-image:url('${it.images[0]}')"`:'';
+      const emoji=(it.images&&it.images[0])?'':'🥩';
+      return `<div class="card" onclick="location.href='listing.html?id=${it.id}'">
+        <div class="thumb" ${img}>${emoji}${badge(it.deal_type)}</div>
+        <div class="body">
+          <div class="ttl">${it.title||it.item_name}</div>
+          <div class="meta">${it.item_name} · ${it.region||'지역미지정'} · 남은수량 ${fmt(it.qty_remaining)}${it.unit}</div>
+          <div class="price">
+            <div class="unit">${fmt(it.unit_price)}<small>원/${it.unit}</small></div>
+            <div class="qty">${it.storage||''}</div>
+          </div>
+        </div></div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div class="empty">불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>'}
+}
+load();
+</script>
+</body>
+</html>

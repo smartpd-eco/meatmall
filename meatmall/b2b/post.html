@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>판매글 등록 · B2B 거래소</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#ECE7DA;--bg:#F7F5F0;--white:#fff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:90px}
+.hdr{position:sticky;top:0;z-index:50;background:#fff;border-bottom:2px solid var(--gold);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.hdr button{background:none;border:none;font-size:1.2rem;cursor:pointer}.hdr h1{font-size:1rem;font-weight:800}
+.form{padding:16px}
+.grp{margin-bottom:14px}.grp label{display:block;font-size:.82rem;font-weight:700;margin-bottom:6px}.grp .req{color:#B42318}
+.grp input,.grp select,.grp textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font-size:.92rem;outline:none;font-family:inherit;background:#fff}
+.grp input:focus,.grp select:focus,.grp textarea:focus{border-color:var(--gold)}
+.grp textarea{min-height:90px;resize:vertical}
+.two{display:flex;gap:10px}.two>*{flex:1}
+.seg{display:flex;gap:8px}.seg .s{flex:1;text-align:center;padding:11px;border:1.5px solid var(--line);border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;color:var(--sub);background:#fff}
+.seg .s.on{border-color:var(--gold);background:#FBF7EC;color:var(--gold-d)}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--line);padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0))}
+.bottom button{width:100%;height:52px;border:none;border-radius:12px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a;cursor:pointer}
+.note{font-size:.8rem;color:var(--sub);background:#FBF7EC;border:1px solid #EBDCAF;border-radius:10px;padding:10px 12px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr"><button onclick="history.back()">←</button><h1>판매글 등록</h1></div>
+  <div class="form">
+    <div class="note" id="note">승인된 B2B 회원만 등록할 수 있습니다.</div>
+    <div class="grp"><label>거래유형</label>
+      <div class="seg" id="dt">
+        <div class="s on" data-v="surplus" onclick="segSel(this)">잉여재고</div>
+        <div class="s" data-v="clearance" onclick="segSel(this)">⚡ 임박덤핑</div>
+      </div></div>
+    <div class="grp"><label>제목 <span class="req">*</span></label><input id="title" placeholder="예: 국내산 냉장 삼겹 1톤 급처"></div>
+    <div class="grp"><label>품목 <span class="req">*</span></label><input id="item_name" placeholder="예: 삼겹살"></div>
+    <div class="two">
+      <div class="grp"><label>카테고리</label><input id="category" placeholder="삼겹살 등"></div>
+      <div class="grp"><label>원산지</label><input id="origin" placeholder="국내산"></div>
+    </div>
+    <div class="two">
+      <div class="grp"><label>총 수량 <span class="req">*</span></label><input id="qty_total" type="number" placeholder="1000"></div>
+      <div class="grp"><label>단위</label><select id="unit"><option>kg</option><option>ton</option><option>box</option></select></div>
+    </div>
+    <div class="grp"><label>단가(원/단위) <span class="req">*</span></label><input id="unit_price" type="number" placeholder="8000"></div>
+    <div class="two">
+      <div class="grp"><label>보관</label><select id="storage"><option value="">선택</option><option>냉장</option><option>냉동</option></select></div>
+      <div class="grp"><label>유통기한</label><input id="expiry_at" type="date"></div>
+    </div>
+    <div class="grp"><label>지역</label><input id="region" placeholder="예: 경기 안산"></div>
+    <div class="grp"><label>배송방식</label><select id="delivery_type"><option value="">선택</option><option>직접수령</option><option>택배</option><option>화물</option><option>공동배송</option></select></div>
+    <div class="grp"><label>배송정보</label><textarea id="delivery_info" placeholder="상하차 조건, 배송 가능 지역/일정 등"></textarea></div>
+    <div class="grp"><label>상세 설명</label><textarea id="description" placeholder="상품 상태, 로트, 급처 사유 등"></textarea></div>
+  </div>
+</div>
+<div class="bottom"><button onclick="submit()">등록하기</button></div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+let dealType='surplus';
+function segSel(el){document.querySelectorAll('#dt .s').forEach(s=>s.classList.remove('on'));el.classList.add('on');dealType=el.dataset.v}
+(async function(){
+  if(!token){document.getElementById('note').textContent='로그인이 필요합니다.';setTimeout(()=>location.href='../../login.html',800);return}
+  try{const r=await fetch(API+'/b2b/members/me',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    if(!d.approved){document.getElementById('note').innerHTML='아직 승인된 B2B 회원이 아닙니다. <a href="join.html" style="color:#A8862A;font-weight:800">회원신청 →</a>';}
+  }catch(e){}
+})();
+async function submit(){
+  const g=id=>document.getElementById(id).value.trim();
+  if(!g('title')||!g('item_name')||!g('qty_total')||!g('unit_price')){alert('제목·품목·수량·단가는 필수입니다');return}
+  const body={deal_type:dealType,title:g('title'),item_name:g('item_name'),category:g('category'),origin:g('origin'),
+    qty_total:Number(g('qty_total')),unit:g('unit'),unit_price:Number(g('unit_price')),storage:g('storage'),
+    expiry_at:g('expiry_at')||null,region:g('region'),delivery_type:g('delivery_type'),delivery_info:g('delivery_info'),description:g('description')};
+  try{
+    const r=await fetch(API+'/b2b/listings',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(!r.ok){alert(d.error||'등록 실패');return}
+    alert('판매글이 등록됐습니다.');location.href='index.html';
+  }catch(e){alert('등록 중 오류가 발생했습니다')}
+}
+</script>
+</body>
+</html>

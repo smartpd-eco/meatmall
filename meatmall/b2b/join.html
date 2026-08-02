@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>B2B 회원신청 · 거래소</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#ECE7DA;--bg:#F7F5F0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:90px}
+.hdr{position:sticky;top:0;z-index:50;background:#fff;border-bottom:2px solid var(--gold);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.hdr button{background:none;border:none;font-size:1.2rem;cursor:pointer}.hdr h1{font-size:1rem;font-weight:800}
+.form{padding:16px}
+.grp{margin-bottom:14px}.grp label{display:block;font-size:.82rem;font-weight:700;margin-bottom:6px}.grp .req{color:#B42318}
+.grp input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font-size:.92rem;outline:none;background:#fff}
+.grp input:focus{border-color:var(--gold)}
+.two{display:flex;gap:10px}.two>*{flex:1}
+.note{font-size:.82rem;color:var(--sub);background:#FBF7EC;border:1px solid #EBDCAF;border-radius:10px;padding:12px;margin-bottom:16px;line-height:1.6}
+.status{text-align:center;padding:40px 20px}.status .ic{font-size:3rem;margin-bottom:12px}.status .t{font-size:1.1rem;font-weight:800;margin-bottom:6px}.status .s{font-size:.9rem;color:var(--sub)}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--line);padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0))}
+.bottom button{width:100%;height:52px;border:none;border-radius:12px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr"><button onclick="history.back()">←</button><h1>B2B 회원신청</h1></div>
+  <div id="content"><div class="form">확인 중…</div></div>
+</div>
+<div class="bottom" id="bottom" style="display:none"><button onclick="submit()">신청하기</button></div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+const STLABEL={pending:'승인 대기 중',approved:'승인 완료',rejected:'반려됨',suspended:'정지됨'};
+function formHtml(){return `<div class="form">
+  <div class="note">사업자 정보를 입력하면 관리자 확인(사업자등록번호 진위) 후 승인됩니다. 승인 후 판매글 등록·거래가 가능합니다.</div>
+  <div class="grp"><label>상호 <span class="req">*</span></label><input id="company_name" placeholder="주식회사 좋은축산유통"></div>
+  <div class="grp"><label>사업자등록번호 <span class="req">*</span></label><input id="biz_reg_no" placeholder="000-00-00000"></div>
+  <div class="grp"><label>대표자명</label><input id="ceo_name"></div>
+  <div class="two"><div class="grp"><label>업태</label><input id="biz_type" placeholder="도소매"></div>
+  <div class="grp"><label>종목</label><input id="biz_item" placeholder="축산물"></div></div>
+  <div class="grp"><label>사업장 주소</label><input id="address"></div>
+  <div class="grp"><label>연락처</label><input id="contact_phone" placeholder="010-0000-0000"></div>
+  <div class="grp"><label>세금계산서 수신 이메일</label><input id="tax_email" type="email" placeholder="tax@company.com"></div>
+</div>`}
+async function boot(){
+  if(!token){document.getElementById('content').innerHTML='<div class="status"><div class="ic">🔒</div><div class="t">로그인이 필요합니다</div></div>';setTimeout(()=>location.href='../../login.html',900);return}
+  try{
+    const r=await fetch(API+'/b2b/members/me',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    if(d.member){
+      const m=d.member;
+      document.getElementById('content').innerHTML=`<div class="status"><div class="ic">${m.status==='approved'?'✅':m.status==='rejected'?'❌':'⏳'}</div>
+        <div class="t">${STLABEL[m.status]||m.status}</div>
+        <div class="s">${m.company_name}<br>${m.status==='approved'?'여신한도 '+Number(m.credit_limit||0).toLocaleString()+'원 · 미수 '+Number(m.credit_used||0).toLocaleString()+'원':'관리자 확인 후 승인됩니다.'}</div>
+        <div style="margin-top:20px"><a href="index.html" style="color:#A8862A;font-weight:800;text-decoration:none">거래소로 →</a></div></div>`;
+      return;
+    }
+    document.getElementById('content').innerHTML=formHtml();
+    document.getElementById('bottom').style.display='block';
+  }catch(e){document.getElementById('content').innerHTML=formHtml();document.getElementById('bottom').style.display='block'}
+}
+async function submit(){
+  const g=id=>document.getElementById(id).value.trim();
+  if(!g('company_name')||!g('biz_reg_no')){alert('상호와 사업자등록번호는 필수입니다');return}
+  const body={company_name:g('company_name'),biz_reg_no:g('biz_reg_no'),ceo_name:g('ceo_name'),biz_type:g('biz_type'),biz_item:g('biz_item'),address:g('address'),contact_phone:g('contact_phone'),tax_email:g('tax_email')};
+  try{
+    const r=await fetch(API+'/b2b/members/register',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(!r.ok){alert(d.error||'신청 실패');return}
+    alert('신청이 접수됐습니다. 관리자 승인 후 이용 가능합니다.');boot();
+  }catch(e){alert('신청 중 오류가 발생했습니다')}
+}
+boot();
+</script>
+</body>
+</html>

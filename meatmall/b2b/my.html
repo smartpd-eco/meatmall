@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>내 거래 · B2B 거래소</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#ECE7DA;--bg:#F7F5F0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:30px}
+.hdr{position:sticky;top:0;z-index:50;background:#fff;border-bottom:2px solid var(--gold);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.hdr button{background:none;border:none;font-size:1.2rem;cursor:pointer}.hdr h1{font-size:1rem;font-weight:800}
+.mcard{background:#fff;margin:12px;border:1px solid var(--line);border-radius:14px;padding:16px}
+.mcard .co{font-size:1.05rem;font-weight:800}.mcard .st{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;display:inline-block;margin-top:4px}
+.st-approved{background:#E7F6EC;color:#1B7F3B}.st-pending{background:#FEF6E7;color:#B45309}
+.credit{display:flex;gap:10px;margin-top:12px}.credit>div{flex:1;background:#FBF7EC;border:1px solid #EBDCAF;border-radius:10px;padding:10px;text-align:center}
+.credit .l{font-size:.72rem;color:var(--sub)}.credit .v{font-size:1rem;font-weight:800;margin-top:2px}
+.tabs{display:flex;gap:8px;padding:0 12px}
+.tab{flex:1;text-align:center;padding:11px;font-weight:800;font-size:.9rem;border-bottom:2.5px solid transparent;color:var(--sub);cursor:pointer}
+.tab.on{color:var(--gold-d);border-color:var(--gold)}
+.list{padding:8px 12px 30px}
+.d{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.d .top{display:flex;justify-content:space-between;align-items:flex-start}
+.d .nm{font-size:.95rem;font-weight:700}.d .no{font-size:.72rem;color:var(--sub);margin-top:2px}
+.tag{font-size:.72rem;font-weight:800;padding:3px 9px;border-radius:999px}
+.t-requested{background:#EEF2FF;color:#3538CD}.t-accepted{background:#FEF6E7;color:#B45309}.t-delivered{background:#E7F6EC;color:#1B7F3B}.t-settled{background:#F3F4F6;color:#374151}.t-rejected,.t-cancelled{background:#FDEBEC;color:#B42318}
+.d .amt{font-size:1.05rem;font-weight:800;margin:8px 0 4px}.d .amt small{font-size:.75rem;color:var(--sub);font-weight:600}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.acts button{flex:1;min-width:70px;height:38px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer;border:1.5px solid var(--line);background:#fff}
+.acts .p{background:linear-gradient(135deg,var(--gold-d),#E8C97A);border:none;color:#1a1a1a}
+.empty{text-align:center;color:var(--sub);padding:50px 20px;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr"><button onclick="location.href='index.html'">←</button><h1>내 거래</h1></div>
+  <div id="member"></div>
+  <div class="tabs"><div class="tab on" id="tab-buy" onclick="setTab('buy')">구매</div><div class="tab" id="tab-sell" onclick="setTab('sell')">판매</div></div>
+  <div class="list" id="list">불러오는 중…</div>
+</div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+let tab='buy';
+const STLABEL={requested:'요청',accepted:'수락됨',rejected:'거절',delivering:'배송중',delivered:'배송완료',settled:'정산완료',cancelled:'취소'};
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+function setTab(t){tab=t;document.getElementById('tab-buy').classList.toggle('on',t==='buy');document.getElementById('tab-sell').classList.toggle('on',t==='sell');loadDeals()}
+async function boot(){
+  if(!token){location.href='../../login.html';return}
+  try{
+    const r=await fetch(API+'/b2b/members/me',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    const m=d.member;
+    if(!m){document.getElementById('member').innerHTML='<div class="mcard">B2B 회원이 아닙니다. <a href="join.html" style="color:#A8862A;font-weight:800">회원신청 →</a></div>';return}
+    document.getElementById('member').innerHTML=`<div class="mcard">
+      <div class="co">${m.company_name}</div>
+      <div class="st ${m.status==='approved'?'st-approved':'st-pending'}">${m.status==='approved'?'승인 회원':'승인 대기'}</div>
+      ${m.status==='approved'?`<div class="credit">
+        <div><div class="l">여신한도</div><div class="v">${fmt(m.credit_limit)}</div></div>
+        <div><div class="l">미수(사용)</div><div class="v" style="color:#B42318">${fmt(m.credit_used)}</div></div>
+        <div><div class="l">잔여여신</div><div class="v" style="color:#1B7F3B">${fmt(Number(m.credit_limit)-Number(m.credit_used))}</div></div>
+      </div>`:''}</div>`;
+  }catch(e){}
+  loadDeals();
+}
+async function loadDeals(){
+  const el=document.getElementById('list');el.innerHTML='불러오는 중…';
+  try{
+    const r=await fetch(API+'/b2b/deals?role='+(tab==='sell'?'seller':'buyer'),{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();const deals=d.deals||[];
+    if(!deals.length){el.innerHTML=`<div class="empty">${tab==='buy'?'구매':'판매'} 거래가 없습니다.</div>`;return}
+    el.innerHTML=deals.map(x=>render(x)).join('');
+  }catch(e){el.innerHTML='<div class="empty">불러오지 못했습니다.</div>'}
+}
+function render(x){
+  let acts='';
+  if(tab==='sell'){
+    if(x.status==='requested')acts=`<button class="p" onclick="ch('${x.id}','accepted')">수락</button><button onclick="ch('${x.id}','rejected')">거절</button>`;
+    else if(x.status==='accepted')acts=`<button onclick="ch('${x.id}','delivering')">배송시작</button><button class="p" onclick="tax('${x.id}')">세금계산서</button>`;
+    else if(x.status==='delivering')acts=`<button onclick="ch('${x.id}','delivered')">배송완료</button><button class="p" onclick="tax('${x.id}')">세금계산서</button>`;
+    else if(x.status==='delivered')acts=`<button class="p" onclick="ch('${x.id}','settled')">정산완료</button><button onclick="tax('${x.id}')">세금계산서</button>`;
+  }else{
+    if(x.status==='requested')acts=`<button onclick="ch('${x.id}','cancelled')">요청취소</button>`;
+    else if(x.status==='delivered')acts=`<button class="p" onclick="ch('${x.id}','settled')">입금완료</button>`;
+  }
+  return `<div class="d"><div class="top"><div><div class="nm">${x.item_name} ${fmt(x.qty)}${x.unit||''}</div><div class="no">${x.deal_no}</div></div>
+    <span class="tag t-${x.status}">${STLABEL[x.status]||x.status}</span></div>
+    <div class="amt">${fmt(x.total_amount)}원 <small>(공급 ${fmt(x.supply_amount)} + VAT ${fmt(x.vat)})</small></div>
+    <div class="acts">${acts||'<span style="color:#9CA3AF;font-size:.8rem">진행 대기</span>'}</div></div>`;
+}
+async function ch(id,status){
+  if(!confirm('상태를 "'+STLABEL[status]+'"(으)로 변경할까요?'))return;
+  try{const r=await fetch(API+'/b2b/deals/'+id+'/status',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({status})});
+    const d=await r.json();if(!r.ok){alert(d.error||'변경 실패');return}loadDeals();boot();
+  }catch(e){alert('오류가 발생했습니다')}
+}
+async function tax(id){
+  if(!confirm('이 거래의 세금계산서를 발행하시겠어요?'))return;
+  try{const r=await fetch(API+'/b2b/deals/'+id+'/tax-invoice',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}});
+    const d=await r.json();alert(d.message||(d.ok?'발행 완료':'처리됨'));
+  }catch(e){alert('오류가 발생했습니다')}
+}
+boot();
+</script>
+</body>
+</html>
