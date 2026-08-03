@@ -11,10 +11,13 @@ body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink
 .hdr{background:#1A1A1A;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
 .hdr .t{font-weight:800}.hdr .t b{color:var(--gold)}.hdr a{color:#ddd;text-decoration:none;font-size:.85rem}
 .wrap{max-width:900px;margin:0 auto;padding:20px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tb{padding:9px 16px;border:1.5px solid var(--line);background:#fff;border-radius:999px;font-weight:700;font-size:.85rem;cursor:pointer;color:var(--sub)}
+.tb.on{border-color:var(--gold);background:#FBF7EC;color:var(--gold-d)}
 .bar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
 .bar label{font-size:.82rem;color:var(--sub)}
-.bar input{width:70px;height:34px;border:1.5px solid var(--line);border-radius:8px;padding:0 8px}
-.bar button{height:34px;padding:0 14px;border:none;border-radius:8px;background:#1A1A1A;color:#fff;font-weight:700;cursor:pointer}
+.bar input,.bar select{height:34px;border:1.5px solid var(--line);border-radius:8px;padding:0 8px}
+.bar input{width:70px}.bar button{height:34px;padding:0 14px;border:none;border-radius:8px;background:#1A1A1A;color:#fff;font-weight:700;cursor:pointer}
 .warn{background:#FEF6E7;border:1px solid #F0D9A8;border-radius:10px;padding:10px 12px;font-size:.84rem;color:#8a5a00;margin-bottom:14px}
 .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
 .flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -22,69 +25,146 @@ body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink
 .arrow{font-size:1.4rem;color:var(--gold-d)}
 .risk{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:800;background:#FDEBEC;color:var(--red)}
 .meta{font-size:.82rem;color:var(--sub);margin-top:8px}
-.act{display:flex;gap:8px;align-items:center;margin-top:12px}
-.act input{width:110px;height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px}
+.act{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.act input{height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px}
+.act .q{width:100px}.act .d{width:150px}
 .act button{height:38px;padding:0 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a}
+.form{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.form .row{display:grid;grid-template-columns:1fr 1fr 90px auto;gap:8px}
+.form select,.form input{height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px}
+.form button{background:linear-gradient(135deg,var(--gold-d),#E8C97A);border:none;border-radius:8px;font-weight:700;cursor:pointer;padding:0 14px}
 .empty{text-align:center;color:var(--sub);padding:50px;background:#fff;border-radius:12px}
+.del{color:var(--red);font-size:.8rem;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="hdr"><div class="t">정육본가 <b>임박재고 이전</b></div><a href="dashboard.html">← 대시보드</a></div>
 <div class="wrap">
-  <div class="bar">
-    <label>임박기준</label><input id="days" type="number" value="3"><span style="font-size:.82rem">일</span>
-    <label>반경</label><input id="km" type="number" value="30"><span style="font-size:.82rem">km</span>
-    <button onclick="load()">추천 조회</button>
+  <div class="tabs">
+    <div class="tb on" id="tb-hq" onclick="setTab('hq')">본사 → 매장</div>
+    <div class="tb" id="tb-store" onclick="setTab('store')">정육점 → 정육점</div>
+    <div class="tb" id="tb-req" onclick="setTab('req')">📥 재고 이동 요청 창</div>
   </div>
-  <div id="warn"></div>
-  <div id="list" class="empty">‘추천 조회’를 눌러주세요.</div>
+
+  <div id="pane-hq">
+    <div class="bar">
+      <label>임박기준</label><input id="days" type="number" value="3"><span style="font-size:.82rem">일</span>
+      <label>반경</label><input id="km" type="number" value="30"><span style="font-size:.82rem">km</span>
+      <button onclick="loadHq()">추천 조회</button>
+    </div>
+    <div id="warn"></div>
+    <div id="hqlist" class="empty">'추천 조회'를 눌러주세요.</div>
+  </div>
+
+  <div id="pane-store" style="display:none">
+    <div class="bar"><label>반경</label><input id="skm" type="number" value="30"><span style="font-size:.82rem">km</span><button onclick="loadStore()">추천 조회</button></div>
+    <div class="meta" style="margin-bottom:8px">열린 '재고 이동 요청'을 여유재고 매장과 거리순으로 매칭합니다.</div>
+    <div id="storelist" class="empty">'추천 조회'를 눌러주세요.</div>
+  </div>
+
+  <div id="pane-req" style="display:none">
+    <div class="form">
+      <div style="font-weight:800;margin-bottom:10px">필요 매장 재고 이동 요청 등록</div>
+      <div class="row">
+        <select id="r-vendor"></select>
+        <select id="r-product"></select>
+        <input id="r-qty" type="number" placeholder="수량">
+        <button onclick="addReq()">요청 등록</button>
+      </div>
+    </div>
+    <div id="reqlist" class="empty">불러오는 중…</div>
+  </div>
 </div>
 <script>
 const API='https://api.meatbonga.com/api';
 const token=localStorage.getItem('mm_access_token');
+let tab='hq',VENDORS=[],PRODUCTS=[];
 function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
-async function load(){
-  const el=document.getElementById('list');el.className='empty';el.textContent='불러오는 중…';
-  document.getElementById('warn').innerHTML='';
+function tomorrow(){const d=new Date(Date.now()+86400000);return d.toISOString().slice(0,10)}
+function setTab(t){tab=t;['hq','store','req'].forEach(x=>{document.getElementById('tb-'+x).classList.toggle('on',x===t);document.getElementById('pane-'+x).style.display=x===t?'':'none'});
+  if(t==='req'){loadPickers();loadReqs()}}
+
+// ── 본사 → 매장 ──
+async function loadHq(){
+  const el=document.getElementById('hqlist');el.className='empty';el.textContent='불러오는 중…';document.getElementById('warn').innerHTML='';
   if(!token){el.textContent='관리자 로그인이 필요합니다.';return}
-  const days=document.getElementById('days').value||3,km=document.getElementById('km').value||30;
-  try{
-    const r=await fetch(`${API}/admin/transfer/recommendations?days=${days}&max_km=${km}`,{headers:{Authorization:'Bearer '+token}});
-    const d=await r.json();
-    if(!r.ok){el.textContent=d.error||'권한이 없습니다(관리자 전용).';return}
-    if(!d.hq_set) document.getElementById('warn').innerHTML='<div class="warn">⚠️ 본사 좌표(HQ_LAT·HQ_LNG 환경변수)가 없어 거리컷 없이 재고부족 매장만 추천합니다. 좌표 설정 시 이동경로(거리) 근사가 적용됩니다.</div>';
-    const rs=d.recommendations||[];
-    if(!rs.length){el.textContent='이전 추천 대상이 없습니다. (임박 로트 또는 재고부족 매장 없음)';return}
-    el.className='';el.innerHTML=rs.map(card).join('');
+  try{const r=await fetch(`${API}/admin/transfer/recommendations?days=${document.getElementById('days').value||3}&max_km=${document.getElementById('km').value||30}`,{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();if(!r.ok){el.textContent=d.error||'권한 없음(관리자 전용).';return}
+    if(!d.hq_set)document.getElementById('warn').innerHTML='<div class="warn">⚠️ 본사 좌표(HQ_LAT·HQ_LNG)가 없어 거리컷 없이 재고부족 매장만 추천합니다.</div>';
+    const rs=d.recommendations||[];el.className=rs.length?'':'empty';
+    el.innerHTML=rs.length?rs.map(hqCard).join(''):'이전 추천 대상이 없습니다.';
   }catch(e){el.textContent='불러오지 못했습니다.'}
 }
-function card(x){
-  const exp=(x.expiry_at||'').slice(0,10);
-  const alt=(x.alternatives||[]).map(a=>`${a.vendor_name}(${a.km!=null?a.km+'km':'-'}, 부족 ${fmt(a.shortage)})`).join(' · ');
-  return `<div class="card">
-    <div class="flow">
-      <div class="box"><div class="l">본사 임박재고 <span class="risk">위험 ${x.waste_risk}</span></div>
-        <div class="v">${x.product_name}</div><div class="meta">유통기한 ${exp} · 잔여 ${fmt(x.qty_remaining)}</div></div>
-      <div class="arrow">➜</div>
-      <div class="box"><div class="l">이전 대상 매장</div>
-        <div class="v">${x.to_vendor_name}</div><div class="meta">${x.to_dong||''} · ${x.distance_km!=null?x.distance_km+'km':'거리미상'} · 부족 ${fmt(x.shortage)}</div></div>
-    </div>
-    ${alt?`<div class="meta">대안: ${alt}</div>`:''}
-    <div class="act">
-      <input type="number" id="q-${x.lot_id}" value="${x.suggest_qty}" title="이전 수량">
-      <button onclick='approve(${JSON.stringify(x).replace(/'/g,"&#39;")})'>이 매장으로 이전 승인</button>
-    </div></div>`;
+function hqCard(x){const exp=(x.expiry_at||'').slice(0,10);
+  return `<div class="card"><div class="flow">
+    <div class="box"><div class="l">본사 임박재고 <span class="risk">위험 ${x.waste_risk}</span></div><div class="v">${x.product_name}</div><div class="meta">유통기한 ${exp} · 잔여 ${fmt(x.qty_remaining)}</div></div>
+    <div class="arrow">➜</div>
+    <div class="box"><div class="l">이전 대상 매장</div><div class="v">${x.to_vendor_name}</div><div class="meta">${x.to_dong||''} · ${x.distance_km!=null?x.distance_km+'km':'거리미상'} · 부족 ${fmt(x.shortage)}</div></div></div>
+    <div class="act"><input class="q" type="number" id="q-h-${x.lot_id}" value="${x.suggest_qty}" title="수량">
+      <input class="d" type="date" id="d-h-${x.lot_id}" value="${tomorrow()}" title="이동 예정일">
+      <button onclick='approve(${JSON.stringify({...x,_k:"h"}).replace(/'/g,"&#39;")})'>본사→매장 이전 승인</button></div></div>`;
 }
+
+// ── 정육점 → 정육점 ──
+async function loadStore(){
+  const el=document.getElementById('storelist');el.className='empty';el.textContent='불러오는 중…';
+  try{const r=await fetch(`${API}/admin/transfer/recommendations/store?max_km=${document.getElementById('skm').value||30}`,{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();if(!r.ok){el.textContent=d.error||'조회 실패';return}
+    const rs=d.recommendations||[];el.className=rs.length?'':'empty';
+    el.innerHTML=rs.length?rs.map(stCard).join(''):'매칭되는 여유재고 매장이 없습니다. (요청 창에서 품목 지정 요청 필요)';
+  }catch(e){el.textContent='불러오지 못했습니다.'}
+}
+function stCard(x){
+  return `<div class="card"><div class="flow">
+    <div class="box"><div class="l">여유재고 매장(출발)</div><div class="v">${x.from_vendor_name}</div><div class="meta">${x.from_dong||''} · ${x.distance_km!=null?x.distance_km+'km':'거리미상'}</div></div>
+    <div class="arrow">➜</div>
+    <div class="box"><div class="l">필요 매장(도착)</div><div class="v">${x.to_vendor_name}</div><div class="meta">${x.to_dong||''} · 요청 ${x.req_qty?fmt(x.req_qty):'-'} · ${x.product_name}</div></div></div>
+    <div class="act"><input class="q" type="number" id="q-s-${x.request_id}" value="${x.suggest_qty}" title="수량">
+      <input class="d" type="date" id="d-s-${x.request_id}" value="${tomorrow()}" title="이동 예정일">
+      <button onclick='approve(${JSON.stringify({...x,_k:"s"}).replace(/'/g,"&#39;")})'>정육점간 이전 승인</button></div></div>`;
+}
+
 async function approve(x){
-  const q=Number(document.getElementById('q-'+x.lot_id).value)||x.suggest_qty;
-  if(!confirm(`${x.product_name} ${fmt(q)}개를 '${x.to_vendor_name}'(으)로 이전할까요?\n본사 재고 차감 + 매장 재고 증가가 실행됩니다.`))return;
-  try{
-    const r=await fetch(`${API}/admin/transfer/approve`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body:JSON.stringify({lot_id:x.lot_id,product_id:x.product_id,to_vendor_id:x.to_vendor_id,qty:q,distance_km:x.distance_km,reason:'유통기한 임박 이전'})});
+  const isStore=x._k==='s';
+  const qid=isStore?('q-s-'+x.request_id):('q-h-'+x.lot_id);
+  const did=isStore?('d-s-'+x.request_id):('d-h-'+x.lot_id);
+  const q=Number(document.getElementById(qid).value)||x.suggest_qty;
+  const date=document.getElementById(did).value||tomorrow();
+  const dest=isStore?x.to_vendor_name:x.to_vendor_name;
+  if(!confirm(`${x.product_name} ${fmt(q)} 이전\n${isStore?'출발: '+x.from_vendor_name:'본사'} → 도착: ${dest}\n이동예정일: ${date}\n실행할까요?`))return;
+  const body=isStore
+    ?{from_type:'vendor',from_vendor_id:x.from_vendor_id,product_id:x.product_id,to_vendor_id:x.to_vendor_id,qty:q,distance_km:x.distance_km,transfer_date:date,request_id:x.request_id,reason:'매장간 이전'}
+    :{from_type:'hq',lot_id:x.lot_id,product_id:x.product_id,to_vendor_id:x.to_vendor_id,qty:q,distance_km:x.distance_km,transfer_date:date,reason:'유통기한 임박 이전'};
+  try{const r=await fetch(`${API}/admin/transfer/approve`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
     const d=await r.json();if(!r.ok){alert(d.error||'이전 실패');return}
-    alert('이전 완료되었습니다.');load();
+    alert('이전 완료(이동예정일 '+date+').');isStore?loadStore():loadHq();
   }catch(e){alert('오류가 발생했습니다')}
 }
+
+// ── 이동 요청 창 ──
+async function loadPickers(){
+  if(!VENDORS.length){try{const r=await fetch(`${API}/admin/transfer/vendors`,{headers:{Authorization:'Bearer '+token}});const d=await r.json();VENDORS=d.vendors||[];
+    document.getElementById('r-vendor').innerHTML='<option value="">필요 매장 선택</option>'+VENDORS.map(v=>`<option value="${v.id}">${v.vendor_name}${v.dong?' ('+v.dong+')':''}</option>`).join('');}catch(e){}}
+  if(!PRODUCTS.length){try{const r=await fetch(`${API}/products?limit=100`);const d=await r.json();PRODUCTS=d.products||[];
+    document.getElementById('r-product').innerHTML='<option value="">품목 선택</option>'+PRODUCTS.map(p=>`<option value="${p.id}" data-n="${p.name}">${p.name}</option>`).join('');}catch(e){}}
+}
+async function addReq(){
+  const sel=document.getElementById('r-product');const opt=sel.options[sel.selectedIndex];
+  const body={requester_vendor_id:document.getElementById('r-vendor').value,product_id:sel.value,item_name:opt?opt.dataset.n:'',qty:document.getElementById('r-qty').value};
+  if(!body.requester_vendor_id||!body.product_id){alert('필요 매장·품목을 선택하세요');return}
+  try{const r=await fetch(`${API}/admin/transfer/requests`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
+    const d=await r.json();if(!r.ok){alert(d.error||'등록 실패');return}document.getElementById('r-qty').value='';loadReqs();
+  }catch(e){alert('오류가 발생했습니다')}
+}
+async function loadReqs(){
+  const el=document.getElementById('reqlist');el.className='empty';el.textContent='불러오는 중…';
+  try{const r=await fetch(`${API}/admin/transfer/requests`,{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    const rs=d.requests||[];el.className=rs.length?'':'empty';
+    el.innerHTML=rs.length?rs.map(q=>`<div class="card"><div class="flow"><div class="box"><div class="l">필요 매장</div><div class="v">${(q.vendor&&q.vendor.vendor_name)||('매장 '+q.requester_vendor_id)}</div><div class="meta">${q.vendor&&q.vendor.dong?q.vendor.dong+' · ':''}${q.item_name||''} · 요청수량 ${q.qty?fmt(q.qty):'-'}</div></div>
+      <span class="del" onclick="cancelReq(${q.id})">요청 취소</span></div></div>`).join(''):'열린 요청이 없습니다.';
+  }catch(e){el.textContent='불러오지 못했습니다.'}
+}
+async function cancelReq(id){if(!confirm('요청을 취소할까요?'))return;try{await fetch(`${API}/admin/transfer/requests/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({status:'cancelled'})});loadReqs();}catch(e){}}
 </script>
 </body>
 </html>
