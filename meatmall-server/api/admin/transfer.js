@@ -120,7 +120,21 @@ router.post('/approve', async (req, res) => {
       distance_km: distance_km || null, reason: reason || (fromType === 'vendor' ? '매장간 이전' : '유통기한 임박 이전'),
       status: 'done', approved_at: new Date().toISOString()
     }).select().single();
-    res.json({ ok: true, transfer: tr });
+
+    // 정육점간 직거래 → 매입·매출 기록(단가 입력 시). 출발=매출, 도착=매입.
+    let storeTx = null;
+    const unitPrice = Number(req.body.unit_price) || 0;
+    if (fromType === 'vendor' && fromVendorId && unitPrice > 0) {
+      const supply = Math.round(q * unitPrice);
+      const vat = Math.round(supply * 0.1);
+      const { data: stx } = await supabase.from('store_transactions').insert({
+        transfer_id: tr ? tr.id : null, seller_vendor_id: fromVendorId, buyer_vendor_id: to_vendor_id,
+        product_id, item_name: req.body.item_name || null, qty: q, unit_price: unitPrice,
+        supply_amount: supply, vat, total_amount: supply + vat, transfer_date: transferDate
+      }).select().single();
+      storeTx = stx;
+    }
+    res.json({ ok: true, transfer: tr, store_transaction: storeTx });
   } catch (err) { console.error('[transfer/approve]', err); res.status(500).json({ error: err.message || '이전 처리 오류' }); }
 });
 

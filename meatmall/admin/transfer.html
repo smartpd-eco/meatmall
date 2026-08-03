@@ -120,6 +120,7 @@ function stCard(x){
     <div class="arrow">➜</div>
     <div class="box"><div class="l">필요 매장(도착)</div><div class="v">${x.to_vendor_name}</div><div class="meta">${x.to_dong||''} · 요청 ${x.req_qty?fmt(x.req_qty):'-'} · ${x.product_name}</div></div></div>
     <div class="act"><input class="q" type="number" id="q-s-${x.request_id}" value="${x.suggest_qty}" title="수량">
+      <input class="q" type="number" id="p-s-${x.request_id}" placeholder="이전단가(원)" title="이전 단가(매출/매입)">
       <input class="d" type="date" id="d-s-${x.request_id}" value="${tomorrow()}" title="이동 예정일">
       <button onclick='approve(${JSON.stringify({...x,_k:"s"}).replace(/'/g,"&#39;")})'>정육점간 이전 승인</button></div></div>`;
 }
@@ -132,8 +133,9 @@ async function approve(x){
   const date=document.getElementById(did).value||tomorrow();
   const dest=isStore?x.to_vendor_name:x.to_vendor_name;
   if(!confirm(`${x.product_name} ${fmt(q)} 이전\n${isStore?'출발: '+x.from_vendor_name:'본사'} → 도착: ${dest}\n이동예정일: ${date}\n실행할까요?`))return;
+  const unit=isStore?(Number(document.getElementById('p-s-'+x.request_id).value)||0):0;
   const body=isStore
-    ?{from_type:'vendor',from_vendor_id:x.from_vendor_id,product_id:x.product_id,to_vendor_id:x.to_vendor_id,qty:q,distance_km:x.distance_km,transfer_date:date,request_id:x.request_id,reason:'매장간 이전'}
+    ?{from_type:'vendor',from_vendor_id:x.from_vendor_id,product_id:x.product_id,to_vendor_id:x.to_vendor_id,qty:q,unit_price:unit,item_name:x.product_name,distance_km:x.distance_km,transfer_date:date,request_id:x.request_id,reason:'매장간 이전'}
     :{from_type:'hq',lot_id:x.lot_id,product_id:x.product_id,to_vendor_id:x.to_vendor_id,qty:q,distance_km:x.distance_km,transfer_date:date,reason:'유통기한 임박 이전'};
   try{const r=await fetch(`${API}/admin/transfer/approve`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
     const d=await r.json();if(!r.ok){alert(d.error||'이전 실패');return}

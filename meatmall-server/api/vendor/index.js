@@ -329,4 +329,22 @@ router.patch('/transfer-requests/:id/cancel', async (req, res) => {
   } catch (err) { res.status(500).json({ error: '처리 오류' }); }
 });
 
+// 정육점간 매출·매입 (매출집계 반영). 출발=매출, 도착=매입.
+router.get('/store-transactions', async (req, res) => {
+  try {
+    const vid = req.vendorId;
+    const { data: sales } = await supabase.from('store_transactions').select('*').eq('seller_vendor_id', vid).order('created_at', { ascending: false }).limit(100);
+    const { data: purchases } = await supabase.from('store_transactions').select('*').eq('buyer_vendor_id', vid).order('created_at', { ascending: false }).limit(100);
+    const sum = arr => (arr || []).reduce((s, r) => s + Number(r.total_amount || 0), 0);
+    const vids = [...new Set([...(sales || []).map(s => s.buyer_vendor_id), ...(purchases || []).map(p => p.seller_vendor_id)].filter(Boolean))];
+    let vmap = {};
+    if (vids.length) { const { data: vs } = await supabase.from('vendors').select('id, vendor_name').in('id', vids); (vs || []).forEach(v => vmap[v.id] = v.vendor_name); }
+    res.json({
+      ok: true, sales_total: sum(sales), purchase_total: sum(purchases),
+      sales: (sales || []).map(s => ({ ...s, counterpart: vmap[s.buyer_vendor_id] || ('매장 ' + s.buyer_vendor_id) })),
+      purchases: (purchases || []).map(p => ({ ...p, counterpart: vmap[p.seller_vendor_id] || ('매장 ' + p.seller_vendor_id) }))
+    });
+  } catch (err) { console.error('[vendor/store-transactions]', err); res.status(500).json({ error: '조회 오류' }); }
+});
+
 module.exports = router;

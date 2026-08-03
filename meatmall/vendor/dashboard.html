@@ -68,6 +68,14 @@
     </div>
     <div style="text-align:center;margin-top:14px" id="more-wrap"></div>
   </div>
+
+  <div class="card" id="store-tx-card" style="display:none">
+    <div class="card-head">
+      <div><div class="card-title">🔄 정육점간 매출·매입</div><div class="card-sub">매장 간 재고 이전 직거래</div></div>
+      <div style="font-size:.82rem"><span style="color:#15803D;font-weight:800">매출 <b id="st-sales">0원</b></span> &nbsp;·&nbsp; <span style="color:#B45309;font-weight:800">매입 <b id="st-purch">0원</b></span></div>
+    </div>
+    <div id="st-list" style="padding:4px 2px"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -145,5 +153,18 @@ function downloadCsv(){
   const blob=new Blob(['﻿'+head+body],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='매출집계_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
+// 정육점간 매출·매입 반영
+async function loadStoreTx(){
+  try{const t=localStorage.getItem('mm_access_token');const r=await fetch(API+'/vendor/store-transactions',{headers:{Authorization:'Bearer '+t}});const d=await r.json();
+    if(!r.ok)return; if(!((d.sales&&d.sales.length)||(d.purchases&&d.purchases.length)))return;
+    document.getElementById('store-tx-card').style.display='';
+    document.getElementById('st-sales').textContent=Number(d.sales_total||0).toLocaleString('ko-KR')+'원';
+    document.getElementById('st-purch').textContent=Number(d.purchase_total||0).toLocaleString('ko-KR')+'원';
+    const row=(t2,x)=>`<div style="display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #eee;font-size:.85rem"><div><b style="color:${t2==='매출'?'#15803D':'#B45309'}">${t2}</b> ${x.item_name||''} ${Number(x.qty).toLocaleString()} · ${x.counterpart}</div><div style="font-weight:700">${Number(x.total_amount).toLocaleString('ko-KR')}원</div></div>`;
+    const items=[...(d.sales||[]).map(s=>['매출',s]),...(d.purchases||[]).map(p=>['매입',p])].sort((a,b)=>(b[1].created_at||'').localeCompare(a[1].created_at||''));
+    document.getElementById('st-list').innerHTML=items.slice(0,20).map(it=>row(it[0],it[1])).join('');
+  }catch(e){}
+}
+loadStoreTx();
 </script>
 </body></html>
