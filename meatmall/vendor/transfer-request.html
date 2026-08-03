@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>재고 이동 요청 · 정육본가 벤더</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor-theme.css">
+<script>window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});</script>
+<script>(function(){if(window.__mmFetchPatched)return;window.__mmFetchPatched=true;var o=window.fetch.bind(window);window.fetch=function(u,p){if(typeof u==='string'&&u.indexOf('api.meatbonga.com')>-1){if(/iP(hone|ad|od)/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&(navigator.maxTouchPoints||0)>1)){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)}return o(u,p).catch(function(){return o(u.replace('api.meatbonga.com','meatmall.vercel.app'),p)})}return o(u,p)}})();</script>
+<style>
+.tr-field{width:100%;height:44px;border:1.5px solid #d8d3c4;border-radius:9px;padding:0 12px;font-size:.92rem;font-family:inherit;background:#fff;outline:none;margin-bottom:10px}
+.tr-field:focus{border-color:#2f7d4f}
+.tr-btn{width:100%;height:48px;border:none;border-radius:10px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#2f7d4f,#57b37e);color:#fff;cursor:pointer}
+.tr-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #eee}
+.tr-item .nm{font-weight:700}.tr-item .mt{font-size:.8rem;color:#888;margin-top:2px}
+.tr-st{font-size:.72rem;font-weight:800;padding:3px 9px;border-radius:999px}
+.st-open{background:#E7F6EC;color:#1B7F3B}.st-fulfilled{background:#EEF2FF;color:#3538CD}.st-cancelled{background:#FDEBEC;color:#B42318}.st-matched{background:#FEF6E7;color:#B45309}
+.tr-cancel{color:#B42318;font-size:.8rem;cursor:pointer}
+</style>
+</head>
+<body>
+<aside class="v-side">
+  <div class="v-brand"><div class="ico">🏪</div><div>
+    <div class="code" id="v-code">VENDOR</div><div class="shop" id="v-shop">불러오는 중…</div><div class="vid" id="v-id">벤더사 ID : —</div></div></div>
+  <nav class="v-nav">
+    <a href="dashboard.html">🏠 매출집계</a>
+    <a href="products.html">📦 상품등록(당일배송건)</a>
+    <a href="orders.html">📋 발주현황</a>
+    <a class="on" href="transfer-request.html">🔄 재고 이동 요청</a>
+  </nav>
+  <button class="logout" onclick="logout()">↩ 로그아웃</button>
+</aside>
+
+<div class="v-head"><div><h1>재고 이동 요청</h1><div class="sub">필요한 품목·수량을 요청하면 본사가 임박재고 또는 여유재고 매장에서 이동경로상 이동일자를 잡아 옮겨줍니다.</div></div></div>
+
+<div class="v-body">
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-weight:800;margin-bottom:12px">➕ 새 요청</div>
+    <select id="product" class="tr-field"><option value="">품목 선택</option></select>
+    <input id="qty" type="number" class="tr-field" placeholder="필요 수량">
+    <input id="note" class="tr-field" placeholder="메모(선택) — 예: 주말 물량 부족">
+    <button class="tr-btn" onclick="submit()">재고 이동 요청</button>
+  </div>
+  <div class="card">
+    <div style="font-weight:800;margin-bottom:8px">내 요청 내역</div>
+    <div id="list">불러오는 중…</div>
+  </div>
+</div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+const STL={open:'대기',matched:'매칭',fulfilled:'완료',cancelled:'취소'};
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+function logout(){localStorage.removeItem('mm_access_token');location.href='../login.html';}
+async function boot(){
+  if(!token){location.href='../login.html';return}
+  try{const r=await fetch(API+'/vendor/me',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    if(r.ok&&d.vendor){document.getElementById('v-shop').textContent=d.vendor.vendor_name||'';document.getElementById('v-id').textContent='벤더사 ID : '+(d.vendor.id||'—');}
+  }catch(e){}
+  try{const r=await fetch(API+'/products?limit=100');const d=await r.json();
+    document.getElementById('product').innerHTML='<option value="">품목 선택</option>'+(d.products||[]).map(p=>`<option value="${p.id}" data-n="${p.name}">${p.name}</option>`).join('');
+  }catch(e){}
+  loadReqs();
+}
+async function submit(){
+  const sel=document.getElementById('product');const opt=sel.options[sel.selectedIndex];
+  if(!sel.value){alert('품목을 선택하세요');return}
+  const body={product_id:sel.value,item_name:opt?opt.dataset.n:'',qty:document.getElementById('qty').value,note:document.getElementById('note').value};
+  try{const r=await fetch(API+'/vendor/transfer-requests',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
+    const d=await r.json();if(!r.ok){alert(d.error||'요청 실패');return}
+    document.getElementById('qty').value='';document.getElementById('note').value='';alert('재고 이동 요청이 접수됐습니다.');loadReqs();
+  }catch(e){alert('오류가 발생했습니다')}
+}
+async function loadReqs(){
+  const el=document.getElementById('list');el.textContent='불러오는 중…';
+  try{const r=await fetch(API+'/vendor/transfer-requests',{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    const rs=d.requests||[];
+    el.innerHTML=rs.length?rs.map(q=>`<div class="tr-item"><div><div class="nm">${q.item_name||'(품목)'} ${q.qty?fmt(q.qty):''}</div><div class="mt">${(q.created_at||'').slice(0,10)}${q.note?' · '+q.note:''}</div></div>
+      <div style="display:flex;gap:10px;align-items:center"><span class="tr-st st-${q.status}">${STL[q.status]||q.status}</span>${q.status==='open'?`<span class="tr-cancel" onclick="cancelReq(${q.id})">취소</span>`:''}</div></div>`).join(''):'<div style="color:#888;padding:16px 0;text-align:center">요청 내역이 없습니다.</div>';
+  }catch(e){el.textContent='불러오지 못했습니다.'}
+}
+async function cancelReq(id){if(!confirm('요청을 취소할까요?'))return;try{await fetch(API+'/vendor/transfer-requests/'+id+'/cancel',{method:'PATCH',headers:{Authorization:'Bearer '+token}});loadReqs();}catch(e){}}
+boot();
+</script>
+</body>
+</html>

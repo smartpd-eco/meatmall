@@ -45,13 +45,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
 const API='https://api.meatbonga.com/api';
 const id=new URLSearchParams(location.search).get('id');
 const token=localStorage.getItem('mm_access_token');
-let L=null;
+let L=null,appliedPrice=null,priceTier='base';
 function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
 function dtLabel(t){return t==='clearance'?'⚡ 유통기한 임박(덤핑)':t==='surplus'?'잉여재고':'일반'}
 function badge(t){return t==='clearance'?'<span class="badge b-clear">⚡ 임박덤핑</span>':'<span class="badge b-surplus">잉여재고</span>'}
 function calc(){
   const q=Number(document.getElementById('q').value)||0;
-  const supply=Math.round(q*Number(L.unit_price));const vat=Math.round(supply*0.1);
+  const supply=Math.round(q*Number(appliedPrice!=null?appliedPrice:L.unit_price));const vat=Math.round(supply*0.1);
   document.getElementById('c-supply').textContent=fmt(supply)+'원';
   document.getElementById('c-vat').textContent=fmt(vat)+'원';
   document.getElementById('c-total').textContent=fmt(supply+vat)+'원';
@@ -109,6 +109,21 @@ async function boot(){
     } else if(L.status!=='open'){
       document.getElementById('buyBtn').classList.add('muted');
       document.getElementById('buyBtn').textContent=L.status==='soldout'?'품절':'거래마감';
+    }
+    // 계약단가 적용 표시 (로그인 구매자·판매글·단가공개)
+    if((L.post_kind||'sell')==='sell' && !L.price_hidden && token && L.seller){
+      try{
+        const pr=await fetch(`${API}/b2b/price-quote?seller_id=${L.seller.id}&item_name=${encodeURIComponent(L.item_name)}&qty=1&base=${L.unit_price}`,{headers:{Authorization:'Bearer '+token}});
+        const pd=await pr.json();
+        if(pr.ok && pd.price!=null){ appliedPrice=pd.price; priceTier=pd.tier;
+          if(pd.tier==='contract'||pd.tier==='grade'){
+            const lbl=pd.tier==='contract'?'계약단가':'등급단가';
+            const el=document.getElementById('buysec');
+            if(el){const b=document.createElement('div');b.style.cssText='background:#E7F6EC;border:1px solid #B7E4C7;border-radius:10px;padding:8px 10px;font-size:.82rem;color:#1B7F3B;font-weight:700;margin-bottom:10px';b.textContent=`✓ ${lbl} 적용: ${fmt(pd.price)}원/${L.unit} (정가 ${fmt(L.unit_price)}원)`;el.insertBefore(b,el.children[1]||null);}
+          }
+          calc();
+        }
+      }catch(e){}
     }
   }catch(e){document.getElementById('main').innerHTML='<div class="sec">불러오지 못했습니다.</div>'}
 }

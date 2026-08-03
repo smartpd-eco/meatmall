@@ -241,7 +241,15 @@ router.post('/deals', requireAuth, async (req, res) => {
     if (!q || q <= 0) return res.status(400).json({ error: '수량을 입력해주세요' });
     if (q > Number(listing.qty_remaining)) return res.status(400).json({ error: `남은 수량(${listing.qty_remaining}${listing.unit})을 초과했습니다` });
 
-    const supply = Math.round(q * Number(listing.unit_price));
+    // 계약단가 엔진 적용: 이 거래처(buyer)에 계약단가/등급단가가 있으면 그 가격으로 거래
+    const quote = await resolvePrice({
+      sellerId: listing.seller_id, buyerId: buyer.id, itemName: listing.item_name,
+      qty: q, basePrice: Number(listing.unit_price), grade: buyer.grade || 'basic'
+    });
+    const appliedPrice = quote.price != null ? Number(quote.price) : Number(listing.unit_price);
+    const tierLabel = { contract: '계약단가', grade: '등급단가', base: '기본단가' }[quote.tier] || '기본단가';
+
+    const supply = Math.round(q * appliedPrice);
     const vat = Math.round(supply * VAT_RATE);
     const total = supply + vat;
 
@@ -253,13 +261,13 @@ router.post('/deals', requireAuth, async (req, res) => {
 
     const { data: deal, error } = await supabase.from('b2b_deals').insert({
       deal_no: dealNo(), listing_id: listing.id, seller_id: listing.seller_id, buyer_id: buyer.id,
-      item_name: listing.item_name, qty: q, unit: listing.unit, unit_price: listing.unit_price,
+      item_name: listing.item_name, qty: q, unit: listing.unit, unit_price: appliedPrice,
       supply_amount: supply, vat, total_amount: total, pay_method: 'credit',
       delivery_type: listing.delivery_type, delivery_info: listing.delivery_info,
-      status: 'requested', note: (req.body.note || null)
+      status: 'requested', note: (req.body.note || null) ? `${req.body.note} (${tierLabel})` : tierLabel + ' 적용'
     }).select().single();
     if (error) throw error;
-    res.status(201).json({ ok: true, deal });
+    res.status(201).json({ ok: true, deal, price_tier: quote.tier, applied_price: appliedPrice });
   } catch (err) { console.error('[b2b/deals POST]', err); res.status(500).json({ error: err.message || '거래 요청 오류' }); }
 });
 

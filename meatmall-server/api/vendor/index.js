@@ -298,4 +298,35 @@ router.patch('/orders/:id/status', async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════════════════
+// 재고 이동 요청 (벤더가 직접 필요 재고를 본사에 요청)
+// ════════════════════════════════════════════════════
+router.post('/transfer-requests', async (req, res) => {
+  try {
+    const { product_id, item_name, qty, note } = req.body || {};
+    if (!(product_id || item_name)) return res.status(400).json({ error: '품목은 필수입니다' });
+    const { data, error } = await supabase.from('stock_transfer_requests').insert({
+      requester_vendor_id: req.vendorId, product_id: product_id || null, item_name: item_name || null,
+      qty: qty != null && qty !== '' ? Number(qty) : null, note: note || null, status: 'open', created_by: 'vendor'
+    }).select().single();
+    if (error) throw error;
+    res.status(201).json({ ok: true, request: data });
+  } catch (err) { console.error('[vendor/transfer-requests POST]', err); res.status(500).json({ error: err.message || '요청 오류' }); }
+});
+router.get('/transfer-requests', async (req, res) => {
+  try {
+    const { data } = await supabase.from('stock_transfer_requests').select('*')
+      .eq('requester_vendor_id', req.vendorId).order('created_at', { ascending: false });
+    res.json({ ok: true, requests: data || [] });
+  } catch (err) { res.status(500).json({ error: '조회 오류' }); }
+});
+router.patch('/transfer-requests/:id/cancel', async (req, res) => {
+  try {
+    const { data: own } = await supabase.from('stock_transfer_requests').select('requester_vendor_id').eq('id', req.params.id).single();
+    if (!own || own.requester_vendor_id !== req.vendorId) return res.status(403).json({ error: '권한 없음' });
+    await supabase.from('stock_transfer_requests').update({ status: 'cancelled', updated_at: new Date().toISOString() }).eq('id', req.params.id);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: '처리 오류' }); }
+});
+
 module.exports = router;
