@@ -133,6 +133,7 @@ app.use('/api/payment', require('./api/payment/index'));
 app.use('/api/admin/categories', require('./api/admin/categories'));
 app.use('/api/admin/vendors', require('./api/admin/vendors'));
 app.use('/api/admin/assignments', require('./api/admin/assignments'));
+app.use('/api/admin/transfer', require('./api/admin/transfer'));
 app.use('/api/admin/vendor-inventory', require('./api/admin/vendor-inventory'));
 app.use('/api/admin', require('./api/admin/index'));
 app.use('/api/vendor', require('./api/vendor/index'));

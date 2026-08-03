@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>임박재고 이전 · 정육본가 ADMIN</title>
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#E5E1D5;--bg:#F4F2EC;--red:#B42318;--green:#1B7F3B}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink)}
+.hdr{background:#1A1A1A;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.hdr .t{font-weight:800}.hdr .t b{color:var(--gold)}.hdr a{color:#ddd;text-decoration:none;font-size:.85rem}
+.wrap{max-width:900px;margin:0 auto;padding:20px}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.bar label{font-size:.82rem;color:var(--sub)}
+.bar input{width:70px;height:34px;border:1.5px solid var(--line);border-radius:8px;padding:0 8px}
+.bar button{height:34px;padding:0 14px;border:none;border-radius:8px;background:#1A1A1A;color:#fff;font-weight:700;cursor:pointer}
+.warn{background:#FEF6E7;border:1px solid #F0D9A8;border-radius:10px;padding:10px 12px;font-size:.84rem;color:#8a5a00;margin-bottom:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.box{flex:1;min-width:150px}.box .l{font-size:.72rem;color:var(--sub)}.box .v{font-weight:800;font-size:1rem;margin-top:2px}
+.arrow{font-size:1.4rem;color:var(--gold-d)}
+.risk{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:800;background:#FDEBEC;color:var(--red)}
+.meta{font-size:.82rem;color:var(--sub);margin-top:8px}
+.act{display:flex;gap:8px;align-items:center;margin-top:12px}
+.act input{width:110px;height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px}
+.act button{height:38px;padding:0 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a}
+.empty{text-align:center;color:var(--sub);padding:50px;background:#fff;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="t">정육본가 <b>임박재고 이전</b></div><a href="dashboard.html">← 대시보드</a></div>
+<div class="wrap">
+  <div class="bar">
+    <label>임박기준</label><input id="days" type="number" value="3"><span style="font-size:.82rem">일</span>
+    <label>반경</label><input id="km" type="number" value="30"><span style="font-size:.82rem">km</span>
+    <button onclick="load()">추천 조회</button>
+  </div>
+  <div id="warn"></div>
+  <div id="list" class="empty">‘추천 조회’를 눌러주세요.</div>
+</div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
+async function load(){
+  const el=document.getElementById('list');el.className='empty';el.textContent='불러오는 중…';
+  document.getElementById('warn').innerHTML='';
+  if(!token){el.textContent='관리자 로그인이 필요합니다.';return}
+  const days=document.getElementById('days').value||3,km=document.getElementById('km').value||30;
+  try{
+    const r=await fetch(`${API}/admin/transfer/recommendations?days=${days}&max_km=${km}`,{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(!r.ok){el.textContent=d.error||'권한이 없습니다(관리자 전용).';return}
+    if(!d.hq_set) document.getElementById('warn').innerHTML='<div class="warn">⚠️ 본사 좌표(HQ_LAT·HQ_LNG 환경변수)가 없어 거리컷 없이 재고부족 매장만 추천합니다. 좌표 설정 시 이동경로(거리) 근사가 적용됩니다.</div>';
+    const rs=d.recommendations||[];
+    if(!rs.length){el.textContent='이전 추천 대상이 없습니다. (임박 로트 또는 재고부족 매장 없음)';return}
+    el.className='';el.innerHTML=rs.map(card).join('');
+  }catch(e){el.textContent='불러오지 못했습니다.'}
+}
+function card(x){
+  const exp=(x.expiry_at||'').slice(0,10);
+  const alt=(x.alternatives||[]).map(a=>`${a.vendor_name}(${a.km!=null?a.km+'km':'-'}, 부족 ${fmt(a.shortage)})`).join(' · ');
+  return `<div class="card">
+    <div class="flow">
+      <div class="box"><div class="l">본사 임박재고 <span class="risk">위험 ${x.waste_risk}</span></div>
+        <div class="v">${x.product_name}</div><div class="meta">유통기한 ${exp} · 잔여 ${fmt(x.qty_remaining)}</div></div>
+      <div class="arrow">➜</div>
+      <div class="box"><div class="l">이전 대상 매장</div>
+        <div class="v">${x.to_vendor_name}</div><div class="meta">${x.to_dong||''} · ${x.distance_km!=null?x.distance_km+'km':'거리미상'} · 부족 ${fmt(x.shortage)}</div></div>
+    </div>
+    ${alt?`<div class="meta">대안: ${alt}</div>`:''}
+    <div class="act">
+      <input type="number" id="q-${x.lot_id}" value="${x.suggest_qty}" title="이전 수량">
+      <button onclick='approve(${JSON.stringify(x).replace(/'/g,"&#39;")})'>이 매장으로 이전 승인</button>
+    </div></div>`;
+}
+async function approve(x){
+  const q=Number(document.getElementById('q-'+x.lot_id).value)||x.suggest_qty;
+  if(!confirm(`${x.product_name} ${fmt(q)}개를 '${x.to_vendor_name}'(으)로 이전할까요?\n본사 재고 차감 + 매장 재고 증가가 실행됩니다.`))return;
+  try{
+    const r=await fetch(`${API}/admin/transfer/approve`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({lot_id:x.lot_id,product_id:x.product_id,to_vendor_id:x.to_vendor_id,qty:q,distance_km:x.distance_km,reason:'유통기한 임박 이전'})});
+    const d=await r.json();if(!r.ok){alert(d.error||'이전 실패');return}
+    alert('이전 완료되었습니다.');load();
+  }catch(e){alert('오류가 발생했습니다')}
+}
+</script>
+</body>
+</html>
