@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이미지 최적화 · 정육본가 ADMIN</title>
+<style>
+:root{--gold:#C9A84C;--gold-d:#A8862A;--ink:#1A1A1A;--sub:#6B7280;--line:#E5E1D5;--bg:#F4F2EC;--green:#1B7F3B;--red:#B42318}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink)}
+.hdr{background:#1A1A1A;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.hdr .t{font-weight:800}.hdr .t b{color:var(--gold)}.hdr a{color:#ddd;text-decoration:none;font-size:.85rem}
+.wrap{max-width:820px;margin:0 auto;padding:20px}
+.info{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:.88rem;color:#444;line-height:1.6}
+.run{height:44px;padding:0 22px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a;font-weight:800;cursor:pointer}
+.row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}
+.row img{width:44px;height:44px;object-fit:cover;border-radius:7px;background:#eee}
+.row .nm{flex:1;font-size:.88rem;font-weight:600}
+.row .st{font-size:.8rem;font-weight:700}
+.st-wait{color:var(--sub)}.st-done{color:var(--green)}.st-skip{color:var(--sub)}.st-err{color:var(--red)}
+.sum{margin:10px 0 16px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="t">정육본가 <b>이미지 최적화</b></div><a href="dashboard.html">← 대시보드</a></div>
+<div class="wrap">
+  <div class="info">기존 상품 이미지를 <b>작은 WebP</b>로 재저장합니다. 원본을 내려받아 최대 1000px·품질 82%로 리사이즈 후 교체하여, 이후 로딩이 변환 없이 <b>항상 일정하게 빠릅니다.</b> (원본 대비 보통 80~90% 용량 감소)</div>
+  <button class="run" onclick="run()">전체 이미지 최적화 실행</button>
+  <div class="sum" id="sum"></div>
+  <div id="list"></div>
+</div>
+<script>
+const API='https://api.meatbonga.com/api';
+const token=localStorage.getItem('mm_access_token');
+function hdrs(){return {'Content-Type':'application/json','Authorization':'Bearer '+token}}
+function kb(n){return Math.round(n/1024)+'KB'}
+let PRODUCTS=[];
+async function boot(){
+  if(!token){document.getElementById('list').textContent='관리자 로그인이 필요합니다.';return}
+  try{const r=await fetch(API+'/products?limit=200',{headers:hdrs()});const d=await r.json();
+    PRODUCTS=(d.products||[]).filter(p=>p.thumbnail_url&&p.thumbnail_url.indexOf('/storage/v1/object/public/')>-1);
+    document.getElementById('list').innerHTML=PRODUCTS.map(p=>`<div class="row" id="r-${p.id}"><img src="${p.thumbnail_url}"><div class="nm">${p.name}</div><div class="st st-wait" id="s-${p.id}">대기</div></div>`).join('')||'<div class="row">최적화할 이미지가 없습니다.</div>';
+    document.getElementById('sum').textContent=`대상 ${PRODUCTS.length}개`;
+  }catch(e){document.getElementById('list').textContent='목록을 불러오지 못했습니다.'}
+}
+async function optimize(url){
+  const blob=await fetch(url,{cache:'no-store'}).then(r=>r.blob());
+  const bmp=await createImageBitmap(blob);
+  let w=bmp.width,h=bmp.height,max=1000;
+  if(w>max||h>max){if(w>=h){h=Math.round(h*max/w);w=max}else{w=Math.round(w*max/h);h=max}}
+  const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);
+  let data=c.toDataURL('image/webp',0.82);if(data.indexOf('image/webp')<0)data=c.toDataURL('image/jpeg',0.82);
+  const after=Math.round((data.length-data.indexOf(',')-1)*0.75);
+  return {data,before:blob.size,after};
+}
+async function run(){
+  let done=0,saved=0;
+  for(const p of PRODUCTS){
+    const s=document.getElementById('s-'+p.id);s.className='st st-wait';s.textContent='처리 중…';
+    try{
+      const o=await optimize(p.thumbnail_url);
+      if(o.after>=o.before){s.className='st st-skip';s.textContent='이미 최적('+kb(o.before)+')';continue}
+      const mime=o.data.split(';')[0].split(':')[1]||'image/webp';
+      const up=await fetch(API+'/upload/image',{method:'POST',headers:hdrs(),body:JSON.stringify({base64:o.data,contentType:mime})});
+      const ud=await up.json();if(!up.ok)throw new Error(ud.error||'업로드 실패');
+      const pr=await fetch(API+'/products/'+p.id,{method:'PATCH',headers:hdrs(),body:JSON.stringify({thumbnail_url:ud.url})});
+      if(!pr.ok)throw new Error('교체 실패');
+      s.className='st st-done';s.textContent=`완료 ${kb(o.before)}→${kb(o.after)}`;done++;saved+=(o.before-o.after);
+      document.getElementById('r-'+p.id).querySelector('img').src=ud.url;
+    }catch(e){s.className='st st-err';s.textContent='실패: '+(e.message||'오류')}
+    document.getElementById('sum').textContent=`완료 ${done}/${PRODUCTS.length} · 절감 ${kb(saved)}`;
+  }
+  alert(`이미지 최적화 완료: ${done}개, 총 ${kb(saved)} 절감`);
+}
+boot();
+</script>
+</body>
+</html>

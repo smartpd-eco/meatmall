@@ -23,7 +23,7 @@ router.post('/image', requireAdmin, async (req, res) => {
 
     const { error: upErr } = await supabase.storage
       .from('products')
-      .upload(path, buffer, { contentType: mime, upsert: false });
+      .upload(path, buffer, { contentType: mime, upsert: false, cacheControl: '31536000' });
 
     if (upErr) throw upErr;
 

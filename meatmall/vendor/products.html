@@ -171,8 +171,17 @@ function showTab(n){
 function setState(on){isActive=on;document.getElementById('st-on').classList.toggle('on',on);document.getElementById('st-off').classList.toggle('on',!on)}
 function previewImg(input){
   const f=input.files[0];if(!f)return;
-  if(f.size>1024*1024){toast('이미지 크기는 1MB 이하여야 합니다');input.value='';return}
-  const rd=new FileReader();rd.onload=e=>{imgBase64=e.target.result;const a=document.getElementById('img-area');a.classList.add('has-img');a.innerHTML=`<img src="${imgBase64}"><button class="img-rm" onclick="rmImg(event)">✕</button>`};rd.readAsDataURL(f);
+  if(f.size>20*1024*1024){toast('이미지 크기는 20MB 이하여야 합니다');input.value='';return}
+  resizeImage(f,1000,0.82,data=>{imgBase64=data;const a=document.getElementById('img-area');a.classList.add('has-img');a.innerHTML=`<img src="${imgBase64}"><button class="img-rm" onclick="rmImg(event)">✕</button>`});
+}
+// 업로드 전 리사이즈 → WebP(정적 작은 파일로 저장, 변환 불필요)
+function resizeImage(file,maxDim,quality,cb){
+  const rd=new FileReader();rd.onload=e=>{const img=new Image();
+    img.onload=()=>{let w=img.width,h=img.height;if(w>maxDim||h>maxDim){if(w>=h){h=Math.round(h*maxDim/w);w=maxDim}else{w=Math.round(w*maxDim/h);h=maxDim}}
+      const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+      let out=c.toDataURL('image/webp',quality);if(out.indexOf('image/webp')<0)out=c.toDataURL('image/jpeg',quality);cb(out)};
+    img.onerror=()=>cb(e.target.result);img.src=e.target.result};
+  rd.readAsDataURL(file);
 }
 function rmImg(e){if(e)e.stopPropagation();imgBase64=null;const a=document.getElementById('img-area');a.classList.remove('has-img');a.innerHTML='<div class="img-ico">☁️</div><div class="img-txt">이미지 업로드<br><span style="font-size:.72rem">jpg, png 파일만 가능 (최대 1MB)</span></div>';document.getElementById('img-file').value=''}
 function weightG(){const w=Number(document.getElementById('f-weight').value)||0;return document.getElementById('f-unit').value==='kg'?w*1000:w}
