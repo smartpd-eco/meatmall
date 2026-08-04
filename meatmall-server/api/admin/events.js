@@ -8,6 +8,7 @@ const supabase = require('../../lib/supabase');
 const { requireAdmin } = require('../../middleware/auth');
 const { haversineKm, kakaoGeocode } = require('../../lib/geocode');
 const { fetchFestivals } = require('../../lib/event-api');
+const { inferDemand } = require('../../lib/event-demand');
 
 router.use(requireAdmin);
 
@@ -78,7 +79,8 @@ router.get('/', async (req, res) => {
       }
       return { ...ev, span_days: eventSpanDays(ev),
         nearest_store: nearest ? nearest.vendor_name : null,
-        nearest_km: nearest ? Math.round(nearKm * 10) / 10 : null };
+        nearest_km: nearest ? Math.round(nearKm * 10) / 10 : null,
+        demand: inferDemand(ev) };
     });
 
     // 필터: 단기 행사 + 반경 내

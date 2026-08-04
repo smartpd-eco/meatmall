@@ -35,6 +35,25 @@ body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink
 .form button{background:linear-gradient(135deg,var(--gold-d),#E8C97A);border:none;border-radius:8px;font-weight:700;cursor:pointer;padding:0 14px}
 .empty{text-align:center;color:var(--sub);padding:50px;background:#fff;border-radius:12px}
 .del{color:var(--red);font-size:.8rem;cursor:pointer}
+/* ── 행사 카드 ── */
+.ev-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.ev-tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:800;background:#FBF7EC;color:var(--gold-d);border:1px solid #EBDFBE}
+.ev-dist{font-size:.76rem;color:var(--sub);font-weight:700;white-space:nowrap}
+.ev-dist b{color:var(--ink)}
+.ev-title{font-weight:800;font-size:1.06rem;line-height:1.3}
+.ev-sub{font-size:.8rem;color:var(--sub);margin-top:3px}
+.ev-demand{margin-top:12px;background:#FAFAF7;border:1px solid var(--line);border-radius:10px;padding:12px 13px}
+.ev-demand-h{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:800;color:var(--ink)}
+.lv{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.7rem;font-weight:800}
+.lv3{background:#FDEBEC;color:var(--red)}.lv2{background:#FBF3E2;color:#8a5a00}.lv1{background:#EEF2F0;color:var(--sub)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid var(--line);font-size:.78rem}
+.chip .k{color:var(--sub);font-size:.68rem;font-weight:700}
+.chip .val{font-weight:700}
+.ev-reason{font-size:.82rem;color:#3d3d3d;margin-top:9px;line-height:1.5}
+.ev-note{font-size:.7rem;color:var(--sub);margin-top:7px;line-height:1.45;padding-top:7px;border-top:1px dashed var(--line)}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg label{font-size:.68rem;color:var(--sub);font-weight:700}
 </style>
 </head>
 <body>
@@ -110,10 +129,43 @@ async function loadEvents(){await loadEvProducts();
     if(d.vendors===0){msg.textContent='⚠ 벤더 좌표 없음(주소 등록 필요)';}
     else{msg.textContent=`수집 ${d.total||0}건 중 노출 ${d.shown||0}건 (반경 ${rad}km·${mxd}일 이내)`;}
     if(!es.length){el.className='empty';el.textContent='조건에 맞는 행사가 없습니다. (반경/기간을 넓혀보거나 공공 행사 수집을 먼저 실행)';return}
-    const opts=EVPRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');el.className='';
-    el.innerHTML=es.map(ev=>`<div class="card"><div class="flow"><div class="box"><div class="l">🎪 행사${ev.nearest_km!=null?` · 최근접 ${ev.nearest_store} ${ev.nearest_km}km`:''}</div><div class="v">${ev.title}</div><div class="meta">${ev.addr||''} · ${ev.start_date||''}~${ev.end_date||''} · ${ev.span_days}일</div></div></div>
-      <div class="act"><select id="ep-${ev.id}" class="d">${opts}</select><input class="q" type="number" id="eq-${ev.id}" placeholder="매장당 수량"><input class="q" type="number" id="er-${ev.id}" value="${rad}" title="반경km"><button onclick="planEvent(${ev.id})">반경 매장 선제이전 요청</button></div></div>`).join('');
+    el.className='';
+    el.innerHTML=es.map(ev=>{
+      const dm=ev.demand||{};
+      const sel=pickProduct(dm.cut,dm.species);
+      const opts=EVPRODUCTS.map(p=>`<option value="${p.id}"${p.id===sel?' selected':''}>${p.name}</option>`).join('');
+      const dist=ev.nearest_km!=null?`최근접 <b>${ev.nearest_store}</b> · ${ev.nearest_km}km`:'';
+      return `<div class="card">
+        <div class="ev-head"><span class="ev-tag">🎪 축제</span><span class="ev-dist">${dist}</span></div>
+        <div class="ev-title">${ev.title}</div>
+        <div class="ev-sub">${ev.addr||''} · ${ev.start_date||''}~${ev.end_date||''} · ${ev.span_days}일간</div>
+        <div class="ev-demand">
+          <div class="ev-demand-h">🤖 AI 수요 추정<span class="lv lv${dm.level||2}">수요 ${dm.level_label||'보통'}</span></div>
+          <div class="chips">
+            <span class="chip"><span class="k">유형</span><span class="val">${dm.category||'-'}</span></span>
+            <span class="chip"><span class="k">추천 축종</span><span class="val">${dm.species||'-'}</span></span>
+            <span class="chip"><span class="k">추천 부위</span><span class="val">${dm.cut||'-'}</span></span>
+          </div>
+          <div class="ev-reason">${dm.reason||''}</div>
+          <div class="ev-note">※ 지역 축제 먹거리·구이 소비의 일반적 패턴에 근거한 AI 추정치입니다(농림축산식품부·aT 소비동향 등 공개 통계의 축제 소비 경향 참조). 실제 발주는 매장 재고·판매 데이터와 함께 검토하세요.</div>
+        </div>
+        <div class="act">
+          <div class="fg"><label>추천 품목</label><select id="ep-${ev.id}" class="d">${opts}</select></div>
+          <div class="fg"><label>매장당 수량</label><input class="q" type="number" id="eq-${ev.id}" value="${dm.suggest_qty||10}"></div>
+          <div class="fg"><label>반경(km)</label><input class="q" type="number" id="er-${ev.id}" value="${rad}"></div>
+          <button onclick="planEvent(${ev.id})" style="align-self:flex-end">반경 매장 선제이전 요청</button>
+        </div></div>`;
+    }).join('');
   }catch(e){el.textContent='불러오지 못했습니다.'}}
+// AI 추천 부위/축종에 맞는 상품 자동 선택
+function pickProduct(cut,species){
+  if(!EVPRODUCTS.length)return null;
+  const keys=[];
+  (cut||'').replace(/[^가-힣]/g,' ').split(/\s+/).forEach(w=>{if(w.length>=2)keys.push(w)});
+  ['삼겹','목살','오겹','앞다리','갈비','등심','닭','가슴살'].forEach(k=>{if((cut||'').includes(k))keys.unshift(k)});
+  for(const k of keys){const m=EVPRODUCTS.find(p=>(p.name||'').includes(k));if(m)return m.id;}
+  return EVPRODUCTS[0].id;
+}
 async function planEvent(id){
   const pid=document.getElementById('ep-'+id).value,qty=document.getElementById('eq-'+id).value,rad=document.getElementById('er-'+id).value;
   if(!pid||!qty){alert('품목·수량을 입력하세요');return}
