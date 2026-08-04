@@ -23,8 +23,9 @@
 <body>
 <div class="hdr"><div class="t">정육본가 <b>이미지 최적화</b></div><a href="dashboard.html">← 대시보드</a></div>
 <div class="wrap">
-  <div class="info">기존 상품 이미지를 <b>작은 WebP</b>로 재저장합니다. 원본을 내려받아 최대 1000px·품질 82%로 리사이즈 후 교체하여, 이후 로딩이 변환 없이 <b>항상 일정하게 빠릅니다.</b> (원본 대비 보통 80~90% 용량 감소)</div>
-  <button class="run" onclick="run()">전체 이미지 최적화 실행</button>
+  <div class="info">✅ 이제 상품 이미지는 <b>업로드하는 순간 자동으로 작은 WebP로 최적화</b>되어 저장됩니다. 따라서 이 일괄 최적화는 <b>다시 하지 않아도 됩니다</b>(기존 이미지 1회 정리용 도구). 로딩은 변환 없이 항상 일정하게 빠릅니다.</div>
+  <button class="run" id="runBtn" onclick="run()" disabled style="opacity:.45;cursor:not-allowed">전체 이미지 최적화 (자동 적용 중 — 불필요)</button>
+  <div style="margin-top:8px"><a href="#" onclick="enableRun(event)" style="font-size:.8rem;color:#9a9a9a;text-decoration:none">대량 일괄 등록 등으로 다시 필요하면 → 여기를 눌러 활성화</a></div>
   <div class="sum" id="sum"></div>
   <div id="list"></div>
 </div>
@@ -52,7 +53,9 @@ async function optimize(url){
   const after=Math.round((data.length-data.indexOf(',')-1)*0.75);
   return {data,before:blob.size,after};
 }
+function enableRun(e){if(e)e.preventDefault();const b=document.getElementById('runBtn');b.disabled=false;b.style.opacity='1';b.style.cursor='pointer';b.textContent='전체 이미지 최적화 실행';}
 async function run(){
+  if(document.getElementById('runBtn').disabled)return;
   let done=0,saved=0;
   for(const p of PRODUCTS){
     const s=document.getElementById('s-'+p.id);s.className='st st-wait';s.textContent='처리 중…';
