@@ -77,8 +77,12 @@ body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink
   </div>
 
   <div id="pane-evt" style="display:none">
-    <div class="bar"><button onclick="syncEvents()">공공 행사 수집</button><span id="evt-msg" style="font-size:.82rem;color:var(--sub)"></span></div>
-    <div class="meta" style="margin-bottom:8px">행사 반경 매장에 선제 재고 이동 '요청'을 만들어, 정육점→정육점·재고이동요청 탭의 추천으로 이어집니다.</div>
+    <div class="bar"><button onclick="syncEvents()">공공 행사 수집</button>
+      <label style="margin-left:10px">벤더 반경</label><input id="evt-radius" type="number" value="30" style="width:64px"><span style="font-size:.82rem">km</span>
+      <label style="margin-left:8px">기간</label><input id="evt-maxdays" type="number" value="14" style="width:56px"><span style="font-size:.82rem">일 이내</span>
+      <button onclick="loadEvents()" style="margin-left:6px">적용</button>
+      <span id="evt-msg" style="font-size:.82rem;color:var(--sub);margin-left:8px"></span></div>
+    <div class="meta" style="margin-bottom:8px">등록 벤더 반경 안의 <b>단기 행사</b>만 노출합니다(연중·상설 제외). 반경 매장에 선제 재고 이동 '요청'을 만들어, 정육점→정육점·재고이동요청 탭의 추천으로 이어집니다.</div>
     <div id="evtlist" class="empty">'공공 행사 수집'을 눌러 목록을 불러오세요.</div>
   </div>
 </div>
@@ -98,11 +102,17 @@ async function syncEvents(){document.getElementById('evt-msg').textContent='수�
   }catch(e){document.getElementById('evt-msg').textContent='수집 실패';}}
 async function loadEvents(){await loadEvProducts();
   const el=document.getElementById('evtlist');el.className='empty';el.textContent='불러오는 중…';
-  try{const r=await fetch(`${API}/admin/events`,{headers:{Authorization:'Bearer '+token}});const d=await r.json();
-    const es=d.events||[];if(!es.length){el.className='empty';el.textContent='다가오는 행사가 없습니다. (공공 행사 수집을 먼저 실행)';return}
+  const rad=Number(document.getElementById('evt-radius').value)||30;
+  const mxd=Number(document.getElementById('evt-maxdays').value)||14;
+  try{const r=await fetch(`${API}/admin/events?radius_km=${rad}&max_days=${mxd}`,{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    const es=d.events||[];
+    const msg=document.getElementById('evt-msg');
+    if(d.vendors===0){msg.textContent='⚠ 벤더 좌표 없음(주소 등록 필요)';}
+    else{msg.textContent=`수집 ${d.total||0}건 중 노출 ${d.shown||0}건 (반경 ${rad}km·${mxd}일 이내)`;}
+    if(!es.length){el.className='empty';el.textContent='조건에 맞는 행사가 없습니다. (반경/기간을 넓혀보거나 공공 행사 수집을 먼저 실행)';return}
     const opts=EVPRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');el.className='';
-    el.innerHTML=es.map(ev=>`<div class="card"><div class="flow"><div class="box"><div class="l">🎪 행사</div><div class="v">${ev.title}</div><div class="meta">${ev.addr||''} · ${ev.start_date||''}~${ev.end_date||''}</div></div></div>
-      <div class="act"><select id="ep-${ev.id}" class="d">${opts}</select><input class="q" type="number" id="eq-${ev.id}" placeholder="매장당 수량"><input class="q" type="number" id="er-${ev.id}" value="10" title="반경km"><button onclick="planEvent(${ev.id})">반경 매장 선제이전 요청</button></div></div>`).join('');
+    el.innerHTML=es.map(ev=>`<div class="card"><div class="flow"><div class="box"><div class="l">🎪 행사${ev.nearest_km!=null?` · 최근접 ${ev.nearest_store} ${ev.nearest_km}km`:''}</div><div class="v">${ev.title}</div><div class="meta">${ev.addr||''} · ${ev.start_date||''}~${ev.end_date||''} · ${ev.span_days}일</div></div></div>
+      <div class="act"><select id="ep-${ev.id}" class="d">${opts}</select><input class="q" type="number" id="eq-${ev.id}" placeholder="매장당 수량"><input class="q" type="number" id="er-${ev.id}" value="${rad}" title="반경km"><button onclick="planEvent(${ev.id})">반경 매장 선제이전 요청</button></div></div>`).join('');
   }catch(e){el.textContent='불러오지 못했습니다.'}}
 async function planEvent(id){
   const pid=document.getElementById('ep-'+id).value,qty=document.getElementById('eq-'+id).value,rad=document.getElementById('er-'+id).value;
