@@ -8,14 +8,22 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../../lib/supabase');
 const { requireAdmin } = require('../../middleware/auth');
-const { haversineKm } = require('../../lib/geocode');
+const { haversineKm, kakaoGeocode } = require('../../lib/geocode');
 const { productWasteRisk } = require('../../lib/lot-risk');
 
 router.use(requireAdmin);
 
-function hqCoord() {
+// 본사(사업장) 좌표: HQ_LAT/HQ_LNG 환경변수 우선, 없으면 사업장 주소를 지오코딩(1회 캐시)
+//  사업장 소재지: 경기도 시흥시 군자로387번길 21-1 (거모동) — 주식회사 좋은축산유통
+const HQ_ADDRESS = process.env.HQ_ADDRESS || '경기도 시흥시 군자로387번길 21-1';
+let _hqCache = null;
+async function hqCoord() {
   const lat = Number(process.env.HQ_LAT), lng = Number(process.env.HQ_LNG);
-  return (lat && lng) ? { lat, lng } : null;
+  if (lat && lng) return { lat, lng };
+  if (_hqCache) return _hqCache;
+  const g = await kakaoGeocode(HQ_ADDRESS);
+  if (g) { _hqCache = g; }
+  return g || null;
 }
 
 // GET /api/admin/transfer/recommendations?days=3&max_km=30
@@ -23,7 +31,7 @@ router.get('/recommendations', async (req, res) => {
   try {
     const days = Number(req.query.days) || 3;            // 임박 기준(일)
     const maxKm = Number(req.query.max_km) || Number(process.env.TRANSFER_MAX_KM) || 30;
-    const hq = hqCoord();
+    const hq = await hqCoord();
     const until = new Date(Date.now() + days * 86400000).toISOString();
 
     // 1) 본사 임박 로트 (active·유통기한 임박·잔여>0), 본사 상품(vendor_id null)만
