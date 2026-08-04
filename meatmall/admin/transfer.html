@@ -25,9 +25,10 @@ body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink
 .arrow{font-size:1.4rem;color:var(--gold-d)}
 .risk{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:800;background:#FDEBEC;color:var(--red)}
 .meta{font-size:.82rem;color:var(--sub);margin-top:8px}
-.act{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
-.act input{height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px}
-.act .q{width:100px}.act .d{width:150px}
+.act{display:flex;gap:10px;align-items:flex-end;margin-top:12px;flex-wrap:wrap}
+.act input,.act select{height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px;background:#fff;font-size:.9rem;color:var(--ink)}
+.act .q{width:110px}.act .d{width:100%}
+.fg.prod{flex:1 1 260px;min-width:220px}
 .act button{height:38px;padding:0 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--gold-d),#E8C97A);color:#1a1a1a}
 .form{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
 .form .row{display:grid;grid-template-columns:1fr 1fr 90px auto;gap:8px}
@@ -54,6 +55,10 @@ body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink
 .ev-note{font-size:.7rem;color:var(--sub);margin-top:7px;line-height:1.45;padding-top:7px;border-top:1px dashed var(--line)}
 .fg{display:flex;flex-direction:column;gap:3px}
 .fg label{font-size:.68rem;color:var(--sub);font-weight:700}
+.stock{font-size:.76rem;margin-top:10px;padding:7px 11px;border-radius:8px;line-height:1.45}
+.stock.has{background:#EDF6EF;border:1px solid #CBE6D3;color:#1B6B37}
+.stock.none{background:#FDEFEF;border:1px solid #F2CFCF;color:var(--red)}
+.stock b{font-weight:800}
 </style>
 </head>
 <body>
@@ -131,10 +136,19 @@ async function loadEvents(){await loadEvProducts();
     if(!es.length){el.className='empty';el.textContent='조건에 맞는 행사가 없습니다. (반경/기간을 넓혀보거나 공공 행사 수집을 먼저 실행)';return}
     el.className='';
     el.innerHTML=es.map(ev=>{
-      const dm=ev.demand||{};
-      const sel=pickProduct(dm.cut,dm.species);
+      const dm=ev.demand||{},rc=ev.rec||{};
+      const sel=rc.product_id||pickProduct(dm.cut);
       const opts=EVPRODUCTS.map(p=>`<option value="${p.id}"${p.id===sel?' selected':''}>${p.name}</option>`).join('');
       const dist=ev.nearest_km!=null?`최근접 <b>${ev.nearest_store}</b> · ${ev.nearest_km}km`:'';
+      // 재고 라인
+      let stock='';
+      if(rc.product_id&&rc.in_stock&&(rc.locations||[]).length){
+        const locs=rc.locations.map(l=>`${l.name} <b>${l.qty}</b>${l.km!=null?`(${l.km}km)`:''}`).join(' · ');
+        stock=`<div class="stock has">📦 재고 보유: ${locs} — 재고 있는 매장 기준으로 추천했습니다.</div>`;
+      }else if(rc.product_id){
+        stock=`<div class="stock none">⚠ 「${rc.product_name}」 전 매장 재고 없음 — 본사 확보 후 이전이 필요합니다.</div>`;
+      }
+      const chips=(dm.cuts||[dm.cut]).map(c=>`<span class="chip"><span class="val">${c}</span></span>`).join('');
       return `<div class="card">
         <div class="ev-head"><span class="ev-tag">🎪 축제</span><span class="ev-dist">${dist}</span></div>
         <div class="ev-title">${ev.title}</div>
@@ -143,26 +157,25 @@ async function loadEvents(){await loadEvProducts();
           <div class="ev-demand-h">🤖 AI 수요 추정<span class="lv lv${dm.level||2}">수요 ${dm.level_label||'보통'}</span></div>
           <div class="chips">
             <span class="chip"><span class="k">유형</span><span class="val">${dm.category||'-'}</span></span>
-            <span class="chip"><span class="k">추천 축종</span><span class="val">${dm.species||'-'}</span></span>
-            <span class="chip"><span class="k">추천 부위</span><span class="val">${dm.cut||'-'}</span></span>
+            <span class="chip"><span class="k">축종</span><span class="val">${dm.species||'-'}</span></span>
           </div>
+          <div class="chips" style="margin-top:5px"><span class="chip" style="background:#FBF7EC;border-color:#EBDFBE"><span class="k">즐길 부위</span></span>${chips}</div>
           <div class="ev-reason">${dm.reason||''}</div>
-          <div class="ev-note">※ 지역 축제 먹거리·구이 소비의 일반적 패턴에 근거한 AI 추정치입니다(농림축산식품부·aT 소비동향 등 공개 통계의 축제 소비 경향 참조). 실제 발주는 매장 재고·판매 데이터와 함께 검토하세요.</div>
+          ${stock}
+          <div class="ev-note">※ 지역 축제 먹거리·구이 소비의 일반적 패턴에 근거한 AI 추정치입니다(농림축산식품부·aT 소비동향 등 공개 통계의 축제 소비 경향 참조). 추천 품목은 실제 매장 재고를 기준으로 선정합니다.</div>
         </div>
         <div class="act">
-          <div class="fg"><label>추천 품목</label><select id="ep-${ev.id}" class="d">${opts}</select></div>
+          <div class="fg prod"><label>추천 품목 (재고 기준)</label><select id="ep-${ev.id}" class="d">${opts}</select></div>
           <div class="fg"><label>매장당 수량</label><input class="q" type="number" id="eq-${ev.id}" value="${dm.suggest_qty||10}"></div>
           <div class="fg"><label>반경(km)</label><input class="q" type="number" id="er-${ev.id}" value="${rad}"></div>
-          <button onclick="planEvent(${ev.id})" style="align-self:flex-end">반경 매장 선제이전 요청</button>
+          <button onclick="planEvent(${ev.id})">반경 매장 선제이전 요청</button>
         </div></div>`;
     }).join('');
   }catch(e){el.textContent='불러오지 못했습니다.'}}
-// AI 추천 부위/축종에 맞는 상품 자동 선택
-function pickProduct(cut,species){
+// (폴백) 서버 추천이 없을 때 부위 키워드로 상품 선택
+function pickProduct(cut){
   if(!EVPRODUCTS.length)return null;
-  const keys=[];
-  (cut||'').replace(/[^가-힣]/g,' ').split(/\s+/).forEach(w=>{if(w.length>=2)keys.push(w)});
-  ['삼겹','목살','오겹','앞다리','갈비','등심','닭','가슴살'].forEach(k=>{if((cut||'').includes(k))keys.unshift(k)});
+  const keys=[];(cut||'').replace(/[^가-힣]/g,' ').split(/\s+/).forEach(w=>{if(w.length>=2)keys.push(w)});
   for(const k of keys){const m=EVPRODUCTS.find(p=>(p.name||'').includes(k));if(m)return m.id;}
   return EVPRODUCTS[0].id;
 }

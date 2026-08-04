@@ -38,6 +38,65 @@ function eventSpanDays(ev) {
   return Math.round((e - s) / 86400000) + 1;
 }
 
+// 상품목록 + 매장별 재고 인덱스(현재고>0)
+async function buildStockIndex() {
+  const [{ data: prods }, { data: inv }] = await Promise.all([
+    supabase.from('products').select('id, name'),
+    supabase.from('vendor_inventory').select('product_id, current_stock, vendors(vendor_name, lat, lng)')
+  ]);
+  const stockByProduct = new Map();
+  for (const r of (inv || [])) {
+    const q = Number(r.current_stock) || 0;
+    if (q <= 0) continue;
+    const v = r.vendors || {};
+    if (!stockByProduct.has(r.product_id)) stockByProduct.set(r.product_id, []);
+    stockByProduct.get(r.product_id).push({ vendor_name: v.vendor_name || '매장', lat: v.lat, lng: v.lng, qty: q });
+  }
+  return { products: prods || [], stockByProduct };
+}
+
+// 추천 부위(cuts) → 매칭 상품 키워드 추출
+function cutKeywords(cuts) {
+  const set = new Set();
+  for (const c of (cuts || [])) {
+    const base = String(c).replace(/\(.*?\)/g, ' ').replace(/양념|수제|훈제/g, ' ');
+    for (const tok of base.split(/\s+/)) if (tok.length >= 2) set.add(tok);
+    if (/닭/.test(c)) set.add('닭');
+    if (/오리/.test(c)) set.add('오리');
+    if (/소시지|소세지/.test(c)) set.add('소시지');
+    if (/갈비/.test(c)) set.add('갈비');
+  }
+  return [...set];
+}
+
+// 재고 기준 추천 상품 선정 + 재고 위치
+function pickRecommendation(ev, demand, index) {
+  const keys = cutKeywords(demand.cuts);
+  const cands = index.products.filter(p => keys.some(k => (p.name || '').includes(k)));
+  if (!cands.length) return { product_id: null, product_name: null, in_stock: false, locations: [] };
+
+  const evLat = ev.lat, evLng = ev.lng;
+  const locsFor = (pid) => {
+    const arr = (index.stockByProduct.get(pid) || []).map(s => ({
+      name: s.vendor_name, qty: s.qty,
+      km: (evLat != null && s.lat != null) ? Math.round(haversineKm(evLat, evLng, s.lat, s.lng) * 10) / 10 : null
+    }));
+    arr.sort((a, b) => (a.km == null ? 1e9 : a.km) - (b.km == null ? 1e9 : b.km) || b.qty - a.qty);
+    return arr;
+  };
+
+  // 재고 있는 후보 우선(가장 가까운 재고 매장 기준), 없으면 이름매칭 첫 후보
+  let best = null, bestScore = Infinity;
+  for (const p of cands) {
+    const locs = locsFor(p.id);
+    if (!locs.length) continue;
+    const nearKm = locs[0].km == null ? 1e6 : locs[0].km;
+    if (nearKm < bestScore) { bestScore = nearKm; best = { p, locs }; }
+  }
+  if (best) return { product_id: best.p.id, product_name: best.p.name, in_stock: true, locations: best.locs.slice(0, 3) };
+  return { product_id: cands[0].id, product_name: cands[0].name, in_stock: false, locations: [] };
+}
+
 // 공공 API에서 행사 수집 → events 저장
 router.post('/sync', async (req, res) => {
   try {
@@ -88,6 +147,10 @@ router.get('/', async (req, res) => {
       .filter(e => e.span_days <= MAXD)
       .filter(e => e.nearest_km != null && e.nearest_km <= R)
       .sort((a, b) => a.nearest_km - b.nearest_km);
+
+    // 재고 기준 추천 상품 부착(노출 대상만)
+    const index = await buildStockIndex();
+    for (const e of filtered) e.rec = pickRecommendation(e, e.demand, index);
 
     res.json({ ok: true, events: filtered, total, shown: filtered.length,
       radius_km: R, max_days: MAXD, vendors: vendors.length,
