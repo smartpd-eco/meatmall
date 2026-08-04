@@ -8,12 +8,15 @@ const fetch = require('node-fetch');
 function ymd(d) { return d.toISOString().slice(0, 10).replace(/-/g, ''); }
 function toDate(s) { s = String(s || ''); return s.length === 8 ? `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}` : null; }
 
+// 공공데이터포털 '한국관광공사_국문 관광정보 서비스' 인증키.
+//  ※ 환경변수 EVENT_API_KEY가 있으면 그것을 우선 사용(권장·교체 가능).
+const DEFAULT_KEY = 'f638d2ae88ca13abee2be48a984734e2ae0007f008bbaa12cc3323776acca6f7';
 async function fetchFestivals(days = 30) {
-  const key = process.env.EVENT_API_KEY || process.env.TOUR_API_KEY;
+  const key = process.env.EVENT_API_KEY || process.env.TOUR_API_KEY || DEFAULT_KEY;
   if (!key) return { ok: false, reason: 'no_key', items: [] };
   try {
     const start = ymd(new Date());
-    const url = `https://apis.data.go.kr/B551011/KorService1/searchFestival1?serviceKey=${encodeURIComponent(key)}&MobileOS=ETC&MobileApp=meatmall&_type=json&arrange=A&numOfRows=100&pageNo=1&eventStartDate=${start}`;
+    const url = `https://apis.data.go.kr/B551011/KorService2/searchFestival2?serviceKey=${encodeURIComponent(key)}&MobileOS=ETC&MobileApp=meatmall&_type=json&arrange=A&numOfRows=100&pageNo=1&eventStartDate=${start}`;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 8000);
     const r = await fetch(url, { signal: ctrl.signal });
