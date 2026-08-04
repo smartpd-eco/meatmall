@@ -44,6 +44,7 @@ body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink
     <div class="tb on" id="tb-hq" onclick="setTab('hq')">본사 → 매장</div>
     <div class="tb" id="tb-store" onclick="setTab('store')">정육점 → 정육점</div>
     <div class="tb" id="tb-req" onclick="setTab('req')">📥 재고 이동 요청 창</div>
+    <div class="tb" id="tb-evt" onclick="setTab('evt')">🎪 행사 수요예측</div>
   </div>
 
   <div id="pane-hq">
@@ -74,6 +75,12 @@ body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink
     </div>
     <div id="reqlist" class="empty">불러오는 중…</div>
   </div>
+
+  <div id="pane-evt" style="display:none">
+    <div class="bar"><button onclick="syncEvents()">공공 행사 수집</button><span id="evt-msg" style="font-size:.82rem;color:var(--sub)"></span></div>
+    <div class="meta" style="margin-bottom:8px">행사 반경 매장에 선제 재고 이동 '요청'을 만들어, 정육점→정육점·재고이동요청 탭의 추천으로 이어집니다.</div>
+    <div id="evtlist" class="empty">'공공 행사 수집'을 눌러 목록을 불러오세요.</div>
+  </div>
 </div>
 <script>
 const API='https://api.meatbonga.com/api';
@@ -81,8 +88,29 @@ const token=localStorage.getItem('mm_access_token');
 let tab='hq',VENDORS=[],PRODUCTS=[];
 function fmt(n){return Number(n||0).toLocaleString('ko-KR')}
 function tomorrow(){const d=new Date(Date.now()+86400000);return d.toISOString().slice(0,10)}
-function setTab(t){tab=t;['hq','store','req'].forEach(x=>{document.getElementById('tb-'+x).classList.toggle('on',x===t);document.getElementById('pane-'+x).style.display=x===t?'':'none'});
-  if(t==='req'){loadPickers();loadReqs()}}
+function setTab(t){tab=t;['hq','store','req','evt'].forEach(x=>{document.getElementById('tb-'+x).classList.toggle('on',x===t);document.getElementById('pane-'+x).style.display=x===t?'':'none'});
+  if(t==='req'){loadPickers();loadReqs()} if(t==='evt'){loadEvents()}}
+let EVPRODUCTS=[];
+async function loadEvProducts(){if(EVPRODUCTS.length)return;try{const r=await fetch(`${API}/products?limit=100`);const d=await r.json();EVPRODUCTS=d.products||[];}catch(e){}}
+async function syncEvents(){document.getElementById('evt-msg').textContent='수집 중…';
+  try{const r=await fetch(`${API}/admin/events/sync`,{method:'POST',headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    document.getElementById('evt-msg').textContent=d.ok?`수집 ${d.synced}건`:(d.message||'수집 실패');loadEvents();
+  }catch(e){document.getElementById('evt-msg').textContent='수집 실패';}}
+async function loadEvents(){await loadEvProducts();
+  const el=document.getElementById('evtlist');el.className='empty';el.textContent='불러오는 중…';
+  try{const r=await fetch(`${API}/admin/events`,{headers:{Authorization:'Bearer '+token}});const d=await r.json();
+    const es=d.events||[];if(!es.length){el.className='empty';el.textContent='다가오는 행사가 없습니다. (공공 행사 수집을 먼저 실행)';return}
+    const opts=EVPRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');el.className='';
+    el.innerHTML=es.map(ev=>`<div class="card"><div class="flow"><div class="box"><div class="l">🎪 행사</div><div class="v">${ev.title}</div><div class="meta">${ev.addr||''} · ${ev.start_date||''}~${ev.end_date||''}</div></div></div>
+      <div class="act"><select id="ep-${ev.id}" class="d">${opts}</select><input class="q" type="number" id="eq-${ev.id}" placeholder="매장당 수량"><input class="q" type="number" id="er-${ev.id}" value="10" title="반경km"><button onclick="planEvent(${ev.id})">반경 매장 선제이전 요청</button></div></div>`).join('');
+  }catch(e){el.textContent='불러오지 못했습니다.'}}
+async function planEvent(id){
+  const pid=document.getElementById('ep-'+id).value,qty=document.getElementById('eq-'+id).value,rad=document.getElementById('er-'+id).value;
+  if(!pid||!qty){alert('품목·수량을 입력하세요');return}
+  try{const res=await fetch(`${API}/admin/events/${id}/plan`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({product_id:pid,base_qty:qty,radius_km:rad})});
+    const d=await res.json();if(!res.ok){alert(d.error||'실패');return}
+    alert(`반경 내 ${d.stores}개 매장에 재고 이동 요청 ${d.created}건 생성.\n'정육점→정육점' 또는 '재고 이동 요청 창'에서 이어서 처리하세요.`);
+  }catch(e){alert('오류가 발생했습니다')}}
 
 // ── 본사 → 매장 ──
 async function loadHq(){
