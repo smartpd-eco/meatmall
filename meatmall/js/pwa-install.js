@@ -18,7 +18,7 @@
   var ICON = BASE + 'install-icon.png';          /* 새 공식 설치 아이콘 */
   var ICON_FALLBACK = BASE + 'icon-192.png';     /* 이미지 없을 때 기존 아이콘 */
   var SHARE_IMG = BASE + 'share-btn.png';        /* 공유하기 버튼 이미지 */
-  var SHARE_URL = 'https://smartpd-eco.github.io/';
+  var SHARE_URL = 'https://meatbonga.com/';
   var LS_INSTALLED = 'mm-pwa-installed';
   var LS_TOAST     = 'mm-pwa-toast-v1';
   var LS_SETTINGS  = 'mm-pwa-settings';
@@ -32,7 +32,7 @@
       (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   }
   if (isStandalone()) { try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {} }
-  var IS_INSTALLED = isStandalone() || !!localStorage.getItem(LS_INSTALLED);   /* 설치됨/앱 실행 → 설치버튼만 숨김(공유는 유지) */
+  var IS_INSTALLED = isStandalone();   /* 앱 삭제 후 localStorage가 남아도 설치 버튼이 숨지 않게 실제 앱 실행 상태만 기준 */
 
   /* ── 환경 감지 ── */
   var ua = navigator.userAgent;
@@ -240,6 +240,15 @@
     }, 250);
   }
 
+  function openExternalBrowser() {
+    var target = location.href.split('#')[0];
+    if (isAndroid) {
+      location.href = 'intent://' + target.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+      return;
+    }
+    window.open(target, '_blank');
+  }
+
   /* ── 설치 방법 안내 (beforeinstallprompt 미지원 환경) ── */
   function showGuide() {
     var steps, primaryBtn = '', openChrome = false;
@@ -287,12 +296,7 @@
       if (openChrome && cls === 'mm-go') {
         clearInterval(poll);
         /* 안드로이드: Chrome 인텐트로 강제 오픈 (인앱 → Chrome 탈출) */
-        if (isAndroid) {
-          var host = location.host, path = location.pathname + location.search;
-          location.href = 'intent://' + host + path + '#Intent;scheme=https;package=com.android.chrome;end';
-        } else {
-          window.open(SHARE_URL, '_blank');
-        }
+        openExternalBrowser();
         return;
       }
       if (e.target === wrap || cls === 'mm-close') {
