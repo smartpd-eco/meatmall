@@ -26,7 +26,7 @@ body{font-size:.9375rem}.app-wrap{background:var(--light-bg)}
 .dep-badge{background:rgba(201,168,76,.15);color:var(--gold);font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--gold-bdr);display:inline-flex;align-items:center;gap:3px}
 .ord-foot{display:flex;align-items:center;justify-content:space-between;padding:18px;background:#FAFAF7;flex-wrap:wrap;gap:8px}
 .oabtn{font-size:.9375rem;font-weight:700;padding:6px 11px;border-radius:16px;cursor:pointer;border:none;transition:opacity .15s,transform .15s}
-.oabtn-g{background:var(--gold);color:var(--black)}
+.oabtn-g{background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff}
 .oabtn-o{background:var(--white);color:var(--gold);border:1.5px solid var(--gold)!important}
 .oabtn-gray{background:var(--white);color:var(--gray-txt);border:1.5px solid #ddd!important}
 .empty-box{text-align:center;padding:72px 24px;color:var(--gray-txt)}
@@ -96,11 +96,11 @@ async function load(){
       orders=d.orders||[];
     }
     render(orders);
-  }catch(e){document.getElementById('ord-list').innerHTML=`<div class="empty-box"><div style="font-size:2.5rem;margin-bottom:12px">😢</div><div>${e.message}</div><button onclick="load()" style="margin-top:14px;padding:8px 20px;background:var(--gold);color:var(--black);border:none;border-radius:16px;font-size:.9375rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .15s">다시 시도</button></div>`}
+  }catch(e){document.getElementById('ord-list').innerHTML=`<div class="empty-box"><div style="font-size:2.5rem;margin-bottom:12px">😢</div><div>${e.message}</div><button onclick="load()" style="margin-top:14px;padding:8px 20px;background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff;border:none;border-radius:16px;font-size:.9375rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .15s">다시 시도</button></div>`}
 }
 function render(orders){
   const list=document.getElementById('ord-list');
-  if(!orders.length){list.innerHTML=`<div class="empty-box"><div style="font-size:3rem;margin-bottom:14px">📦</div><div style="margin-bottom:18px">${cur==='preparing'?'준비중인 주문이 없습니다':'아직 주문 내역이 없습니다'}</div><button onclick="go('../index.html')" style="padding:10px 24px;background:var(--gold);color:var(--black);border:none;border-radius:16px;font-size:.9375rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .15s">쇼핑하러 가기</button></div>`;return}
+  if(!orders.length){list.innerHTML=`<div class="empty-box"><div style="font-size:3rem;margin-bottom:14px">📦</div><div style="margin-bottom:18px">${cur==='preparing'?'준비중인 주문이 없습니다':'아직 주문 내역이 없습니다'}</div><button onclick="go('../index.html')" style="padding:10px 24px;background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff;border:none;border-radius:16px;font-size:.9375rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .15s">쇼핑하러 가기</button></div>`;return}
   list.innerHTML=orders.map(o=>{
     const d=new Date(o.created_at),ds=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
     const isVW=o.payment_method==='VBANK'&&(o.payment_status==='awaiting_deposit'||o.status==='pending_deposit');

@@ -282,7 +282,7 @@ async function loadProducts(){
     renderProducts(allProducts);
   }catch(e){
     console.error('[loadProducts]',e);
-    document.getElementById('prd-wrap').innerHTML=`<div class="empty-state"><div class="empty-icon">😢</div><div class="empty-text">상품을 불러오지 못했습니다</div><button onclick="loadProducts()" style="margin-top:16px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#111;border:none;border-radius:8px;padding:10px 24px;font-size:.85rem;font-weight:700;cursor:pointer">다시 시도</button></div>`;
+    document.getElementById('prd-wrap').innerHTML=`<div class="empty-state"><div class="empty-icon">😢</div><div class="empty-text">상품을 불러오지 못했습니다</div><button onclick="loadProducts()" style="margin-top:16px;background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:.85rem;font-weight:700;cursor:pointer">다시 시도</button></div>`;
   }finally{
     hideLoading(); // 반드시 실행 — 어떤 경우에도 로딩 상태 해제
   }

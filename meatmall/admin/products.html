@@ -60,7 +60,7 @@ tbody tr:last-child td{border-bottom:none}
 .btn{padding:7px 16px;border-radius:6px;border:none;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .15s;white-space:nowrap}
 .btn:hover{opacity:.85}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-gold{background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F}
+.btn-gold{background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff}
 .btn-outline{background:transparent;border:1px solid #C9A84C;color:#C9A84C}
 .btn-danger{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.3)}
 .btn-sm{padding:4px 10px;font-size:.76rem}
@@ -134,6 +134,11 @@ input.tgl:checked::after{left:21px}
 /* TOAST */
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);background:#1C1C1C;border:1px solid #C9A84C;color:#F0F2F5;padding:10px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.btn-gold,.btn-primary,#save-btn,
+button[style*="background:#C9A84C"],
+button[style*="background: #C9A84C"],
+button[style*="#A8862A"],
+button[style*="#E8C97A"]{background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB)!important;color:#fff!important;border-color:#3B82F6!important;box-shadow:0 6px 18px rgba(59,130,246,.24)!important}
 .prd-mobile-list{display:none}
 
 @media(max-width:768px){

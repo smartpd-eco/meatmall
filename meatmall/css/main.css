@@ -228,6 +228,39 @@ img{max-width:100%;display:block}
 .form-input::placeholder,.lf-input::placeholder{color:var(--gray-txt)}
 .form-label,.lf-label{display:block;font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:5px}
 .form-group,.lf-group{margin-bottom:14px}
+
+/* 2026-08-11: 누런색 버튼만 이미지 기준 블루 버튼으로 통일 */
+:root{
+  --btn-blue:#3B82F6;
+  --btn-blue-lt:#60A5FA;
+  --btn-blue-dk:#2563EB;
+  --btn-blue-shadow:rgba(59,130,246,.28);
+}
+.btn-gold,
+.btn-gold-sm,
+.btn-primary,
+.oabtn-g,
+.pc-btn:not(.ghost),
+.btn-buy-bar,
+button[style*="background:var(--gold)"],
+button[style*="background: var(--gold)"],
+button[style*="background:#C9A84C"],
+button[style*="background: #C9A84C"],
+button[style*="#A8862A"],
+button[style*="#E8C97A"]{
+  background:linear-gradient(135deg,var(--btn-blue-lt),var(--btn-blue),var(--btn-blue-dk))!important;
+  color:#fff!important;
+  border-color:var(--btn-blue)!important;
+  box-shadow:0 8px 22px var(--btn-blue-shadow)!important;
+}
+.btn-gold:hover,
+.btn-gold-sm:hover,
+.btn-primary:hover,
+.oabtn-g:hover,
+.pc-btn:not(.ghost):hover,
+.btn-buy-bar:hover{
+  background:linear-gradient(135deg,#60A5FA,#2563EB)!important;
+}
 .form-error{font-size:.76rem;color:#DC2626;margin-top:4px;display:none}
 .form-error.show{display:block}
 .section-header{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 10px}

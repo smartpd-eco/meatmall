@@ -77,7 +77,7 @@ tbody tr:last-child td{border-bottom:none}
 .btn{padding:7px 16px;border-radius:6px;border:none;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
 .btn:hover{opacity:.85}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-gold{background:linear-gradient(135deg,#A8862A,#E8C97A);color:#0F0F0F}
+.btn-gold{background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff}
 .btn-outline{background:transparent;border:1px solid #C9A84C;color:#C9A84C}
 .btn-danger{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.3)}
 .btn-success{background:rgba(34,197,94,.12);color:#22C55E;border:1px solid rgba(34,197,94,.3)}
@@ -443,7 +443,7 @@ async function tabSettlements(){
     <div class="card">
       <div class="card-head">
         <div><div class="card-title">정산 내역</div><div class="card-sub">미정산 정산액 합계 <strong style="color:#C9A84C">${fmt(pending)}원</strong></div></div>
-        <button class="btn btn-sm" style="background:#C9A84C;color:#111;font-weight:700" onclick="genSettlements()">배송완료 건 정산 집계</button>
+        <button class="btn btn-sm" style="background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff;font-weight:700" onclick="genSettlements()">배송완료 건 정산 집계</button>
       </div>
       <div class="tbl-wrap"><table>
         <thead><tr><th>주문번호</th><th>정육점</th><th>매출</th><th>수수료</th><th>정산액</th><th>상태</th><th>정산예정</th><th>처리</th></tr></thead>
@@ -958,7 +958,7 @@ function openVendorForm(id){
     <div class="fgrp"><label class="flbl">주소 <span style="color:#6B7280;font-weight:400">(주소검색으로 시/구/동 자동입력)</span></label>
       <div style="display:flex;gap:6px">
         <input class="finput" id="vf-addr" value="${v?.address||''}" placeholder="주소검색을 눌러 선택하세요" style="flex:1" readonly>
-        <button type="button" class="btn btn-sm" style="white-space:nowrap;background:#C9A84C;color:#111;font-weight:700" onclick="vendorAddrSearch()">🔍 주소검색</button>
+        <button type="button" class="btn btn-sm" style="white-space:nowrap;background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff;font-weight:700" onclick="vendorAddrSearch()">🔍 주소검색</button>
       </div>
     </div>
   </div>

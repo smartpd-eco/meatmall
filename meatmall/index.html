@@ -195,7 +195,7 @@ async function loadPrds(catFilter){
     try{preloadProductImages(allPrds);}catch(_){}
   }catch(e){
     console.error('[loadPrds]',e);
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:#9CA3AF">상품을 불러오지 못했습니다<br><button onclick="loadPrds(\''+(catFilter||'')+'\')" style="margin-top:14px;background:linear-gradient(135deg,#A8862A,#E8C97A);color:#111;border:none;border-radius:8px;padding:9px 22px;font-size:.82rem;font-weight:700;cursor:pointer">다시 시도</button></div>';
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:.82rem;color:#9CA3AF">상품을 불러오지 못했습니다<br><button onclick="loadPrds(\''+(catFilter||'')+'\')" style="margin-top:14px;background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:.82rem;font-weight:700;cursor:pointer">다시 시도</button></div>';
   }
 }
 async function loadCats(){

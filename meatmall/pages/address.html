@@ -135,7 +135,7 @@ async function loadAddrs(){
     syncLocal();
     renderAddrs();
   }catch(e){
-    document.getElementById('addr-list').innerHTML=`<div style="text-align:center;padding:52px 20px;color:var(--gray-txt)"><div style="font-size:3rem;margin-bottom:12px">📍</div><div>${e.message}</div><button onclick="loadAddrs()" style="margin-top:14px;padding:8px 20px;background:var(--gold);color:var(--black);border:none;border-radius:8px;font-weight:700;cursor:pointer">다시 시도</button></div>`;
+    document.getElementById('addr-list').innerHTML=`<div style="text-align:center;padding:52px 20px;color:var(--gray-txt)"><div style="font-size:3rem;margin-bottom:12px">📍</div><div>${e.message}</div><button onclick="loadAddrs()" style="margin-top:14px;padding:8px 20px;background:linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">다시 시도</button></div>`;
   }
 }
 

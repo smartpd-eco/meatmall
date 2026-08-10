@@ -10,8 +10,17 @@
 .btn-sm { padding: 3px 9px !important; font-size: .72rem !important; }
 
 /* ── 채운 버튼 = 라이트블루 + 흰 글자 ── */
-.btn-gold, .btn-primary, .save, #save-btn, button.save {
-  background: #3B82F6 !important; color: #fff !important; border: 1px solid #3B82F6 !important;
+.btn-gold, .btn-primary, .save, #save-btn, button.save,
+button[style*="background:#C9A84C"],
+button[style*="background: #C9A84C"],
+button[style*="background:var(--gold)"],
+button[style*="background: var(--gold)"],
+button[style*="#A8862A"],
+button[style*="#E8C97A"] {
+  background: linear-gradient(135deg,#60A5FA,#3B82F6,#2563EB) !important;
+  color: #fff !important;
+  border: 1px solid #3B82F6 !important;
+  box-shadow: 0 6px 18px rgba(59,130,246,.24) !important;
 }
 .btn-gold:hover, .btn-primary:hover, .save:hover, #save-btn:hover { background: #2563EB !important; }
 
