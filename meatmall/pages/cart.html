@@ -241,6 +241,9 @@ function ensurePayment(){
     return true;
   }catch(e){ console.error('[toss payment]',e); return false; }
 }
+function paymentReturnUrl(fileName){
+  return new URL(fileName, location.href).href;
+}
 (async function loadConfig(){
   try {
     const r = await fetch(API+'/payment/config');
@@ -604,8 +607,8 @@ async function doPay(){
         amount:   { currency:'KRW', value: order.amount },
         orderId:  order.orderId,
         orderName:order.orderName,
-        successUrl: location.origin + '/pages/payment-success.html',
-        failUrl:    location.origin + '/pages/payment-fail.html',
+        successUrl: paymentReturnUrl('payment-success.html'),
+        failUrl:    paymentReturnUrl('payment-fail.html'),
         customerName: selectedAddr.recipient || '고객',
         ...(phone.length>=10 ? { customerMobilePhone: phone } : {}),
         card: { useEscrow:false, flowMode:'DEFAULT', useCardPoint:false, useAppCardOnly:false },

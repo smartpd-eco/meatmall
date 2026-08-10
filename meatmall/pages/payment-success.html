@@ -45,11 +45,16 @@ function box(html){document.getElementById('pc-box').innerHTML=html}
       body:JSON.stringify({paymentKey, orderId, amount:Number(amount)})
     });
     const d=await r.json();
-    if(!r.ok) throw new Error(d.error||'결제 승인에 실패했습니다');
+    if(!r.ok){
+      const err = new Error(d.error||'결제 승인에 실패했습니다');
+      err.code = d.code || '';
+      throw err;
+    }
     try{ if(window.Store){ Store.load(); Store.cart=[]; Store.save(); if(window.updateCartBadge) updateCartBadge(); } }catch(e){}
     location.replace(`./order-complete.html?orderId=${encodeURIComponent(orderId)}&amount=${encodeURIComponent(amount)}&point=${encodeURIComponent(d.pointEarned||0)}`);
   }catch(e){
-    box('<div style="font-size:2.4rem;margin-bottom:12px">❌</div><div class="pc-title">결제 승인 실패</div><div class="pc-sub">'+(e.message||'오류가 발생했습니다')+'<br>결제가 완료되지 않았다면 다시 시도해주세요.</div><button class="pc-btn" onclick="location.href=\'./cart.html\'">장바구니로</button> <button class="pc-btn ghost" onclick="location.href=\'./orders.html\'">주문내역</button>');
+    const codeHtml = e.code ? '<div class="pc-sub" style="margin-top:10px;font-size:.75rem;color:#9CA3AF">오류코드: '+String(e.code).replace(/</g,'&lt;')+'</div>' : '';
+    box('<div style="font-size:2.4rem;margin-bottom:12px">❌</div><div class="pc-title">결제 승인 실패</div><div class="pc-sub">'+(e.message||'오류가 발생했습니다')+'<br>결제가 완료되지 않았다면 다시 시도해주세요.</div>'+codeHtml+'<button class="pc-btn" onclick="location.href=\'./cart.html\'">장바구니로</button> <button class="pc-btn ghost" onclick="location.href=\'./orders.html\'">주문내역</button>');
   }
 })();
 </script>

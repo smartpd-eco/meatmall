@@ -237,8 +237,16 @@ router.post('/confirm', requireAuth, async (req, res) => {
         body: JSON.stringify({ paymentKey, orderId, amount:Number(amount) })
       });
       const td = await tr.json();
-      if (!tr.ok)
+      if (!tr.ok) {
+        console.error('[payment/confirm:toss]', {
+          orderId,
+          amount: Number(amount),
+          status: tr.status,
+          code: td.code,
+          message: td.message,
+        });
         return res.status(400).json({ error: td.message||'결제 승인 실패', code: td.code });
+      }
     }
 
     await supabase.from('orders').update({
