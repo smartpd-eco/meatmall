@@ -134,6 +134,46 @@ input.tgl:checked::after{left:21px}
 /* TOAST */
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);background:#1C1C1C;border:1px solid #C9A84C;color:#F0F2F5;padding:10px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.prd-mobile-list{display:none}
+
+@media(max-width:768px){
+  body{overflow-x:hidden;background:#0F0F0F}
+  .hdr{height:auto;min-height:64px;padding:10px 14px;gap:10px;position:sticky;top:0}
+  .hdr-brand{font-size:1.05rem;line-height:1.2;white-space:nowrap}
+  .hdr-brand small{display:block;margin:3px 0 0}
+  .hdr-btns{gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .hdr-btn{height:38px;padding:0 9px;font-size:.78rem;border-radius:8px}
+  .tabs{position:sticky;top:64px;z-index:90;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:1;text-align:center;padding:12px 8px;font-size:.92rem;white-space:nowrap}
+  .page-body{padding:14px 12px 96px}
+  .card{border-radius:14px;padding:16px;margin-bottom:14px}
+  .card-head{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px}
+  .card-title{font-size:1.08rem}
+  .card-sub{font-size:.82rem}
+  .fbar{display:grid;grid-template-columns:1fr;gap:10px;width:100%}
+  .fin{width:100%!important;height:46px;font-size:.94rem}
+  .tbl-wrap{display:none}
+  .prd-mobile-list{display:grid;gap:10px}
+  .prd-card{display:grid;grid-template-columns:76px 1fr;gap:12px;background:#171717;border:1px solid #2A2A2A;border-radius:14px;padding:12px;min-width:0}
+  .prd-thumb{width:76px;height:76px;border-radius:12px;overflow:hidden;background:#242424;display:flex;align-items:center;justify-content:center;font-size:2rem}
+  .prd-thumb img{width:100%;height:100%;object-fit:cover}
+  .prd-info{min-width:0}
+  .prd-name{font-size:1rem;font-weight:800;color:#F3F4F6;line-height:1.35;word-break:keep-all}
+  .prd-sub{font-size:.8rem;color:#9CA3AF;margin-top:3px}
+  .prd-price{font-size:.98rem;font-weight:800;color:#E8C97A;margin-top:8px}
+  .prd-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+  .prd-actions{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}
+  .prd-actions .btn{height:40px;justify-content:center}
+  .form-grid,.form-grid.c1,.form-grid.c3{grid-template-columns:1fr!important;gap:12px}
+  .finput,.fselect{min-height:46px;font-size:.95rem}
+  .cat-chips{gap:7px}
+  .cat-chip{padding:8px 12px}
+  .img-area{padding:22px 14px}
+  .save-bar{left:0;right:0;padding:12px;background:#111;gap:8px}
+  .save-bar .btn{flex:1;max-width:none!important;height:46px;padding:0 10px}
+  .empty{padding:36px 12px}
+}
 </style>
 <script>
 document.documentElement.style.visibility = 'hidden';
@@ -426,6 +466,7 @@ function renderList(list){
     return;
   }
   wrap.innerHTML = `
+  <div class="prd-mobile-list">${productCards(list)}</div>
   <div class="tbl-wrap">
     <table>
       <thead><tr><th style="width:50px">이미지</th><th>상품명</th><th>카테고리</th><th>판매가</th><th>재고</th><th>상태</th><th>액션</th></tr></thead>
@@ -476,6 +517,39 @@ function renderList(list){
 }
 
 /* ─── FORM HELPERS ─── */
+function productCards(list){
+  return list.map(p => {
+    const stk = p.stock || 0;
+    const stkCls = stk <= 0 ? 'stk-low' : stk <= (p.min_stock||10) ? 'stk-low' : stk <= (p.min_stock||10)*2 ? 'stk-warn' : 'stk-ok';
+    const disc = p.origin_price ? Math.round((1 - p.price / p.origin_price) * 100) : 0;
+    const safeName = (p.name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    return `
+    <article class="prd-card">
+      <div class="prd-thumb">
+        ${p.thumbnail_url
+          ? `<img src="${mmImg(p.thumbnail_url,160,120)}" alt="">`
+          : `<span>${p.emoji||'🥩'}</span>`}
+      </div>
+      <div class="prd-info">
+        <div class="prd-name">${p.name||'상품명 없음'}</div>
+        <div class="prd-sub">${p.category_name || p.category || '-'} · ${p.weight_g||0}g${p.origin ? ' · '+p.origin : ''}</div>
+        <div class="prd-price">${fmt(p.price)}원 ${disc > 0 ? `<span style="font-size:.78rem;color:#22C55E;margin-left:4px">${disc}% 할인</span>` : ''}</div>
+        <div class="prd-badges">
+          <span class="bdg ${p.is_active?'bdg-on':'bdg-off'}">${p.is_active?'판매중':'비활성'}</span>
+          ${p.is_subscribe ? '<span class="bdg bdg-sub">구독</span>' : ''}
+          ${p.haccp ? '<span class="bdg bdg-haccp">HACCP</span>' : ''}
+          <span class="bdg ${stkCls}">재고 ${stk}개</span>
+        </div>
+      </div>
+      <div class="prd-actions">
+        <button class="btn btn-sm btn-outline" onclick="editProduct('${p.id}')">수정</button>
+        <button class="btn btn-sm btn-outline" onclick="toggleActive('${p.id}',${p.is_active})">${p.is_active?'비활성':'활성'}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}','${safeName}')">삭제</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+
 function selectCat(id, name){
   selCatId = id; selCat = name;
   document.querySelectorAll('.cat-chip[id^="cat-"]').forEach(b => b.classList.remove('on'));
