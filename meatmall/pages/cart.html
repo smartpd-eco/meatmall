@@ -246,7 +246,7 @@ function paymentReturnUrl(fileName){
 }
 (async function loadConfig(){
   try {
-    const r = await fetch(API+'/payment/config');
+    const r = await fetch(API+'/payment/config?ts='+Date.now(), { cache:'no-store' });
     if(r.ok){ const d=await r.json(); payConfig={...payConfig,...d}; }
     // 무통장 계좌 정보 업데이트
     const acc = document.getElementById('vbank-account-info');
@@ -266,7 +266,16 @@ let payMode = 'WIDGET';   // 'WIDGET'(카드·간편결제) | 'VBANK'(무통장)
 let deliveryType = 'standard';
 function kstHour(){ try{ return Number(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul',hour:'2-digit',hour12:false})); }catch(e){ return new Date().getHours(); } }
 function sameDayOpen(){ const h=kstHour(); return h>=9 && h<17; }
+function itemSameDayEligible(c){ return c && c.vendor_id != null && c.is_same_day === true; }
+function selectedSameDayEligible(){
+  const selItems=Store.cart.filter(c=>selected.has(c.productId));
+  return selItems.length>0 && selItems.every(itemSameDayEligible);
+}
 function selDelivery(t){
+  if(t==='same_day' && !selectedSameDayEligible()){
+    t='standard';
+    toast('당일배송은 정육점 당일배송 상품만 선택할 수 있습니다');
+  }
   deliveryType=t;
   const same=document.getElementById('dtype-same'), std=document.getElementById('dtype-std'), d=document.getElementById('dtype-desc');
   if(same) same.classList.toggle('on', t==='same_day');
@@ -277,7 +286,7 @@ function selDelivery(t){
 }
 function initDelivery(){
   const same=document.getElementById('dtype-same');
-  if(sameDayOpen()){ if(same) same.style.display=''; }
+  if(sameDayOpen() && selectedSameDayEligible()){ if(same) same.style.display=''; }
   else { if(same) same.style.display='none'; deliveryType='standard'; }  // 시간외: 당일배송 숨김
   selDelivery(deliveryType);
 }

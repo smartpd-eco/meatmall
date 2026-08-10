@@ -35,15 +35,12 @@ function makeOrderNo() {
 }
 
 // ── 배송비 정책 (shipping_settings 테이블, 60초 캐시, 테이블 없거나 오류 시 기본값 폴백)
-let _shipCache = null, _shipAt = 0;
 async function getShipping() {
-  if (_shipCache && Date.now() - _shipAt < 60000) return _shipCache;
   let s = { mode: 'free50', base_fee: 3500 };
   try {
     const { data } = await supabase.from('shipping_settings').select('mode, base_fee').eq('id', 1).maybeSingle();
     if (data) s = { mode: data.mode || 'free50', base_fee: Number(data.base_fee ?? 3500) };
   } catch (e) { /* 테이블 미생성 등 → 기본값 사용 */ }
-  _shipCache = s; _shipAt = Date.now();
   return s;
 }
 // 무료 기준 금액(0 = 전상품 무료)
@@ -72,6 +69,7 @@ async function getVbank() {
 // ══════════════════════════════════════════════════
 router.get('/config', async (req, res) => {
   const s = await getShipping();
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.json({
     ok: true,
     clientKey: TOSS.clientKey,
@@ -103,6 +101,23 @@ router.post('/ready', requireAuth, async (req, res) => {
       return res.status(400).json({ error:'배송지 정보를 입력해주세요' });
 
     const userId = req.user.sub;
+
+    if (deliveryTypeV === 'same_day') {
+      const productIds = [...new Set(items.map(i => i.productId).filter(Boolean))];
+      const { data: products, error: prodErr } = await supabase
+        .from('products')
+        .select('id, vendor_id, is_same_day')
+        .in('id', productIds);
+      if (prodErr) throw prodErr;
+      const byId = new Map((products || []).map(p => [String(p.id), p]));
+      const allSameDay = productIds.length > 0 && items.every(i => {
+        const p = byId.get(String(i.productId));
+        return p && p.vendor_id != null && p.is_same_day === true;
+      });
+      if (!allSameDay) {
+        return res.status(400).json({ error:'당일배송은 정육점 당일배송 상품만 선택할 수 있습니다' });
+      }
+    }
 
     // 계정에 전화번호가 없으면, 배송지에 입력한 번호를 계정에 자동 등록(별도 인증 단계 불필요).
     // 배송지 저장 시 이미 번호를 받으므로 주문을 막지 않고 진행한다.

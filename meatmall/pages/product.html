@@ -366,6 +366,8 @@ function addToCart(){
   if(product.stock<=0){ toast('품절된 상품입니다'); return; }
   Store.addToCart({
     productId: product.id,
+    vendor_id: product.vendor_id || null,
+    is_same_day: product.is_same_day === true || product.same_day === true,
     emoji: product.emoji||'🥩',
     name: product.name,
     option: product.weight_g?product.weight_g+'g':'기본',
