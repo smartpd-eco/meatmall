@@ -77,4 +77,27 @@ function verifyLinkToken(token) {
   }
 }
 
-module.exports = { signAccessToken, signRefreshToken, verifyAccessToken, rotateRefreshToken, revokeAllTokens, signLinkToken, verifyLinkToken };
+function signPhoneVerifyToken({ userId, phone }) {
+  return jwt.sign({ sub: userId, phone, purpose: 'phone_verify' }, SECRET, { expiresIn: '10m' });
+}
+
+function verifyPhoneVerifyToken(token) {
+  try {
+    const decoded = jwt.verify(token, SECRET);
+    return decoded.purpose === 'phone_verify' ? decoded : null;
+  } catch {
+    return null;
+  }
+}
+
+module.exports = {
+  signAccessToken,
+  signRefreshToken,
+  verifyAccessToken,
+  rotateRefreshToken,
+  revokeAllTokens,
+  signLinkToken,
+  verifyLinkToken,
+  signPhoneVerifyToken,
+  verifyPhoneVerifyToken,
+};

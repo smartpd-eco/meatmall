@@ -2,8 +2,9 @@ const express  = require('express');
 const bcrypt   = require('bcryptjs');
 const router   = express.Router();
 const supabase = require('../../lib/supabase');
-const { signAccessToken, signRefreshToken, rotateRefreshToken, revokeAllTokens } = require('../../lib/jwt');
+const { signAccessToken, signRefreshToken, rotateRefreshToken, revokeAllTokens, signPhoneVerifyToken } = require('../../lib/jwt');
 const { requireAuth } = require('../../middleware/auth');
+const { sendSms, normalizePhone } = require('../../lib/solapi');
 
 // ── 응답 헬퍼: 쿠키에 refresh token 저장
 function setRefreshCookie(res, token, expiresAt) {
@@ -147,6 +148,104 @@ router.post('/logout', requireAuth, async (req, res) => {
 // POST /api/auth/phone — 전화번호 등록 (소셜 로그인 후 전화번호 필수 등록 플로우)
 // ════════════════════════════════════════════
 const PHONE_RE = /^010-\d{4}-\d{4}$/;
+const smsCodes = new Map();
+
+function makeSmsKey(userId, phone) {
+  return `${userId}:${normalizePhone(phone)}`;
+}
+
+function makeSmsCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function cleanupSmsCodes() {
+  const now = Date.now();
+  for (const [key, row] of smsCodes.entries()) {
+    if (!row || row.expiresAt <= now) smsCodes.delete(key);
+  }
+}
+
+router.post('/sms/start', requireAuth, async (req, res) => {
+  try {
+    cleanupSmsCodes();
+    const { phone } = req.body || {};
+    if (!phone || !PHONE_RE.test(phone)) {
+      return res.status(400).json({ ok: false, error: '휴대폰 번호 형식이 올바르지 않습니다 (010-0000-0000)' });
+    }
+
+    const key = makeSmsKey(req.user.sub, phone);
+    const prev = smsCodes.get(key);
+    if (prev && Date.now() - prev.sentAt < 60 * 1000) {
+      return res.status(429).json({ ok: false, error: '인증번호는 1분 후 다시 발송할 수 있습니다' });
+    }
+
+    const code = makeSmsCode();
+    const text = `[정육본가] 배송지 휴대폰 인증번호는 ${code}입니다. 3분 이내 입력해주세요.`;
+    const sent = await sendSms({ phone, text });
+    if (!sent.ok) {
+      return res.status(502).json({ ok: false, error: sent.error || '인증번호 발송에 실패했습니다' });
+    }
+    if (sent.dev && process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ ok: false, error: 'SMS 발송 환경변수가 설정되지 않았습니다' });
+    }
+
+    smsCodes.set(key, {
+      code,
+      sentAt: Date.now(),
+      expiresAt: Date.now() + 3 * 60 * 1000,
+      attempts: 0,
+    });
+
+    res.json({
+      ok: true,
+      expiresIn: 180,
+      dev: !!sent.dev,
+      ...(sent.dev ? { devCode: code } : {}),
+    });
+  } catch (err) {
+    console.error('[sms/start]', err);
+    res.status(500).json({ ok: false, error: '인증번호 발송 중 오류가 발생했습니다' });
+  }
+});
+
+router.post('/sms/confirm', requireAuth, async (req, res) => {
+  try {
+    cleanupSmsCodes();
+    const { phone, code } = req.body || {};
+    if (!phone || !PHONE_RE.test(phone)) {
+      return res.status(400).json({ ok: false, error: '휴대폰 번호 형식이 올바르지 않습니다' });
+    }
+    if (!/^\d{6}$/.test(String(code || ''))) {
+      return res.status(400).json({ ok: false, error: '인증번호 6자리를 입력해주세요' });
+    }
+
+    const key = makeSmsKey(req.user.sub, phone);
+    const row = smsCodes.get(key);
+    if (!row) {
+      return res.status(400).json({ ok: false, error: '인증번호가 만료되었거나 발송 이력이 없습니다' });
+    }
+    if (row.expiresAt <= Date.now()) {
+      smsCodes.delete(key);
+      return res.status(400).json({ ok: false, error: '인증번호가 만료되었습니다. 다시 발송해주세요' });
+    }
+    if (row.attempts >= 5) {
+      smsCodes.delete(key);
+      return res.status(429).json({ ok: false, error: '인증 시도 횟수를 초과했습니다. 다시 발송해주세요' });
+    }
+
+    row.attempts += 1;
+    if (row.code !== String(code)) {
+      return res.status(400).json({ ok: false, error: '인증번호가 일치하지 않습니다' });
+    }
+
+    smsCodes.delete(key);
+    const verifyToken = signPhoneVerifyToken({ userId: req.user.sub, phone });
+    res.json({ ok: true, verifyToken });
+  } catch (err) {
+    console.error('[sms/confirm]', err);
+    res.status(500).json({ ok: false, error: '인증번호 확인 중 오류가 발생했습니다' });
+  }
+});
 
 // TODO: PASS 본인인증 API 연동 필요 - 다날 또는 KG이니시스 계약 후 여기에 연동.
 // 계약 전까지는 형식 검증만 통과하면 인증된 것으로 간주하는 임시 처리.

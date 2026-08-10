@@ -2,6 +2,17 @@ const express = require('express');
 const router  = express.Router();
 const supabase = require('../../lib/supabase');
 const { requireAuth } = require('../../middleware/auth');
+const { verifyPhoneVerifyToken } = require('../../lib/jwt');
+const { normalizePhone } = require('../../lib/solapi');
+
+function assertPhoneVerified(req, phone, token) {
+  const decoded = verifyPhoneVerifyToken(token);
+  return !!(
+    decoded &&
+    decoded.sub === req.user.sub &&
+    normalizePhone(decoded.phone) === normalizePhone(phone)
+  );
+}
 
 // ════════════════════════════════════════════════════
 // GET /api/addresses — 내 배송지 목록
@@ -27,9 +38,12 @@ router.get('/', requireAuth, async (req, res) => {
 // ════════════════════════════════════════════════════
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { recipient, phone, zip_code, address1, address2, delivery_note, is_default } = req.body;
+    const { recipient, phone, zip_code, address1, address2, delivery_note, is_default, phoneVerifyToken } = req.body;
     if (!recipient || !phone || !zip_code || !address1)
       return res.status(400).json({ error: '수령인, 휴대폰, 우편번호, 주소는 필수입니다' });
+    if (!assertPhoneVerified(req, phone, phoneVerifyToken)) {
+      return res.status(400).json({ error: '휴대폰 인증을 완료해주세요' });
+    }
 
     const userId = req.user.sub;
 
@@ -87,12 +101,15 @@ router.put('/:id/default', requireAuth, async (req, res) => {
 // ════════════════════════════════════════════════════
 router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const { recipient, phone, zip_code, address1, address2, delivery_note, is_default } = req.body;
+    const { recipient, phone, zip_code, address1, address2, delivery_note, is_default, phoneVerifyToken } = req.body;
     const userId = req.user.sub;
 
     const { data: existing } = await supabase
-      .from('addresses').select('id').eq('id', req.params.id).eq('user_id', userId).single();
+      .from('addresses').select('id, phone').eq('id', req.params.id).eq('user_id', userId).single();
     if (!existing) return res.status(404).json({ error: '배송지를 찾을 수 없습니다' });
+    if (normalizePhone(existing.phone) !== normalizePhone(phone) && !assertPhoneVerified(req, phone, phoneVerifyToken)) {
+      return res.status(400).json({ error: '휴대폰 인증을 완료해주세요' });
+    }
 
     if (is_default)
       await supabase.from('addresses').update({ is_default: false }).eq('user_id', userId);

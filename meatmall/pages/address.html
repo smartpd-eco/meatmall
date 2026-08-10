@@ -109,7 +109,7 @@ function toast(m){const t=document.getElementById('toast-wrap');t.textContent=m;
 function getToken(){return localStorage.getItem('mm_access_token')||null}
 function authHeaders(extra={}){return{Authorization:'Bearer '+getToken(),'Content-Type':'application/json',...extra}}
 
-let addrs=[],editingId=null,phoneOK=false,smsTimer=null;
+let addrs=[],editingId=null,phoneOK=false,phoneVerifyToken=null,smsTimer=null;
 
 // localStorage 미러링 — cart.html이 배송지 목록을 localStorage에서 읽으므로 동기화 유지
 function syncLocal(){
@@ -157,7 +157,7 @@ function renderAddrs(){
 }
 
 function openForm(id=null){
-  editingId=id;phoneOK=false;
+  editingId=id;phoneOK=false;phoneVerifyToken=null;
   document.getElementById('phone-ok').style.display='none';
   document.getElementById('code-area').style.display='none';
   document.getElementById('form-title').textContent=id?'배송지 수정':'새 배송지 추가';
@@ -191,9 +191,36 @@ function openForm(id=null){
 }
 function closeForm(){document.getElementById('ov').classList.remove('open');document.getElementById('addr-sheet').classList.remove('open');document.body.style.overflow='';clearInterval(smsTimer)}
 function searchAddr(){new daum.Postcode({oncomplete:function(d){document.getElementById('f-zip').value=d.zonecode;document.getElementById('f-addr1').value=d.roadAddress||d.jibunAddress;document.getElementById('f-addr2').focus()}}).open()}
-function fmtPhone(el){let v=el.value.replace(/\D/g,'');if(v.length>3&&v.length<=7)v=v.slice(0,3)+'-'+v.slice(3);else if(v.length>7)v=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);el.value=v;phoneOK=false;document.getElementById('phone-ok').style.display='none'}
-function sendCode(){const ph=document.getElementById('f-phone').value;if(!ph||ph.replace(/\D/g,'').length<10){toast('올바른 번호를 입력해주세요');return}document.getElementById('code-area').style.display='block';document.getElementById('send-btn').textContent='재발송';toast('인증번호 발송 (테스트: 123456)');let t=180;clearInterval(smsTimer);smsTimer=setInterval(()=>{t--;const m=String(Math.floor(t/60)).padStart(2,'0'),s=String(t%60).padStart(2,'0');document.getElementById('timer-txt').textContent=`${m}:${s} 남음`;if(t<=0){clearInterval(smsTimer);document.getElementById('timer-txt').textContent='시간 초과. 재발송하세요.'}},1000)}
-function verifyCode(){if(document.getElementById('f-code').value==='123456'){phoneOK=true;clearInterval(smsTimer);document.getElementById('code-area').style.display='none';document.getElementById('phone-ok').style.display='block';toast('✅ 인증 완료')}else toast('❌ 인증번호가 틀렸습니다')}
+function fmtPhone(el){let v=el.value.replace(/\D/g,'');if(v.length>3&&v.length<=7)v=v.slice(0,3)+'-'+v.slice(3);else if(v.length>7)v=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);el.value=v;phoneOK=false;phoneVerifyToken=null;document.getElementById('phone-ok').style.display='none'}
+async function sendCode(){
+  const ph=document.getElementById('f-phone').value;
+  if(!ph||ph.replace(/\D/g,'').length<10){toast('올바른 번호를 입력해주세요');return}
+  const btn=document.getElementById('send-btn');
+  btn.disabled=true;btn.textContent='발송중';
+  try{
+    const r=await fetch(API+'/auth/sms/start',{method:'POST',headers:authHeaders(),credentials:'include',body:JSON.stringify({phone:ph})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'인증번호 발송 실패');
+    document.getElementById('code-area').style.display='block';
+    document.getElementById('send-btn').textContent='재발송';
+    toast(d.dev&&d.devCode?'인증번호 발송 (DEV: '+d.devCode+')':'인증번호를 문자로 발송했습니다');
+    let t=Number(d.expiresIn||180);
+    clearInterval(smsTimer);
+    smsTimer=setInterval(()=>{t--;const m=String(Math.floor(t/60)).padStart(2,'0'),s=String(t%60).padStart(2,'0');document.getElementById('timer-txt').textContent=`${m}:${s} 남음`;if(t<=0){clearInterval(smsTimer);document.getElementById('timer-txt').textContent='시간 초과. 재발송하세요.'}},1000)
+  }catch(e){toast('❌ '+e.message)}
+  finally{btn.disabled=false;if(btn.textContent==='발송중')btn.textContent='인증번호'}
+}
+async function verifyCode(){
+  const ph=document.getElementById('f-phone').value;
+  const code=document.getElementById('f-code').value.trim();
+  if(!/^\d{6}$/.test(code)){toast('인증번호 6자리를 입력해주세요');return}
+  try{
+    const r=await fetch(API+'/auth/sms/confirm',{method:'POST',headers:authHeaders(),credentials:'include',body:JSON.stringify({phone:ph,code})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'인증 실패');
+    phoneOK=true;phoneVerifyToken=d.verifyToken;clearInterval(smsTimer);document.getElementById('code-area').style.display='none';document.getElementById('phone-ok').style.display='block';toast('✅ 인증 완료')
+  }catch(e){toast('❌ '+e.message)}
+}
 function toggleNote(sel){document.getElementById('note-custom').style.display=sel.value==='직접 입력'?'block':'none'}
 
 // ── POST /api/addresses · PUT /api/addresses/:id ────────
@@ -210,7 +237,7 @@ async function saveAddr(){
   if(!ph){toast('휴대폰 번호를 입력해주세요');return}
   if(!phoneOK){toast('휴대폰 인증을 완료해주세요');return}
   if(!zip||!a1){toast('주소를 검색해주세요');return}
-  const payload={recipient:rec,phone:ph,zip_code:zip,address1:a1,address2:a2,delivery_note:note,is_default:isDef};
+  const payload={recipient:rec,phone:ph,zip_code:zip,address1:a1,address2:a2,delivery_note:note,is_default:isDef,phoneVerifyToken};
   const btn=document.querySelector('#addr-sheet .btn-gold');
   btn.disabled=true;btn.textContent='저장 중...';
   try{

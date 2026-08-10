@@ -17,8 +17,12 @@ function envClean(v) {
 }
 
 const CFG = {
+  // Shared SOLAPI credentials.
+  // These are the same keys already used by Kakao Alimtalk in this project.
+  // Do not reissue SOLAPI_API_SECRET only for SMS unless Alimtalk keys are updated together.
   apiKey:    envClean(process.env.SOLAPI_API_KEY),
   apiSecret: envClean(process.env.SOLAPI_API_SECRET),
+  // SMS uses SOLAPI_SENDER first; if missing, it reuses the existing Alimtalk sender number.
   sender:    envClean(process.env.SOLAPI_SENDER || process.env.ALIMTALK_SENDER_NO),
   pfId:      envClean(process.env.SOLAPI_PFID),
 };
@@ -31,6 +35,10 @@ function normalizePhone(p) {
 // 발송 준비 여부 (키·발신번호·채널 모두 있어야 실제 발송)
 function isConfigured() {
   return !!(CFG.apiKey && CFG.apiSecret && CFG.pfId && CFG.sender);
+}
+
+function isSmsConfigured() {
+  return !!(CFG.apiKey && CFG.apiSecret && CFG.sender);
 }
 
 // ── 내부: 로그 저장 ──
@@ -140,4 +148,33 @@ async function sendAlimtalk({ type, phone, name, templateCode, variables, dedupe
   }
 }
 
-module.exports = { sendAlimtalk, normalizePhone, isConfigured, CFG };
+async function sendSms({ phone, text }) {
+  const to = normalizePhone(phone);
+  if (!to || to.length < 10) {
+    return { ok: false, error: '유효하지 않은 휴대폰 번호입니다' };
+  }
+  if (!text) {
+    return { ok: false, error: '발송할 메시지가 없습니다' };
+  }
+
+  if (!isSmsConfigured()) {
+    console.log(`[SMS DEV] to:${to} text:${text}`);
+    return { ok: true, dev: true };
+  }
+
+  try {
+    const service = new SolapiMessageService(CFG.apiKey, CFG.apiSecret);
+    const result = await service.send({
+      to,
+      from: normalizePhone(CFG.sender),
+      text,
+    });
+    return { ok: true, data: result };
+  } catch (err) {
+    const msg = (err && err.message) || String(err);
+    console.error('[Solapi SMS 오류]', msg);
+    return { ok: false, error: msg };
+  }
+}
+
+module.exports = { sendAlimtalk, sendSms, normalizePhone, isConfigured, isSmsConfigured, CFG };
