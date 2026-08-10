@@ -53,8 +53,16 @@ function box(html){document.getElementById('pc-box').innerHTML=html}
     try{ if(window.Store){ Store.load(); Store.cart=[]; Store.save(); if(window.updateCartBadge) updateCartBadge(); } }catch(e){}
     location.replace(`./order-complete.html?orderId=${encodeURIComponent(orderId)}&amount=${encodeURIComponent(amount)}&point=${encodeURIComponent(d.pointEarned||0)}`);
   }catch(e){
-    const codeHtml = e.code ? '<div class="pc-sub" style="margin-top:10px;font-size:.75rem;color:#9CA3AF">오류코드: '+String(e.code).replace(/</g,'&lt;')+'</div>' : '';
-    box('<div style="font-size:2.4rem;margin-bottom:12px">❌</div><div class="pc-title">결제 승인 실패</div><div class="pc-sub">'+(e.message||'오류가 발생했습니다')+'<br>결제가 완료되지 않았다면 다시 시도해주세요.</div>'+codeHtml+'<button class="pc-btn" onclick="location.href=\'./cart.html\'">장바구니로</button> <button class="pc-btn ghost" onclick="location.href=\'./orders.html\'">주문내역</button>');
+    const code = String(e.code || '');
+    const safeCode = code.replace(/</g,'&lt;');
+    const safeMsg = String(e.message || '오류가 발생했습니다').replace(/</g,'&lt;');
+    const isMerchantMethodBlocked = code === 'NOT_AVAILABLE_PAYMENT_BY_MERCHANT';
+    const title = isMerchantMethodBlocked ? '결제수단 준비 중' : '결제 승인 실패';
+    const desc = isMerchantMethodBlocked
+      ? '현재 상점에서 카드·간편결제 승인이 아직 활성화되지 않았습니다.<br>무통장 입금으로 주문하시거나 상점에 문의해주세요.'
+      : safeMsg + '<br>결제가 완료되지 않았다면 다시 시도해주세요.';
+    const codeHtml = safeCode ? '<div class="pc-sub" style="margin-top:10px;font-size:.75rem;color:#9CA3AF">오류코드: '+safeCode+'</div>' : '';
+    box('<div style="font-size:2.4rem;margin-bottom:12px">❌</div><div class="pc-title">'+title+'</div><div class="pc-sub">'+desc+'</div>'+codeHtml+'<button class="pc-btn" onclick="location.href=\'./cart.html\'">장바구니로</button> <button class="pc-btn ghost" onclick="location.href=\'./orders.html\'">주문내역</button>');
   }
 })();
 </script>
