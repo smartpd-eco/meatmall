@@ -158,6 +158,8 @@ function renderAddrs(){
 
 function openForm(id=null){
   editingId=id;phoneOK=false;phoneVerifyToken=null;
+  const sendBtn=document.getElementById('send-btn');
+  sendBtn.disabled=false;sendBtn.textContent='인증번호';
   document.getElementById('phone-ok').style.display='none';
   document.getElementById('code-area').style.display='none';
   document.getElementById('form-title').textContent=id?'배송지 수정':'새 배송지 추가';
@@ -180,7 +182,7 @@ function openForm(id=null){
       document.getElementById('f-note-c').value=note;
       document.getElementById('note-custom').style.display='block';
     }
-    phoneOK=true;document.getElementById('phone-ok').style.display='block';
+    phoneOK=true;sendBtn.disabled=true;sendBtn.textContent='인증완료';document.getElementById('phone-ok').style.display='block';
   }else{
     ['f-rec','f-phone','f-zip','f-addr1','f-addr2'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('f-default').checked=false;
@@ -191,7 +193,7 @@ function openForm(id=null){
 }
 function closeForm(){document.getElementById('ov').classList.remove('open');document.getElementById('addr-sheet').classList.remove('open');document.body.style.overflow='';clearInterval(smsTimer)}
 function searchAddr(){new daum.Postcode({oncomplete:function(d){document.getElementById('f-zip').value=d.zonecode;document.getElementById('f-addr1').value=d.roadAddress||d.jibunAddress;document.getElementById('f-addr2').focus()}}).open()}
-function fmtPhone(el){let v=el.value.replace(/\D/g,'');if(v.length>3&&v.length<=7)v=v.slice(0,3)+'-'+v.slice(3);else if(v.length>7)v=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);el.value=v;phoneOK=false;phoneVerifyToken=null;document.getElementById('phone-ok').style.display='none'}
+function fmtPhone(el){let v=el.value.replace(/\D/g,'');if(v.length>3&&v.length<=7)v=v.slice(0,3)+'-'+v.slice(3);else if(v.length>7)v=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);el.value=v;phoneOK=false;phoneVerifyToken=null;const b=document.getElementById('send-btn');b.disabled=false;b.textContent='인증번호';document.getElementById('phone-ok').style.display='none'}
 async function sendCode(){
   const ph=document.getElementById('f-phone').value;
   if(!ph||ph.replace(/\D/g,'').length<10){toast('올바른 번호를 입력해주세요');return}
@@ -218,7 +220,8 @@ async function verifyCode(){
     const r=await fetch(API+'/auth/sms/confirm',{method:'POST',headers:authHeaders(),credentials:'include',body:JSON.stringify({phone:ph,code})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'인증 실패');
-    phoneOK=true;phoneVerifyToken=d.verifyToken;clearInterval(smsTimer);document.getElementById('code-area').style.display='none';document.getElementById('phone-ok').style.display='block';toast('✅ 인증 완료')
+    const sendBtn=document.getElementById('send-btn');
+    phoneOK=true;phoneVerifyToken=d.verifyToken;clearInterval(smsTimer);document.getElementById('code-area').style.display='none';document.getElementById('phone-ok').style.display='block';sendBtn.disabled=true;sendBtn.textContent='인증완료';toast('✅ 인증 완료')
   }catch(e){toast('❌ '+e.message)}
 }
 function toggleNote(sel){document.getElementById('note-custom').style.display=sel.value==='직접 입력'?'block':'none'}
