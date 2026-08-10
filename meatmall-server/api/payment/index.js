@@ -339,12 +339,11 @@ router.post('/vbank-confirm', requireAdmin, async (req, res) => {
         deliveryDate: '3~5 영업일 이내',
       }).catch(e => console.error('[입금확인 알림 오류]', e));
     }
-    notifyAdminNewOrder({
-      orderId,
+    notifyAdmins({
+      orderNo:       orderId,
+      customerName:  order.recipient || '고객',
       amount:        order.final_amount,
-      recipient:     order.recipient || '-',
-      items:         '주문 상품',
-      paymentMethod: '무통장입금',
+      address:       '',
     }).catch(e => console.error('[관리자 알림 오류]', e));
 
     res.json({ ok:true, message:'입금 확인 완료. 준비중으로 변경됐습니다.', orderId, pointEarned:pt });
