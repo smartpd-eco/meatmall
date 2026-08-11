@@ -4,6 +4,73 @@ const supabase = require('../../lib/supabase');
 const { requireAdmin } = require('../../middleware/auth');
 const { notifyShippingStart } = require('../notify/index');
 
+const DEFAULT_CARRIER = '로젠택배';
+
+function getLogenTrackingUrl(trackingNumber) {
+  const clean = String(trackingNumber || '').replace(/\s/g, '');
+  return clean ? `https://www.ilogen.com/web/personal/trace/${encodeURIComponent(clean)}` : '';
+}
+
+function buildLogenPayload(order) {
+  const items = order.order_items || [];
+  const firstItem = items[0] || {};
+  return {
+    orderNo: order.order_number,
+    receiverName: order.recipient || order.users?.name || '',
+    receiverPhone: order.phone || order.users?.phone || '',
+    receiverZipCode: order.zip_code || '',
+    receiverAddress1: order.address1 || '',
+    receiverAddress2: order.address2 || '',
+    deliveryMemo: order.delivery_note || order.delivery_memo || '',
+    goodsName: items.length > 1 ? `${firstItem.name || order.order_name || '정육본가 상품'} 외 ${items.length - 1}건` : (firstItem.name || order.order_name || '정육본가 상품'),
+    quantity: items.reduce((sum, item) => sum + Number(item.qty || 1), 0) || 1,
+    amount: order.final_amount || 0,
+  };
+}
+
+async function issueLogenWaybill(order) {
+  const endpoint = process.env.LOGEN_WAYBILL_ENDPOINT;
+  const apiKey = process.env.LOGEN_API_KEY;
+  const customerId = process.env.LOGEN_CUSTOMER_ID;
+
+  if (!endpoint || !apiKey || !customerId) {
+    return {
+      needsConfig: true,
+      error: '로젠 OPEN API 계약정보가 필요합니다. LOGEN_WAYBILL_ENDPOINT, LOGEN_API_KEY, LOGEN_CUSTOMER_ID를 Vercel 환경변수에 설정해주세요.',
+    };
+  }
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'X-Logen-Customer-Id': customerId,
+    },
+    body: JSON.stringify(buildLogenPayload(order)),
+  });
+
+  const raw = await response.text();
+  let data;
+  try { data = raw ? JSON.parse(raw) : {}; } catch { data = { raw }; }
+
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `로젠 송장 발급 실패 (${response.status})`);
+  }
+
+  const trackingNumber = data.trackingNumber || data.tracking_number || data.invoiceNo || data.invoice_no || data.waybillNo || data.waybill_no;
+  if (!trackingNumber) {
+    throw new Error('로젠 응답에서 운송장번호를 찾지 못했습니다.');
+  }
+
+  return {
+    trackingNumber: String(trackingNumber),
+    carrier: DEFAULT_CARRIER,
+    printUrl: data.printUrl || data.print_url || process.env.LOGEN_PRINT_URL || null,
+    raw: data,
+  };
+}
+
 // 모든 관리자 라우터에 인증 적용
 router.use(requireAdmin);
 
@@ -123,6 +190,40 @@ router.get('/orders/:id', async (req, res) => {
   }
 });
 
+router.post('/orders/:id/logen-waybill', async (req, res) => {
+  try {
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('*, users(name, email, phone), order_items(*)')
+      .eq('id', req.params.id)
+      .single();
+    if (error || !order) return res.status(404).json({ error: '주문을 찾을 수 없습니다' });
+
+    const issued = await issueLogenWaybill(order);
+    if (issued.needsConfig) return res.status(428).json({ error: issued.error });
+
+    const { data: updated, error: updateError } = await supabase
+      .from('orders')
+      .update({ carrier: DEFAULT_CARRIER, tracking_number: issued.trackingNumber })
+      .eq('id', req.params.id)
+      .select('*, users(name, email, phone), order_items(*)')
+      .single();
+    if (updateError) throw updateError;
+
+    res.json({
+      ok: true,
+      order: updated,
+      carrier: DEFAULT_CARRIER,
+      tracking_number: issued.trackingNumber,
+      tracking_url: getLogenTrackingUrl(issued.trackingNumber),
+      print_url: issued.printUrl,
+    });
+  } catch (err) {
+    console.error('[admin/logen-waybill]', err);
+    res.status(500).json({ error: err.message || '로젠 송장 발급 오류' });
+  }
+});
+
 // ════════════════════════════════════════════════════
 // PATCH /api/admin/orders/:id — 주문 상태 변경
 // ════════════════════════════════════════════════════
@@ -155,7 +256,7 @@ router.patch('/orders/:id', async (req, res) => {
         phone:          notifyPhone,
         name:           order.users.name || order.recipient || '고객',
         orderId:        order.order_number,
-        carrier:        carrier || order.carrier || 'CJ대한통운',
+        carrier:        carrier || order.carrier || DEFAULT_CARRIER,
         trackingNumber: tracking_number || order.tracking_number || '-',
       }).catch(e => console.error('[배송시작 알림 오류]', e));
     }
