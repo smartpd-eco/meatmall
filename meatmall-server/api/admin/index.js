@@ -129,6 +129,10 @@ router.get('/orders/:id', async (req, res) => {
 router.patch('/orders/:id', async (req, res) => {
   try {
     const { status, tracking_number, carrier } = req.body;
+    if (!status) return res.status(400).json({ error: '상태값은 필수입니다' });
+    if (status === 'shipping' && (!tracking_number || !carrier)) {
+      return res.status(400).json({ error: '배송중 처리 시 택배사와 운송장번호를 입력해주세요' });
+    }
     const update = { status };
     if (tracking_number) update.tracking_number = tracking_number;
     if (carrier)         update.carrier = carrier;
@@ -145,9 +149,10 @@ router.patch('/orders/:id', async (req, res) => {
     if (error) throw error;
 
     // 배송 시작 시 소비자 알림톡 발송
-    if (status === 'shipping' && order.users?.phone) {
+    const notifyPhone = order.phone || order.users?.phone;
+    if (status === 'shipping' && notifyPhone) {
       notifyShippingStart({
-        phone:          order.users.phone,
+        phone:          notifyPhone,
         name:           order.users.name || order.recipient || '고객',
         orderId:        order.order_number,
         carrier:        carrier || order.carrier || 'CJ대한통운',

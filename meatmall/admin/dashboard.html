@@ -656,6 +656,34 @@ function orderItemsText(o){
   return (o.order_items||[]).map(i=>i.name).join(', ') || o.order_name || '-';
 }
 
+const CARRIERS = [
+  ['CJ대한통운','CJ대한통운'],
+  ['롯데택배','롯데택배'],
+  ['한진택배','한진택배'],
+  ['우체국택배','우체국택배'],
+  ['로젠택배','로젠택배'],
+  ['직접배송','직접배송'],
+  ['퀵서비스','퀵서비스']
+];
+
+function escHtml(v){
+  return String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+function orderAddressText(o){
+  return `[${o.zip_code||'-'}] ${o.address1||''} ${o.address2||''}`.trim();
+}
+
+function trackingUrl(carrier, no){
+  const n = encodeURIComponent((no||'').replace(/\s/g,''));
+  if (!n) return '';
+  if ((carrier||'').includes('CJ')) return 'https://www.cjlogistics.com/ko/tool/parcel/tracking.html';
+  if ((carrier||'').includes('우체국')) return 'https://service.epost.go.kr/iservice/usr/trace/usrtrc001k01.jsp';
+  if ((carrier||'').includes('롯데')) return 'https://www.lotteglogis.com/home/reservation/tracking/index';
+  if ((carrier||'').includes('한진')) return 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillSch.do';
+  return 'https://www.cjlogistics.com/ko/tool/parcel/tracking.html';
+}
+
 function orderCards(list){
   if (!list.length) return '<div class="empty">주문 없음</div>';
   return list.map(o => `
@@ -740,6 +768,63 @@ function openOrderEdit(id){
    TAB 2 — 매출통계
    GET /api/admin/revenue
 ══════════════════════════════════════════════ */
+function openOrderEdit(id){
+  const o = _orders.find(x => x.id === id);
+  if (!o) return;
+  const opts = Object.entries(S_LABEL).map(([v,l]) => `<option value="${v}"${o.status===v?' selected':''}>${l}</option>`).join('');
+  const carrierOpts = CARRIERS.map(([v,l]) => `<option value="${v}"${(o.carrier||'CJ대한통운')===v?' selected':''}>${l}</option>`).join('');
+  const items = (o.order_items||[]).map(i => `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #F3F4F6"><span>${escHtml(i.name)} x ${i.qty||1}</span><b>${fmt(i.subtotal||((i.price||0)*(i.qty||1)))}원</b></div>`).join('') || '<div style="color:#6B7280">상품 정보 없음</div>';
+  const currentTrack = trackingUrl(o.carrier, o.tracking_number);
+  openModal('배송 처리', `
+  <div style="display:grid;gap:12px">
+    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:12px">
+      <div style="font-size:.78rem;color:#6B7280;margin-bottom:4px">주문번호</div>
+      <div style="font-family:monospace;color:#2563EB;font-weight:800">${escHtml(o.order_number)}</div>
+    </div>
+    <div style="background:#FFF;border:1px solid #E5E7EB;border-radius:12px;padding:12px">
+      <div style="font-weight:800;margin-bottom:8px">수령인 / 배송지 확인</div>
+      <div style="line-height:1.8;font-size:.9rem">
+        <b>${escHtml(o.recipient||'-')}</b> · ${escHtml(o.phone || o.users?.phone || '-')}<br>
+        ${escHtml(orderAddressText(o))}<br>
+        <span style="color:#6B7280">배송메모: ${escHtml(o.delivery_note || o.delivery_memo || '없음')}</span>
+      </div>
+    </div>
+    <div style="background:#FFF;border:1px solid #E5E7EB;border-radius:12px;padding:12px">
+      <div style="font-weight:800;margin-bottom:8px">상품 확인</div>
+      ${items}
+    </div>
+    <div class="fgrp">
+      <label class="flbl">처리 상태</label>
+      <select class="fselect" id="mod-st">${opts}</select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fgrp">
+        <label class="flbl">택배사</label>
+        <select class="fselect" id="mod-carrier">${carrierOpts}</select>
+      </div>
+      <div class="fgrp">
+        <label class="flbl">운송장번호</label>
+        <input class="finput" id="mod-tk" value="${escHtml(o.tracking_number||'')}" placeholder="숫자만 입력">
+      </div>
+    </div>
+    ${currentTrack ? `<button type="button" class="btn btn-outline" onclick="window.open('${currentTrack}','_blank')">현재 운송장 조회</button>` : ''}
+    <div style="font-size:.76rem;color:#6B7280;line-height:1.6">출고 전 주소와 연락처를 확인하세요. 배송중 처리 시 택배사와 운송장번호가 필요하며 고객에게 배송 알림이 발송됩니다.</div>
+  </div>`, '저장', async () => {
+    const status = document.getElementById('mod-st').value;
+    const tracking = document.getElementById('mod-tk').value.trim();
+    const carrier = document.getElementById('mod-carrier').value;
+    if (status === 'shipping' && (!tracking || !carrier)) {
+      toast('배송중 처리 시 택배사와 운송장번호를 입력해주세요');
+      return;
+    }
+    try {
+      await api('/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status, carrier, ...(tracking && { tracking_number: tracking }) }) });
+      toast('주문 배송 정보가 저장되었습니다');
+      closeModal(); tabOrders();
+    } catch(e){ toast('❌ ' + e.message); }
+  });
+}
+
 async function tabRevenue(){
   let d = { totalRevenue: 0, orderCount: 0, avgOrder: 0, daily: {}, byMethod: {} };
   try { Object.assign(d, await api('/admin/revenue?period=30d')); } catch(e){}
