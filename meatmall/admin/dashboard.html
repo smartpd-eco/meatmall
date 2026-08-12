@@ -666,6 +666,14 @@ const CARRIERS = [
   ['퀵서비스','퀵서비스']
 ];
 const DEFAULT_CARRIER = '로젠택배';
+const LOGEN_CONTRACT_INFO = {
+  customerId: '38820755',
+  accountName: '좋은축산유통',
+  branchName: '서시흥',
+  branchPhone: '0505-278-8326',
+  freightLabel: '선불',
+  baseFare: 4500
+};
 
 function escHtml(v){
   return String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -795,6 +803,11 @@ function openOrderEdit(id){
       <div style="font-weight:800;margin-bottom:8px">상품 확인</div>
       ${items}
     </div>
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:12px;color:#1E3A8A;font-size:.86rem;line-height:1.7">
+      <div style="font-weight:900;margin-bottom:4px">로젠택배 계약정보</div>
+      <div>거래처코드 <b>${LOGEN_CONTRACT_INFO.customerId}</b> · 업체명 <b>${LOGEN_CONTRACT_INFO.accountName}</b></div>
+      <div>계약지점 <b>${LOGEN_CONTRACT_INFO.branchName}</b> (${LOGEN_CONTRACT_INFO.branchPhone}) · 운임 <b>${LOGEN_CONTRACT_INFO.freightLabel} ${fmt(LOGEN_CONTRACT_INFO.baseFare)}원</b></div>
+    </div>
     <div class="fgrp">
       <label class="flbl">처리 상태</label>
       <select class="fselect" id="mod-st">${opts}</select>
@@ -813,7 +826,7 @@ function openOrderEdit(id){
       <button type="button" class="btn btn-outline" id="logen-waybill-btn" onclick="issueLogenWaybill('${o.id}')">로젠 송장 자동발급</button>
       ${currentTrack ? `<button type="button" class="btn btn-outline" onclick="window.open('${currentTrack}','_blank')">현재 운송장 조회</button>` : ''}
     </div>
-    <div style="font-size:.76rem;color:#6B7280;line-height:1.6">출고 전 주소와 연락처를 확인하세요. 로젠 송장 자동발급은 로젠 OPEN API 계약정보가 설정된 뒤 동작하며, 출력은 로젠 전용 출력 프로그램 또는 설정된 출력 URL에서 진행합니다.</div>
+    <div style="font-size:.76rem;color:#6B7280;line-height:1.6">출고 전 주소와 연락처를 확인하세요. 로젠 송장 자동발급은 로젠 OPEN API Key/Endpoint 설정 후 동작합니다. 거래처코드 38820755, 선불 운임 4,500원 기준으로 요청하며 출력은 로젠 전용 출력 프로그램 또는 설정된 출력 URL에서 진행합니다.</div>
   </div>`, '저장', async () => {
     const status = document.getElementById('mod-st').value;
     const tracking = document.getElementById('mod-tk').value.trim();

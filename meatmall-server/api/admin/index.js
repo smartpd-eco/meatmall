@@ -5,6 +5,18 @@ const { requireAdmin } = require('../../middleware/auth');
 const { notifyShippingStart } = require('../notify/index');
 
 const DEFAULT_CARRIER = '로젠택배';
+const LOGEN_DEFAULTS = {
+  customerId: '38820755',
+  accountName: '좋은축산유통',
+  contractBranchName: '서시흥',
+  contractBranchPhone: '0505-278-8326',
+  salesOfficeName: '민병길',
+  salesOfficePhone: '011-9521-5055',
+  pickupAddress: '경기 시흥시 군자동 815',
+  freightType: 'PREPAID',
+  freightLabel: '선불',
+  baseFare: 4500,
+};
 
 function getLogenTrackingUrl(trackingNumber) {
   const clean = String(trackingNumber || '').replace(/\s/g, '');
@@ -14,7 +26,20 @@ function getLogenTrackingUrl(trackingNumber) {
 function buildLogenPayload(order) {
   const items = order.order_items || [];
   const firstItem = items[0] || {};
+  const customerId = process.env.LOGEN_CUSTOMER_ID || LOGEN_DEFAULTS.customerId;
   return {
+    carrier: DEFAULT_CARRIER,
+    customerId,
+    shipperCode: customerId,
+    shipperName: process.env.LOGEN_ACCOUNT_NAME || LOGEN_DEFAULTS.accountName,
+    contractBranchName: process.env.LOGEN_BRANCH_NAME || LOGEN_DEFAULTS.contractBranchName,
+    contractBranchPhone: process.env.LOGEN_BRANCH_PHONE || LOGEN_DEFAULTS.contractBranchPhone,
+    salesOfficeName: process.env.LOGEN_SALES_OFFICE_NAME || LOGEN_DEFAULTS.salesOfficeName,
+    salesOfficePhone: process.env.LOGEN_SALES_OFFICE_PHONE || LOGEN_DEFAULTS.salesOfficePhone,
+    pickupAddress: process.env.LOGEN_PICKUP_ADDRESS || LOGEN_DEFAULTS.pickupAddress,
+    freightType: process.env.LOGEN_FREIGHT_TYPE || LOGEN_DEFAULTS.freightType,
+    freightLabel: LOGEN_DEFAULTS.freightLabel,
+    baseFare: Number(process.env.LOGEN_BASE_FARE || LOGEN_DEFAULTS.baseFare),
     orderNo: order.order_number,
     receiverName: order.recipient || order.users?.name || '',
     receiverPhone: order.phone || order.users?.phone || '',
@@ -31,12 +56,12 @@ function buildLogenPayload(order) {
 async function issueLogenWaybill(order) {
   const endpoint = process.env.LOGEN_WAYBILL_ENDPOINT;
   const apiKey = process.env.LOGEN_API_KEY;
-  const customerId = process.env.LOGEN_CUSTOMER_ID;
+  const customerId = process.env.LOGEN_CUSTOMER_ID || LOGEN_DEFAULTS.customerId;
 
-  if (!endpoint || !apiKey || !customerId) {
+  if (!endpoint || !apiKey) {
     return {
       needsConfig: true,
-      error: '로젠 OPEN API 계약정보가 필요합니다. LOGEN_WAYBILL_ENDPOINT, LOGEN_API_KEY, LOGEN_CUSTOMER_ID를 Vercel 환경변수에 설정해주세요.',
+      error: '로젠 OPEN API Key/Endpoint가 필요합니다. LOGEN_WAYBILL_ENDPOINT, LOGEN_API_KEY를 Vercel 환경변수에 설정해주세요. 거래처코드 38820755는 기본값으로 반영되어 있습니다.',
     };
   }
 
@@ -217,6 +242,13 @@ router.post('/orders/:id/logen-waybill', async (req, res) => {
       tracking_number: issued.trackingNumber,
       tracking_url: getLogenTrackingUrl(issued.trackingNumber),
       print_url: issued.printUrl,
+      logen_contract: {
+        customer_id: process.env.LOGEN_CUSTOMER_ID || LOGEN_DEFAULTS.customerId,
+        account_name: process.env.LOGEN_ACCOUNT_NAME || LOGEN_DEFAULTS.accountName,
+        branch_name: process.env.LOGEN_BRANCH_NAME || LOGEN_DEFAULTS.contractBranchName,
+        freight_label: LOGEN_DEFAULTS.freightLabel,
+        base_fare: Number(process.env.LOGEN_BASE_FARE || LOGEN_DEFAULTS.baseFare),
+      },
     });
   } catch (err) {
     console.error('[admin/logen-waybill]', err);
