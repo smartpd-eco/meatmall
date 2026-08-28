@@ -19,6 +19,17 @@
   };
 })();
 
+// ── PWA 설치 UI 공통 로더 ────────────────────────────────
+// 모든 사용자 화면에서 플로팅 설치 아이콘과 하단 설치 탭을 동일하게 제공한다.
+(function loadPwaInstallUI(){
+  if (window.__mmPwaInstallLoaded || document.querySelector('script[data-mm-pwa-loader]')) return;
+  var script = document.createElement('script');
+  script.src = location.pathname.indexOf('/pages/') > -1 ? '../js/pwa-install.js?v=20260828-nav-install' : 'js/pwa-install.js?v=20260828-nav-install';
+  script.defer = true;
+  script.dataset.mmPwaLoader = '1';
+  document.head.appendChild(script);
+})();
+
 /* ═══════════════════════════════════════════════════════════
    정육본가 — 공통 JS 유틸리티
 ═══════════════════════════════════════════════════════════ */

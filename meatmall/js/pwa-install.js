@@ -10,6 +10,9 @@
 (function () {
   'use strict';
 
+  if (window.__mmPwaInstallLoaded) return;
+  window.__mmPwaInstallLoaded = true;
+
   /* PWA API는 git 연동 Vercel 프로젝트(meatmall) 사용 — push 시 자동 배포됨
      (meatmall-server 프로젝트는 CLI 배포 전용이라 /api/pwa 미반영) */
   var PWA_API = 'https://api.meatbonga.com/api/pwa';
@@ -32,7 +35,8 @@
       (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   }
   if (isStandalone()) { try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {} }
-  var IS_INSTALLED = isStandalone();   /* 앱 삭제 후 localStorage가 남아도 설치 버튼이 숨지 않게 실제 앱 실행 상태만 기준 */
+  var IS_INSTALLED = isStandalone();
+  try { IS_INSTALLED = IS_INSTALLED || localStorage.getItem(LS_INSTALLED) === '1'; } catch (e) {}
 
   /* ── 환경 감지 ── */
   var ua = navigator.userAgent;
@@ -89,8 +93,10 @@
 
   window.addEventListener('appinstalled', function () {
     try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {}
+    IS_INSTALLED = true;
     track('install_success');
     hideButton();
+    syncInstallNav();
     showMiniToast('🎉 설치가 완료되었습니다');
   });
 
@@ -162,6 +168,30 @@
 
   /* ── 플로팅 스택 생성: [공유하기] 위 + [앱 설치] 아래 ── */
   var fab = null, stack = null, shareBtn = null;
+
+  /* ── 하단 장바구니 탭을 앱 설치 탭으로 전환 ── */
+  function syncInstallNav() {
+    document.querySelectorAll('.nav-i,.dnav-item').forEach(function (item) {
+      var label = item.querySelector('.nav-lbl,.dnav-lbl');
+      var icon = item.querySelector('.nav-ico,.dnav-ico');
+      var isCart = label && label.textContent.trim() === '장바구니';
+      var isInstall = item.classList.contains('mm-pwa-nav-install');
+      if (!isCart && !isInstall) return;
+
+      if (IS_INSTALLED) {
+        item.remove();
+        return;
+      }
+
+      item.classList.remove('on');
+      item.classList.add('mm-pwa-nav-install');
+      item.setAttribute('role', 'button');
+      item.setAttribute('aria-label', '정육본가 앱 설치');
+      item.onclick = function () { onInstallClick(); };
+      if (icon) icon.textContent = '📲';
+      if (label) label.textContent = '설치';
+    });
+  }
   function createButton(settings) {
     stack = document.createElement('div');
     stack.id = 'mm-pwa-stack';
@@ -224,8 +254,8 @@
 
   /* ── 클릭 → 즉시 설치 (이벤트 지연 시 최대 3초 대기 후 안내로 폴백) ── */
   function onInstallClick() {
-    if (!fab) return;
-    fab.classList.add('mm-bounce');
+    if (IS_INSTALLED) return;
+    if (fab) fab.classList.add('mm-bounce');
     setTimeout(function () { fab && fab.classList.remove('mm-bounce'); }, 200);
     track('install_click');
 
@@ -331,6 +361,7 @@
     loadSettings(function (settings) {
       if (settings.enabled === false) return;   /* 관리자 OFF */
       injectCSS(typeof settings.opacity === 'number' ? settings.opacity : 0.6);
+      syncInstallNav();
       createButton(settings);
 
       /* 이미 이 기기에 설치되어 있으면 버튼 숨김 (지원 브라우저 한정) */
@@ -338,7 +369,9 @@
         navigator.getInstalledRelatedApps().then(function (apps) {
           if (apps && apps.length) {
             try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {}
+            IS_INSTALLED = true;
             hideButton();
+            syncInstallNav();
           }
         }).catch(function () {});
       }
@@ -353,6 +386,11 @@
       }
     });
   }
+
+  window.MeatmallPWA = {
+    install: onInstallClick,
+    isInstalled: function () { return IS_INSTALLED; }
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
