@@ -169,7 +169,7 @@
   /* ── 플로팅 스택 생성: [공유하기] 위 + [앱 설치] 아래 ── */
   var fab = null, stack = null, shareBtn = null;
 
-  /* ── 하단 장바구니 탭을 앱 설치 탭으로 전환 ── */
+  /* ── 하단 장바구니 탭을 앱 설치 탭으로 전환하고 마이 오른쪽 끝에 배치 ── */
   function syncInstallNav() {
     document.querySelectorAll('.nav-i,.dnav-item').forEach(function (item) {
       var label = item.querySelector('.nav-lbl,.dnav-lbl');
@@ -190,6 +190,7 @@
       item.onclick = function () { onInstallClick(); };
       if (icon) icon.textContent = '📲';
       if (label) label.textContent = '설치';
+      if (item.parentNode) item.parentNode.appendChild(item);
     });
   }
   function createButton(settings) {
