@@ -89,6 +89,7 @@
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
+    updateInstallReady(true);
 
     /* 앱 삭제 후에도 localStorage 설치 기록이 남아 있는 경우 복구한다.
        브라우저가 설치 프롬프트를 다시 제공했다는 것은 현재 재설치 가능한 상태라는 뜻이다. */
@@ -140,6 +141,7 @@
       '.mm-pwa-btn:hover,.mm-pwa-btn:focus-visible{opacity:1;transform:scale(1.05);outline:none}',
       '.mm-pwa-btn:hover .mm-lbl,.mm-pwa-btn:focus-visible .mm-lbl{opacity:1}',
       '.mm-pwa-btn:active{opacity:1}',
+      '.mm-pwa-btn.mm-not-ready{opacity:.35;filter:grayscale(.35)}',
       '.mm-pwa-btn.mm-bounce{animation:mmPwaBounce .15s ease}',
       '@keyframes mmPwaBounce{0%{transform:scale(1)}50%{transform:scale(.92)}100%{transform:scale(1.05)}}',
       '@media(max-width:640px){.mm-pwa-btn img{width:48px;height:48px}.mm-pwa-btn{border-radius:14px}}',
@@ -178,6 +180,21 @@
 
   /* ── 플로팅 스택 생성: [공유하기] 위 + [앱 설치] 아래 ── */
   var fab = null, stack = null, shareBtn = null;
+
+  /* ── Android Chrome 설치 이벤트 준비 상태 표시 ── */
+  function updateInstallReady(ready) {
+    document.querySelectorAll('.mm-pwa-nav-install').forEach(function (item) {
+      var label = item.querySelector('.nav-lbl,.dnav-lbl');
+      if (label) label.textContent = ready || !isAndroid ? '설치' : '준비중';
+      item.setAttribute('aria-disabled', ready || !isAndroid ? 'false' : 'true');
+    });
+    if (fab) {
+      fab.classList.toggle('mm-not-ready', !ready && isAndroid);
+      fab.setAttribute('aria-disabled', ready || !isAndroid ? 'false' : 'true');
+      var fabLabel = fab.querySelector('.mm-lbl');
+      if (fabLabel) fabLabel.textContent = ready || !isAndroid ? '설치하기' : '준비중';
+    }
+  }
 
   /* ── 하단 장바구니 탭을 앱 설치 탭으로 전환하고 마이 오른쪽 끝에 배치 ── */
   function syncInstallNav() {
@@ -256,10 +273,11 @@
       if (choice.outcome !== 'accepted') track('install_cancel');
       /* accepted 성공 카운트는 appinstalled 이벤트에서 기록 */
       deferredPrompt = null;
+      updateInstallReady(false);
     });
   }
 
-  /* ── 클릭 → 즉시 설치 (이벤트 지연 시 최대 3초 대기 후 안내로 폴백) ── */
+  /* ── 클릭 → 준비된 네이티브 설치 확인창 즉시 호출 ── */
   function onInstallClick() {
     if (IS_INSTALLED) return;
     if (fab) fab.classList.add('mm-bounce');
@@ -268,13 +286,12 @@
 
     if (deferredPrompt) { promptInstall(); return; }
 
-    /* beforeinstallprompt가 아직 안 온 경우(접속 직후 클릭) 잠시 대기 */
-    var waited = 0;
-    var iv = setInterval(function () {
-      waited += 250;
-      if (deferredPrompt) { clearInterval(iv); promptInstall(); }
-      else if (waited >= 3000) { clearInterval(iv); showGuide(); }
-    }, 250);
+    /* iOS와 인앱 브라우저는 네이티브 prompt API가 없어 안내가 필요하다. */
+    if (isIOS || isInApp()) { showGuide(); return; }
+
+    /* Chromium이 아직 설치 가능 판정을 끝내지 않았거나 이미 설치된 상태 */
+    updateInstallReady(false);
+    showMiniToast('📲 설치 준비 중입니다. 잠시 후 다시 눌러주세요');
   }
 
   function openExternalBrowser() {
@@ -370,6 +387,7 @@
       injectCSS(typeof settings.opacity === 'number' ? settings.opacity : 0.6);
       syncInstallNav();
       createButton(settings);
+      updateInstallReady(!!deferredPrompt);
 
       /* 이미 이 기기에 설치되어 있으면 버튼 숨김 (지원 브라우저 한정) */
       if (navigator.getInstalledRelatedApps) {
