@@ -24,7 +24,7 @@
 (function loadPwaInstallUI(){
   if (window.__mmPwaInstallLoaded || document.querySelector('script[data-mm-pwa-loader]')) return;
   var script = document.createElement('script');
-  script.src = location.pathname.indexOf('/pages/') > -1 ? '../js/pwa-install.js?v=20260830-install-end' : 'js/pwa-install.js?v=20260830-install-end';
+  script.src = location.pathname.indexOf('/pages/') > -1 ? '../js/pwa-install.js?v=20260830-reinstall-fix' : 'js/pwa-install.js?v=20260830-reinstall-fix';
   script.defer = true;
   script.dataset.mmPwaLoader = '1';
   document.head.appendChild(script);

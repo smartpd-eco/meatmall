@@ -89,6 +89,16 @@
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
+
+    /* 앱 삭제 후에도 localStorage 설치 기록이 남아 있는 경우 복구한다.
+       브라우저가 설치 프롬프트를 다시 제공했다는 것은 현재 재설치 가능한 상태라는 뜻이다. */
+    if (IS_INSTALLED && !isStandalone()) {
+      try { localStorage.removeItem(LS_INSTALLED); } catch (err) {}
+      IS_INSTALLED = false;
+      if (document.readyState !== 'loading') {
+        location.reload();
+      }
+    }
   });
 
   window.addEventListener('appinstalled', function () {
@@ -159,7 +169,7 @@
 
   /* ── 위치 계산 (모바일은 하단 네비 위로) ── */
   function applyPosition(btn, pos) {
-    var hasNav = !!document.querySelector('.nav');
+    var hasNav = !!document.querySelector('.nav,.nav-lt,.dark-nav');
     var bottomMobile = hasNav ? '78px' : '16px';
     var side = (pos === 'bottom-left') ? 'left' : 'right';
     btn.style[side] = isMobile ? '16px' : '24px';
@@ -178,11 +188,6 @@
       var isInstall = item.classList.contains('mm-pwa-nav-install');
       if (!isCart && !isInstall) return;
 
-      if (IS_INSTALLED) {
-        item.remove();
-        return;
-      }
-
       item.classList.remove('on');
       item.classList.add('mm-pwa-nav-install');
       item.setAttribute('role', 'button');
@@ -191,6 +196,7 @@
       if (icon) icon.textContent = '📲';
       if (label) label.textContent = '설치';
       if (item.parentNode) item.parentNode.appendChild(item);
+      item.style.display = IS_INSTALLED ? 'none' : '';
     });
   }
   function createButton(settings) {
