@@ -19,12 +19,24 @@
   };
 })();
 
+// ── PWA 설치 이벤트 조기 캡처 ─────────────────────────────
+// 동적 설치 UI 스크립트가 로드되기 전에 Chrome이 이벤트를 보내도 놓치지 않는다.
+(function capturePwaInstallPrompt(){
+  if (window.__mmPwaPromptCaptureReady) return;
+  window.__mmPwaPromptCaptureReady = true;
+  window.addEventListener('beforeinstallprompt', function(event){
+    event.preventDefault();
+    window.__mmDeferredInstallPrompt = event;
+    window.dispatchEvent(new CustomEvent('mm-pwa-prompt-ready'));
+  });
+})();
+
 // ── PWA 설치 UI 공통 로더 ────────────────────────────────
 // 모든 사용자 화면에서 플로팅 설치 아이콘과 하단 설치 탭을 동일하게 제공한다.
 (function loadPwaInstallUI(){
   if (window.__mmPwaInstallLoaded || document.querySelector('script[data-mm-pwa-loader]')) return;
   var script = document.createElement('script');
-  script.src = location.pathname.indexOf('/pages/') > -1 ? '../js/pwa-install.js?v=20260830-direct-install' : 'js/pwa-install.js?v=20260830-direct-install';
+  script.src = location.pathname.indexOf('/pages/') > -1 ? '../js/pwa-install.js?v=20260830-prompt-capture' : 'js/pwa-install.js?v=20260830-prompt-capture';
   script.defer = true;
   script.dataset.mmPwaLoader = '1';
   document.head.appendChild(script);

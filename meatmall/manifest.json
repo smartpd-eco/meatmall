@@ -1,6 +1,7 @@
 {
   "name": "정육본가",
   "short_name": "정육본가",
+  "id": "/",
   "version": "1.1",
   "description": "프리미엄 정육 전문 쇼핑몰 — 90분 배송",
   "start_url": "/",
@@ -26,7 +27,8 @@
   "related_applications": [
     {
       "platform": "webapp",
-      "url": "https://smartpd-eco.github.io/manifest.json"
+      "url": "/manifest.json",
+      "id": "https://meatbonga.com/"
     }
   ],
   "prefer_related_applications": false

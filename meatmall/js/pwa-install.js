@@ -85,10 +85,11 @@
   }
 
   /* ── beforeinstallprompt 캡처 (스크립트 로드 즉시 등록) ── */
-  var deferredPrompt = null;
+  var deferredPrompt = window.__mmDeferredInstallPrompt || null;
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
+    window.__mmDeferredInstallPrompt = e;
     updateInstallReady(true);
 
     /* 앱 삭제 후에도 localStorage 설치 기록이 남아 있는 경우 복구한다.
@@ -100,6 +101,11 @@
         location.reload();
       }
     }
+  });
+
+  window.addEventListener('mm-pwa-prompt-ready', function () {
+    deferredPrompt = window.__mmDeferredInstallPrompt || deferredPrompt;
+    updateInstallReady(!!deferredPrompt);
   });
 
   window.addEventListener('appinstalled', function () {
@@ -141,7 +147,6 @@
       '.mm-pwa-btn:hover,.mm-pwa-btn:focus-visible{opacity:1;transform:scale(1.05);outline:none}',
       '.mm-pwa-btn:hover .mm-lbl,.mm-pwa-btn:focus-visible .mm-lbl{opacity:1}',
       '.mm-pwa-btn:active{opacity:1}',
-      '.mm-pwa-btn.mm-not-ready{opacity:.35;filter:grayscale(.35)}',
       '.mm-pwa-btn.mm-bounce{animation:mmPwaBounce .15s ease}',
       '@keyframes mmPwaBounce{0%{transform:scale(1)}50%{transform:scale(.92)}100%{transform:scale(1.05)}}',
       '@media(max-width:640px){.mm-pwa-btn img{width:48px;height:48px}.mm-pwa-btn{border-radius:14px}}',
@@ -181,18 +186,20 @@
   /* ── 플로팅 스택 생성: [공유하기] 위 + [앱 설치] 아래 ── */
   var fab = null, stack = null, shareBtn = null;
 
-  /* ── Android Chrome 설치 이벤트 준비 상태 표시 ── */
+  /* ── 설치 UI는 항상 '설치'로 표시하고 내부 이벤트 준비 상태만 갱신 ── */
   function updateInstallReady(ready) {
     document.querySelectorAll('.mm-pwa-nav-install').forEach(function (item) {
       var label = item.querySelector('.nav-lbl,.dnav-lbl');
-      if (label) label.textContent = ready || !isAndroid ? '설치' : '준비중';
-      item.setAttribute('aria-disabled', ready || !isAndroid ? 'false' : 'true');
+      if (label) label.textContent = '설치';
+      item.setAttribute('aria-disabled', 'false');
+      item.dataset.installReady = ready ? 'true' : 'false';
     });
     if (fab) {
-      fab.classList.toggle('mm-not-ready', !ready && isAndroid);
-      fab.setAttribute('aria-disabled', ready || !isAndroid ? 'false' : 'true');
+      fab.classList.remove('mm-not-ready');
+      fab.setAttribute('aria-disabled', 'false');
+      fab.dataset.installReady = ready ? 'true' : 'false';
       var fabLabel = fab.querySelector('.mm-lbl');
-      if (fabLabel) fabLabel.textContent = ready || !isAndroid ? '설치하기' : '준비중';
+      if (fabLabel) fabLabel.textContent = '설치하기';
     }
   }
 
@@ -273,6 +280,7 @@
       if (choice.outcome !== 'accepted') track('install_cancel');
       /* accepted 성공 카운트는 appinstalled 이벤트에서 기록 */
       deferredPrompt = null;
+      window.__mmDeferredInstallPrompt = null;
       updateInstallReady(false);
     });
   }
@@ -289,9 +297,24 @@
     /* iOS와 인앱 브라우저는 네이티브 prompt API가 없어 안내가 필요하다. */
     if (isIOS || isInApp()) { showGuide(); return; }
 
-    /* Chromium이 아직 설치 가능 판정을 끝내지 않았거나 이미 설치된 상태 */
-    updateInstallReady(false);
-    showMiniToast('📲 설치 준비 중입니다. 잠시 후 다시 눌러주세요');
+    /* 이벤트가 없다면 이미 설치됐거나 Chrome이 설치 가능 상태를 주지 않은 경우다. */
+    if (navigator.getInstalledRelatedApps) {
+      navigator.getInstalledRelatedApps().then(function (apps) {
+        if (apps && apps.length) {
+          IS_INSTALLED = true;
+          try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) {}
+          hideButton();
+          syncInstallNav();
+          showMiniToast('이미 설치된 앱입니다');
+          return;
+        }
+        showMiniToast('Chrome에서 설치 가능 상태를 확인하지 못했습니다');
+      }).catch(function () {
+        showMiniToast('Chrome에서 설치 가능 상태를 확인하지 못했습니다');
+      });
+      return;
+    }
+    showMiniToast('이 브라우저에서는 바로 설치할 수 없습니다');
   }
 
   function openExternalBrowser() {
