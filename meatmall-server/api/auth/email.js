@@ -22,7 +22,7 @@ function setRefreshCookie(res, token, expiresAt) {
 // ════════════════════════════════════════════
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, phone, marketing_agree, push_agree } = req.body;
+    const { name, email, password, phone, zip_code, address1, address2, marketing_agree, push_agree } = req.body;
 
     // 입력 검증
     if (!name || !email || !password)
@@ -31,6 +31,9 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: '올바른 이메일 형식이 아닙니다' });
     if (password.length < 8)
       return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다' });
+    const hasAddress = !!(zip_code || address1 || address2);
+    if (hasAddress && (!phone || !zip_code || !address1))
+      return res.status(400).json({ error: '휴대폰, 우편번호, 기본 주소를 모두 입력해주세요' });
 
     // 중복 이메일 확인
     const { data: existing } = await supabase
@@ -49,6 +52,25 @@ router.post('/signup', async (req, res) => {
       .single();
 
     if (error) throw error;
+
+    // 신규 가입 화면에서 입력한 주소는 회원의 기본 배송지로 즉시 연결한다.
+    // 주소 입력이 없는 구버전/캐시된 가입 화면 요청도 기존처럼 허용한다.
+    if (hasAddress) {
+      const { error: addressError } = await supabase.from('addresses').insert({
+        user_id: user.id,
+        label: '집',
+        recipient: name,
+        phone,
+        zip_code,
+        address1,
+        address2: address2 || '',
+        is_default: true,
+      });
+      if (addressError) {
+        await supabase.from('users').delete().eq('id', user.id);
+        throw addressError;
+      }
+    }
 
     // 가입 축하 포인트 1,000P
     await supabase.from('point_logs').insert({

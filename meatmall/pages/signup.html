@@ -6,6 +6,7 @@
 <title>회원가입 · 정육본가</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/main.css">
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <style>
 .app-wrap{background:var(--light-bg)}
 .step-bar{display:flex;padding:16px 20px;gap:6px;align-items:center}
@@ -78,6 +79,12 @@ function renderStep(){
     <div class="lf-group"><label class="lt-label">이메일</label><input class="lt-input" id="s-email" type="email" placeholder="이메일 입력"></div>
     <div class="lf-group"><label class="lt-label">비밀번호</label><input class="lt-input" id="s-pw" type="password" placeholder="8자 이상"></div>
     <div class="lf-group"><label class="lt-label">비밀번호 확인</label><input class="lt-input" id="s-pw2" type="password" placeholder="비밀번호 재입력"></div>
+    <div class="lf-group"><label class="lt-label">휴대폰</label><input class="lt-input" id="s-phone" type="tel" inputmode="numeric" placeholder="010-0000-0000" oninput="formatSignupPhone(this)"></div>
+    <div class="lf-group"><label class="lt-label">기본 배송지</label>
+      <div style="display:flex;gap:7px"><input class="lt-input" id="s-zip" placeholder="우편번호" readonly style="flex:1"><button type="button" class="btn-gold" onclick="findSignupAddress()" style="width:auto;padding:0 14px;white-space:nowrap">주소 찾기</button></div>
+      <input class="lt-input" id="s-address1" placeholder="기본 주소" readonly style="margin-top:7px">
+      <input class="lt-input" id="s-address2" placeholder="상세 주소" style="margin-top:7px">
+    </div>
     <div id="s-err" style="color:#DC2626;font-size:.8rem;margin-top:-6px"></div>
     <button class="btn-gold" onclick="step2Next()">다음</button>
   </div></div>`;
@@ -91,14 +98,30 @@ function renderStep(){
 function stepBack(){if(step===1){go('../login.html');return}step--;renderStep()}
 function toggleAll(cb){['ag1','ag2','ag3'].forEach(id=>document.getElementById(id).checked=cb.checked)}
 function step1Next(){if(!document.getElementById('ag1').checked||!document.getElementById('ag2').checked){toast('필수 약관에 동의해주세요');return}step=2;renderStep()}
+function formatSignupPhone(input){
+  const n=input.value.replace(/\D/g,'').slice(0,11);
+  input.value=n.length>7?n.replace(/(\d{3})(\d{4})(\d+)/,'$1-$2-$3'):n.length>3?n.replace(/(\d{3})(\d+)/,'$1-$2'):n;
+}
+function findSignupAddress(){
+  if(!window.daum?.Postcode){toast('주소 검색을 불러오지 못했습니다');return}
+  new daum.Postcode({oncomplete:function(d){
+    document.getElementById('s-zip').value=d.zonecode||'';
+    document.getElementById('s-address1').value=d.roadAddress||d.jibunAddress||'';
+    document.getElementById('s-address2').focus();
+  }}).open();
+}
 function step2Next(){
   const name=document.getElementById('s-name').value.trim(),email=document.getElementById('s-email').value.trim();
   const pw=document.getElementById('s-pw').value,pw2=document.getElementById('s-pw2').value;
+  const phone=document.getElementById('s-phone').value.trim(),zip=document.getElementById('s-zip').value.trim();
+  const address1=document.getElementById('s-address1').value.trim(),address2=document.getElementById('s-address2').value.trim();
   const err=document.getElementById('s-err');
-  if(!name||!email||!pw){err.textContent='모든 항목을 입력해주세요';return}
+  if(!name||!email||!pw||!phone||!zip||!address1){err.textContent='기본 정보와 배송지를 모두 입력해주세요';return}
   if(pw.length<8){err.textContent='비밀번호는 8자 이상';return}
   if(pw!==pw2){err.textContent='비밀번호가 일치하지 않습니다';return}
-  DATA.name=name;DATA.email=email;DATA.password=pw;step=3;renderStep();
+  if(!/^010-\d{4}-\d{4}$/.test(phone)){err.textContent='휴대폰 번호를 확인해주세요';return}
+  DATA.name=name;DATA.email=email;DATA.password=pw;DATA.phone=phone;
+  DATA.zip_code=zip;DATA.address1=address1;DATA.address2=address2;step=3;renderStep();
 }
 async function doSignup(){
   const btn=document.getElementById('final-btn');btn.textContent='...';btn.disabled=true;
