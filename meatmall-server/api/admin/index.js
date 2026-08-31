@@ -520,10 +520,7 @@ router.get('/users', async (req, res) => {
 
     let query = supabase
       .from('users')
-      .select(`
-        id, name, email, phone, grade, point, is_active, is_admin, created_at,
-        addresses(id, label, recipient, phone, zip_code, address1, address2, delivery_note, is_default, created_at)
-      `, { count: 'exact' })
+      .select('id, name, email, phone, grade, point, is_active, is_admin, created_at', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + Number(limit) - 1);
 
@@ -532,8 +529,23 @@ router.get('/users', async (req, res) => {
     const { data: users, count, error } = await query;
     if (error) throw error;
 
+    const userIds = (users || []).map(user => user.id);
+    let addresses = [];
+    if (userIds.length) {
+      const { data, error: addressError } = await supabase
+        .from('addresses')
+        .select('id, user_id, label, recipient, phone, zip_code, address1, address2, is_default, created_at')
+        .in('user_id', userIds)
+        .order('created_at', { ascending: false });
+      if (addressError) {
+        console.error('[admin users addresses]', addressError);
+      } else {
+        addresses = data || [];
+      }
+    }
+
     for (const user of users || []) {
-      user.addresses = (user.addresses || []).sort((a, b) => {
+      user.addresses = addresses.filter(address => address.user_id === user.id).sort((a, b) => {
         if (a.is_default !== b.is_default) return a.is_default ? -1 : 1;
         return String(b.created_at || '').localeCompare(String(a.created_at || ''));
       });
