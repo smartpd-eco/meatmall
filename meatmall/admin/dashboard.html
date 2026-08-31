@@ -507,14 +507,14 @@ async function tabUsers(){
         </div>
       </div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>포인트</th><th>상태</th><th>가입일</th><th>관리</th></tr></thead>
+        <thead><tr><th>이름</th><th>이메일</th><th>연락처</th><th>배송지</th><th>등급</th><th>포인트</th><th>상태</th><th>가입일</th><th>관리</th></tr></thead>
         <tbody id="usr-tbody">${userRows(_users)}</tbody>
       </table></div>
     </div>`;
   }catch(e){ body.innerHTML='<div class="empty">❌ '+e.message+'</div>'; }
 }
 function userRows(list){
-  if(!list.length) return '<tr><td colspan="8" class="empty">회원이 없습니다</td></tr>';
+  if(!list.length) return '<tr><td colspan="9" class="empty">회원이 없습니다</td></tr>';
   return list.map(u=>{
     const badge=u.is_admin
       ? '<span class="bdg bdg-completed">관리자</span>'
@@ -523,6 +523,7 @@ function userRows(list){
       <td>${u.name||'-'}</td>
       <td style="font-size:.8rem">${u.email||'-'}</td>
       <td style="font-size:.8rem">${u.phone||'-'}</td>
+      <td><span class="bdg ${u.address_count?'bdg-active':'bdg-pending'}">${Number(u.address_count||0)}개</span></td>
       <td>${GRADE_LBL[u.grade]||u.grade||'일반'}</td>
       <td style="color:#C9A84C;font-weight:700">${Number(u.point||0).toLocaleString('ko-KR')}P</td>
       <td>${badge}</td>
@@ -540,10 +541,27 @@ function openUserManage(id){
   const u=_users.find(x=>x.id===id); if(!u) return;
   const gOpts=Object.entries(GRADE_LBL).map(([v,l])=>`<option value="${v}"${(u.grade||'normal')===v?' selected':''}>${l}</option>`).join('');
   const active=u.is_active!==false;
+  const addresses=(u.addresses||[]).map((a,idx)=>`
+    <div style="border:1px solid #E5E7EB;border-radius:10px;padding:11px 12px;margin-top:8px;background:${a.is_default?'#FFFBEB':'#F9FAFB'}">
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:5px">
+        <strong style="font-size:.82rem;color:#111827">${escHtml(a.label||('배송지 '+(idx+1)))}</strong>
+        ${a.is_default?'<span class="bdg bdg-active">기본 배송지</span>':''}
+      </div>
+      <div style="font-size:.8rem;color:#374151;line-height:1.55">
+        ${escHtml(a.recipient||'-')} · ${escHtml(a.phone||'-')}<br>
+        [${escHtml(a.zip_code||'-')}] ${escHtml(a.address1||'')} ${escHtml(a.address2||'')}
+        ${a.delivery_note?`<br><span style="color:#6B7280">배송 요청: ${escHtml(a.delivery_note)}</span>`:''}
+      </div>
+    </div>`).join('') || '<div style="padding:12px 0;color:#9CA3AF;font-size:.8rem">등록된 배송지가 없습니다.</div>';
   openModal('회원 관리', `
-    <div style="font-size:.86rem;font-weight:700;color:#111827">${u.name||''}</div>
-    <div style="font-size:.8rem;color:#9CA3AF;margin-bottom:2px">${u.email||''}</div>
-    <div style="font-size:.78rem;color:#6B7280;margin-bottom:16px">${u.phone||'연락처 없음'} · 가입 ${(u.created_at||'').slice(0,10)}</div>
+    <div style="font-size:.86rem;font-weight:700;color:#111827">${escHtml(u.name||'')}</div>
+    <div style="font-size:.8rem;color:#9CA3AF;margin-bottom:2px">${escHtml(u.email||'')}</div>
+    <div style="font-size:.78rem;color:#6B7280;margin-bottom:16px">${escHtml(u.phone||'연락처 없음')} · 가입 ${escHtml((u.created_at||'').slice(0,10))}</div>
+
+    <div class="fgrp" style="margin-bottom:14px">
+      <label class="flbl">📍 배송지 정보 (${Number(u.address_count||0)}개)</label>
+      ${addresses}
+    </div>
 
     <div class="fgrp" style="margin-bottom:14px">
       <label class="flbl">💎 보유 포인트: <strong style="color:#C9A84C">${Number(u.point||0).toLocaleString('ko-KR')}P</strong></label>

@@ -520,7 +520,10 @@ router.get('/users', async (req, res) => {
 
     let query = supabase
       .from('users')
-      .select('id, name, email, phone, grade, point, is_active, is_admin, created_at', { count: 'exact' })
+      .select(`
+        id, name, email, phone, grade, point, is_active, is_admin, created_at,
+        addresses(id, label, recipient, phone, zip_code, address1, address2, delivery_note, is_default, created_at)
+      `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + Number(limit) - 1);
 
@@ -529,8 +532,17 @@ router.get('/users', async (req, res) => {
     const { data: users, count, error } = await query;
     if (error) throw error;
 
+    for (const user of users || []) {
+      user.addresses = (user.addresses || []).sort((a, b) => {
+        if (a.is_default !== b.is_default) return a.is_default ? -1 : 1;
+        return String(b.created_at || '').localeCompare(String(a.created_at || ''));
+      });
+      user.address_count = user.addresses.length;
+    }
+
     res.json({ ok: true, users, total: count });
   } catch (err) {
+    console.error('[admin users GET]', err);
     res.status(500).json({ error: '회원 조회 오류' });
   }
 });
