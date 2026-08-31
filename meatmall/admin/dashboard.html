@@ -545,7 +545,7 @@ function openUserManage(id){
     <div style="border:1px solid #E5E7EB;border-radius:10px;padding:11px 12px;margin-top:8px;background:${a.is_default?'#FFFBEB':'#F9FAFB'}">
       <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:5px">
         <strong style="font-size:.82rem;color:#111827">${escHtml(a.label||('배송지 '+(idx+1)))}</strong>
-        ${a.is_default?'<span class="bdg bdg-active">기본 배송지</span>':''}
+        ${a.is_default?'<span class="bdg bdg-active">기본 배송지</span>':(a.source==='order'?'<span class="bdg bdg-pending">주문 배송지</span>':'')}
       </div>
       <div style="font-size:.8rem;color:#374151;line-height:1.55">
         ${escHtml(a.recipient||'-')} · ${escHtml(a.phone||'-')}<br>

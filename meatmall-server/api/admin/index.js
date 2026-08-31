@@ -531,6 +531,7 @@ router.get('/users', async (req, res) => {
 
     const userIds = (users || []).map(user => user.id);
     let addresses = [];
+    let orderAddresses = [];
     if (userIds.length) {
       const { data, error: addressError } = await supabase
         .from('addresses')
@@ -542,10 +543,41 @@ router.get('/users', async (req, res) => {
       } else {
         addresses = data || [];
       }
+
+      const { data: orderData, error: orderAddressError } = await supabase
+        .from('orders')
+        .select('id, user_id, order_number, recipient, phone, zip_code, address1, address2, delivery_note, created_at')
+        .in('user_id', userIds)
+        .order('created_at', { ascending: false });
+      if (orderAddressError) {
+        console.error('[admin users order addresses]', orderAddressError);
+      } else {
+        orderAddresses = (orderData || []).filter(order => order.address1);
+      }
     }
 
     for (const user of users || []) {
-      user.addresses = addresses.filter(address => address.user_id === user.id).sort((a, b) => {
+      const savedAddresses = addresses.filter(address => address.user_id === user.id).map(address => ({
+        ...address,
+        source: 'saved',
+      }));
+      const seen = new Set(savedAddresses.map(address => [
+        address.recipient, address.phone, address.zip_code, address.address1, address.address2,
+      ].map(value => String(value || '').trim().toLowerCase()).join('|')));
+      const recentOrderAddresses = [];
+      for (const order of orderAddresses.filter(address => address.user_id === user.id)) {
+        const key = [order.recipient, order.phone, order.zip_code, order.address1, order.address2]
+          .map(value => String(value || '').trim().toLowerCase()).join('|');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        recentOrderAddresses.push({
+          ...order,
+          label: `최근 주문 · ${order.order_number || '-'}`,
+          is_default: false,
+          source: 'order',
+        });
+      }
+      user.addresses = [...savedAddresses, ...recentOrderAddresses].sort((a, b) => {
         if (a.is_default !== b.is_default) return a.is_default ? -1 : 1;
         return String(b.created_at || '').localeCompare(String(a.created_at || ''));
       });
