@@ -19,6 +19,37 @@
   };
 })();
 
+// ── PWA/iOS 메타데이터 공통 적용 ─────────────────────────
+// 어느 사용자 페이지에서 홈 화면 추가를 시작해도 동일한 앱으로 설치되게 한다.
+(function ensurePwaMetadata(){
+  function addLink(rel, href, sizes){
+    if (document.querySelector('link[rel="' + rel + '"]')) return;
+    var link = document.createElement('link');
+    link.rel = rel;
+    link.href = href;
+    if (sizes) link.sizes = sizes;
+    document.head.appendChild(link);
+  }
+  function addMeta(name, content){
+    if (document.querySelector('meta[name="' + name + '"]')) return;
+    var meta = document.createElement('meta');
+    meta.name = name;
+    meta.content = content;
+    document.head.appendChild(meta);
+  }
+  addLink('manifest', '/manifest.json');
+  addLink('apple-touch-icon', '/images/icon-192.png', '192x192');
+  addMeta('theme-color', '#0F0F0F');
+  addMeta('mobile-web-app-capable', 'yes');
+  addMeta('apple-mobile-web-app-capable', 'yes');
+  addMeta('apple-mobile-web-app-title', '정육본가');
+  addMeta('apple-mobile-web-app-status-bar-style', 'black-translucent');
+
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('/service-worker.js').catch(function () {});
+  }
+})();
+
 // ── PWA 설치 이벤트 조기 캡처 ─────────────────────────────
 // 동적 설치 UI 스크립트가 로드되기 전에 Chrome이 이벤트를 보내도 놓치지 않는다.
 (function capturePwaInstallPrompt(){
@@ -36,7 +67,7 @@
 (function loadPwaInstallUI(){
   if (window.__mmPwaInstallLoaded || document.querySelector('script[data-mm-pwa-loader]')) return;
   var script = document.createElement('script');
-  script.src = location.pathname.indexOf('/pages/') > -1 ? '../js/pwa-install.js?v=20260830-prompt-capture' : 'js/pwa-install.js?v=20260830-prompt-capture';
+  script.src = location.pathname.indexOf('/pages/') > -1 ? '../js/pwa-install.js?v=20260831-ios-safari' : 'js/pwa-install.js?v=20260831-ios-safari';
   script.defer = true;
   script.dataset.mmPwaLoader = '1';
   document.head.appendChild(script);

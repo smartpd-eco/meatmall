@@ -328,20 +328,31 @@
 
   /* ── 설치 방법 안내 (beforeinstallprompt 미지원 환경) ── */
   function showGuide() {
-    var steps, primaryBtn = '', openChrome = false;
+    var steps, primaryBtn = '', openChrome = false, copyForSafari = false;
 
-    if (isInApp()) {
+    if (isIOS && isInApp()) {
+      /* iPhone 인앱 브라우저는 홈 화면 추가를 제공하지 않는 경우가 많음 */
+      steps = '<h3>📲 아이폰 앱 설치하기</h3>' +
+        '<ol><li>아래 <strong>주소 복사</strong>를 탭</li>' +
+        '<li><strong>Safari</strong>를 열어 주소 붙여넣기</li>' +
+        '<li>Safari의 <strong>공유 버튼</strong>(□↑) 탭</li>' +
+        '<li><strong>홈 화면에 추가</strong> → <strong>추가</strong> 탭</li></ol>';
+      primaryBtn = '<button class="mm-go" type="button">주소 복사</button>';
+      copyForSafari = true;
+    } else if (isIOS) {
+      /* iOS는 beforeinstallprompt 미지원 — Safari 공유 메뉴가 공식 설치 경로 */
+      steps = '<h3>📲 아이폰 앱 설치하기</h3><ol>' +
+        '<li>Safari의 <strong>공유 버튼</strong> <span style="font-size:1.15rem">□↑</span>을 탭</li>' +
+        '<li>메뉴에서 <strong>홈 화면에 추가</strong> 선택</li>' +
+        '<li><strong>웹 앱으로 열기</strong>가 보이면 켠 상태로 <strong>추가</strong> 탭</li></ol>' +
+        '<p style="margin:0 0 14px;color:#9CA3AF;font-size:.78rem">설치 후 홈 화면의 정육본가 아이콘으로 실행하세요.</p>';
+    } else if (isInApp()) {
       /* 카카오/네이버 등 인앱 브라우저 → 여기선 설치 불가. Chrome으로 열기 유도 */
       steps = '<h3>📲 앱 설치하기</h3>' +
         '<p style="margin:0 0 4px">지금은 <strong>다른 앱 안의 브라우저</strong>로 열려 있어요.<br>' +
         'Chrome 등 기본 브라우저로 열면 <strong>버튼 한 번</strong>으로 설치됩니다.</p>';
       primaryBtn = '<button class="mm-go" type="button">Chrome으로 열기</button>';
       openChrome = true;
-    } else if (isIOS) {
-      steps = '<h3>📲 아이폰 설치 방법</h3><ol>' +
-        '<li>Safari 하단의 <strong>공유 버튼</strong>(□↑)을 탭</li>' +
-        '<li><strong>홈 화면에 추가</strong> 선택</li>' +
-        '<li>우측 상단 <strong>추가</strong> 탭</li></ol>';
     } else if (isAndroid) {
       steps = '<h3>📲 안드로이드 설치 방법</h3><ol>' +
         '<li>Chrome 우측 상단 <strong>⋮ 메뉴</strong> 탭</li>' +
@@ -374,6 +385,17 @@
         clearInterval(poll);
         /* 안드로이드: Chrome 인텐트로 강제 오픈 (인앱 → Chrome 탈출) */
         openExternalBrowser();
+        return;
+      }
+      if (copyForSafari && cls === 'mm-go') {
+        var installUrl = location.origin + '/';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(installUrl).then(function () {
+            showMiniToast('Safari에서 붙여넣을 주소를 복사했습니다');
+          }).catch(function () { window.prompt('주소를 복사하세요', installUrl); });
+        } else {
+          window.prompt('주소를 복사하세요', installUrl);
+        }
         return;
       }
       if (e.target === wrap || cls === 'mm-close') {

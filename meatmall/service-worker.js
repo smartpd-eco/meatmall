@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jeongyuk-v20260830-prompt-capture';
+const CACHE_NAME = 'jeongyuk-v20260831-ios-safari';
 const CACHE_URLS = [
   '/',
   '/index.html',
