@@ -43,3 +43,71 @@ button[style*="#E8C97A"] {
 /* ── 링크/포인트 색 통일 ── */
 .step-txt a, .tab.on, .snav.on { color: #2563EB !important; }
 .tab.on { border-bottom-color: #3B82F6 !important; }
+
+/* ── 모바일 관리자 상세 화면: 작은 글자 + 최대 2행 중심의 압축 표 ── */
+@media (max-width: 768px) {
+  html { font-size: 14px !important; }
+  body { font-size: 12px !important; overflow-x: hidden !important; }
+
+  .adm-body, .page, .content, .main, main {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  .card { padding: 12px !important; border-radius: 12px !important; }
+  .card-head { gap: 8px !important; margin-bottom: 10px !important; }
+  .card-title { font-size: .88rem !important; }
+  .card-sub, .flbl, .key-lbl, .info, .step-txt { font-size: .72rem !important; }
+
+  .tbl-wrap {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+  }
+  .tbl-wrap table, table.order-desktop {
+    min-width: 620px !important;
+    table-layout: auto !important;
+  }
+  thead th {
+    padding: 7px 6px !important;
+    font-size: .66rem !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+  tbody td {
+    padding: 7px 6px !important;
+    max-width: 130px !important;
+    font-size: .7rem !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: anywhere !important;
+  }
+  tbody td br:nth-of-type(n+2) { display: none; }
+
+  .fbar { gap: 6px !important; }
+  .fin-sm, .fin, .finput, .fselect, .key-inp {
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 6px 8px !important;
+    font-size: .74rem !important;
+  }
+  textarea.finput { height: auto !important; min-height: 72px !important; }
+  .btn, .btn-gold, .btn-outline, .hdr-btn, .adm-logout, .adm-shop, .save, #save-btn {
+    padding: 5px 9px !important;
+    font-size: .68rem !important;
+    line-height: 1.25 !important;
+  }
+  .bdg { padding: 3px 6px !important; font-size: .62rem !important; }
+  .modal {
+    width: calc(100vw - 18px) !important;
+    max-height: 90vh !important;
+    padding: 14px 12px !important;
+    border-radius: 14px !important;
+  }
+  .modal-title { font-size: .88rem !important; margin-bottom: 12px !important; padding-bottom: 10px !important; }
+  .modal-footer { margin-top: 12px !important; padding-top: 10px !important; }
+}
