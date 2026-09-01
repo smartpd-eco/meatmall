@@ -13,37 +13,38 @@ body{min-height:100vh;background:var(--bg);color:var(--ink);font-family:'Noto Sa
 button,a{font:inherit}
 button{border:0;background:none;cursor:pointer}
 a{text-decoration:none;color:inherit}
-.app{min-height:100vh;padding:14px 18px calc(92px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto;background:linear-gradient(180deg,#fff 0%,#FAFAFB 48%,#F8F9FB 100%)}
-.topbar{height:62px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;border-bottom:1px solid var(--line);margin:0 -18px;padding:0 18px;background:rgba(255,255,255,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(14px)}
+.app{min-height:100vh;padding:0 16px calc(92px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;background:#F7F8FA}
+.topbar{height:62px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;border-bottom:1px solid var(--line);margin:0 -16px;padding:0 16px;background:rgba(255,255,255,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(14px)}
 .icon-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;color:#1F2937;transition:transform .15s,background .15s}
 .icon-btn:active{transform:scale(.96);background:#F3F4F6}
 .hamb{display:grid;gap:5px;width:22px}.hamb span{display:block;height:2px;background:#1F2937;border-radius:99px}
 .brand{display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;font-weight:800;letter-spacing:-.01em}
 .brand img{width:34px;height:34px;object-fit:contain}
 .bell{position:relative;font-size:1.45rem}.badge-dot{position:absolute;right:3px;top:4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:white;font-size:.68rem;font-weight:800;display:grid;place-items:center;border:2px solid #fff}
-.hero{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:28px 0 18px}
+.hero{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:24px 2px 18px}
 .hello h1{font-size:1.45rem;line-height:1.25;font-weight:800;letter-spacing:-.02em}
 .hello p{margin-top:8px;color:#4B5563;font-size:1rem;font-weight:500}
 .date-btn{display:inline-flex;align-items:center;gap:6px;padding:11px 14px;border:1px solid #E5E7EB;border-radius:11px;background:#fff;color:#374151;font-weight:700;box-shadow:0 5px 16px rgba(17,24,39,.04);white-space:nowrap}
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:28px}
-.kpi{min-height:118px;border-radius:12px;padding:16px 8px 13px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;box-shadow:0 10px 28px rgba(17,24,39,.05)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.kpi{min-height:104px;border-radius:16px;padding:15px;text-align:left;display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto;align-items:center;column-gap:10px;box-shadow:0 3px 14px rgba(17,24,39,.045);border:1px solid rgba(229,231,235,.7)}
 .kpi:nth-child(1){background:linear-gradient(135deg,#EEF6FF,#F8FBFF)}
 .kpi:nth-child(2){background:linear-gradient(135deg,#ECFFF6,#F7FFFB)}
 .kpi:nth-child(3){background:linear-gradient(135deg,#F6F0FF,#FCFAFF)}
 .kpi:nth-child(4){background:linear-gradient(135deg,#FFF6EA,#FFFDFC)}
-.kpi-ico{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:1.25rem;background:rgba(255,255,255,.66);box-shadow:inset 0 0 0 1px rgba(255,255,255,.65)}
-.kpi-lbl{font-size:.82rem;color:#4B5563;font-weight:600}
-.kpi-val{font-size:1.05rem;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
-.kpi-sub{font-size:.78rem;color:#6B7280;font-weight:700}.up{color:#10B981}.down{color:#EF4444}
-.section{background:var(--panel);border:1px solid #F0F1F4;border-radius:14px;box-shadow:0 10px 26px rgba(17,24,39,.045);padding:20px;margin-bottom:22px}
+.kpi-ico{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:1.2rem;background:rgba(255,255,255,.8);grid-row:1/3}
+.kpi-lbl{font-size:.78rem;color:#4B5563;font-weight:700;align-self:end}
+.kpi-val{font-size:1.16rem;font-weight:800;letter-spacing:-.02em;white-space:nowrap;align-self:start}
+.kpi-sub{display:none}
+.section{background:var(--panel);border:1px solid #E9ECF1;border-radius:16px;box-shadow:0 3px 14px rgba(17,24,39,.035);padding:17px;margin-bottom:14px}
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .section-title{font-size:1.08rem;font-weight:800;letter-spacing:-.01em}
 .pill{padding:7px 10px;border-radius:999px;background:#F8FAFC;color:#6B7280;font-size:.78rem;font-weight:700}
 .link-more{display:inline-flex;align-items:center;gap:4px;color:#6B7280;font-weight:600;font-size:.9rem}
-.quick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
-.quick{display:grid;justify-items:center;gap:9px;min-width:0}
-.quick-box{width:50px;height:50px;border:1px solid #E9EDF3;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:1.45rem;color:#374151;box-shadow:0 8px 18px rgba(17,24,39,.04)}
-.quick span{font-size:.82rem;font-weight:700;white-space:nowrap}
+.quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.quick{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;min-width:0;padding:11px;border:1px solid #ECEFF3;border-radius:13px;background:#fff}
+.quick:active{background:#F3F6FA;transform:scale(.99)}
+.quick-box{width:42px;height:42px;border:0;border-radius:12px;background:#F2F6FF;display:grid;place-items:center;font-size:1.2rem;color:#374151}
+.quick>span:not(.quick-box){font-size:.84rem;font-weight:750;white-space:nowrap}.quick::after{content:'›';color:#A3AAB5;font-size:1.1rem}
 .order-list,.notice-list{display:grid;gap:0}
 .order{display:grid;grid-template-columns:minmax(88px,1.05fr) minmax(0,1.7fr) auto auto 14px;gap:9px;align-items:center;padding:14px 0;border-bottom:1px solid #EEF0F4}
 .order:last-child{border-bottom:0}
@@ -65,11 +66,11 @@ a{text-decoration:none;color:inherit}
 .nav-item{display:grid;justify-items:center;gap:4px;color:#111827;font-size:.75rem;font-weight:700;padding:6px 0;border-radius:12px}
 .nav-item b{font-size:1.25rem;line-height:1}.nav-item.on{color:var(--blue)}
 .drawer{position:fixed;inset:0;z-index:50;display:none}.drawer.show{display:block}.shade{position:absolute;inset:0;background:rgba(17,24,39,.32)}.drawer-panel{position:absolute;left:0;top:0;bottom:0;width:min(82vw,320px);background:#fff;padding:22px 18px;box-shadow:18px 0 40px rgba(17,24,39,.16);transform:translateX(-100%);transition:transform .2s}.drawer.show .drawer-panel{transform:translateX(0)}
-.drawer-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.2rem;margin-bottom:22px}.drawer-brand img{width:32px;height:32px}.drawer a,.drawer button{width:100%;display:flex;align-items:center;gap:10px;padding:14px 10px;border-radius:12px;font-weight:700;color:#374151}.drawer a:active,.drawer button:active{background:#F3F4F6}
+.drawer-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.2rem;margin-bottom:18px}.drawer-brand img{width:32px;height:32px}.drawer-panel{overflow-y:auto}.drawer a,.drawer button{width:100%;display:flex;align-items:center;gap:10px;padding:13px 10px;border-radius:12px;font-weight:700;color:#374151}.drawer a:active,.drawer button:active{background:#F3F4F6}
 .empty{padding:18px 0;text-align:center;color:#9CA3AF;font-weight:600}
 .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(8px);background:#111827;color:#fff;border-radius:999px;padding:10px 16px;font-size:.84rem;font-weight:700;opacity:0;transition:.2s;z-index:60;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(min-width:769px){.app{border-left:1px solid #EEF0F4;border-right:1px solid #EEF0F4}.bottom-nav{display:none}}
-@media(max-width:390px){.app{padding-left:14px;padding-right:14px}.topbar{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}.kpis{gap:8px}.kpi{padding-left:5px;padding-right:5px}.kpi-val{font-size:.96rem}.quick-grid{gap:8px}.quick-box{width:46px;height:46px}.order{grid-template-columns:minmax(82px,1fr) minmax(0,1.35fr) auto}.amount{display:none}}
+@media(max-width:390px){.app{padding-left:12px;padding-right:12px}.topbar{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}.kpis,.quick-grid{gap:8px}.kpi{padding:12px}.kpi-val{font-size:1.05rem}.quick{padding:9px;grid-template-columns:38px minmax(0,1fr) auto}.quick-box{width:38px;height:38px}.order{grid-template-columns:minmax(82px,1fr) minmax(0,1.35fr) auto}.amount{display:none}}
 </style>
 </head>
 <body>
@@ -77,13 +78,13 @@ a{text-decoration:none;color:inherit}
   <header class="topbar">
     <button class="icon-btn" onclick="openDrawer()" aria-label="관리자 메뉴 열기"><i class="hamb"><span></span><span></span><span></span></i></button>
     <div class="brand"><img src="../images/logo.png" alt="">정육본가</div>
-    <button class="icon-btn bell" onclick="toast('새 알림을 확인했습니다')" aria-label="알림">🔔<span class="badge-dot" id="bell-count">3</span></button>
+    <button class="icon-btn bell" onclick="location.href='dashboard.html?tab=cs&desktop=1'" aria-label="고객 문의">💬</button>
   </header>
 
   <section class="hero">
     <div class="hello">
-      <h1>안녕하세요, 관리자님 👋</h1>
-      <p>오늘도 스마트한 운영을 시작해보세요.</p>
+      <h1>관리자 홈</h1>
+      <p>오늘 운영 현황을 확인하세요.</p>
     </div>
     <button class="date-btn" onclick="refreshMobile()">오늘⌄</button>
   </section>
@@ -99,10 +100,15 @@ a{text-decoration:none;color:inherit}
     <div class="section-head"><h2 class="section-title">빠른 메뉴</h2><span class="pill">관리자 전용</span></div>
     <div class="quick-grid">
       <a class="quick" href="dashboard.html?tab=orders&desktop=1"><span class="quick-box">📋</span><span>주문 관리</span></a>
+      <a class="quick" href="dashboard.html?tab=users&desktop=1"><span class="quick-box">👥</span><span>회원 관리</span></a>
       <a class="quick" href="products.html"><span class="quick-box">📦</span><span>상품 관리</span></a>
-      <a class="quick" href="dashboard.html?tab=vendors&desktop=1"><span class="quick-box">🏪</span><span>벤더 관리</span></a>
-      <a class="quick" href="shipping-settings.html"><span class="quick-box">🚚</span><span>배송 관리</span></a>
+      <a class="quick" href="dashboard.html?tab=cs&desktop=1"><span class="quick-box">💬</span><span>CS 관리</span></a>
+      <a class="quick" href="dashboard.html?tab=vendors&desktop=1"><span class="quick-box">🏪</span><span>거래처 관리</span></a>
+      <a class="quick" href="dashboard.html?tab=autoassign&desktop=1"><span class="quick-box">🚚</span><span>배송 배정</span></a>
+      <a class="quick" href="dashboard.html?tab=settlements&desktop=1"><span class="quick-box">💰</span><span>정산 관리</span></a>
       <a class="quick" href="dashboard.html?tab=revenue&desktop=1"><span class="quick-box">📊</span><span>매출 통계</span></a>
+      <a class="quick" href="payment-settings.html"><span class="quick-box">💳</span><span>결제 설정</span></a>
+      <a class="quick" href="shipping-settings.html"><span class="quick-box">⚙️</span><span>배송비 설정</span></a>
     </div>
   </section>
 
@@ -111,22 +117,15 @@ a{text-decoration:none;color:inherit}
     <div class="order-list" id="recent-orders"><div class="empty">주문을 불러오는 중입니다.</div></div>
   </section>
 
-  <section class="section">
-    <div class="section-head"><h2 class="section-title">공지사항</h2><a class="link-more" href="dashboard.html?tab=cs&desktop=1">전체 보기 ›</a></div>
-    <div class="notice-list">
-      <div class="notice"><span class="notice-tag">공지</span><div class="notice-title">7월 정기 점검 안내</div><time class="notice-date">2026-07-25</time></div>
-      <div class="notice"><span class="notice-tag gray">업데이트</span><div class="notice-title">관리자 모바일 UI 적용</div><time class="notice-date">2026-07-25</time></div>
-    </div>
-  </section>
 </div>
 
 <nav class="bottom-nav" aria-label="관리자 모바일 하단 메뉴">
   <div class="bottom-inner">
     <a class="nav-item on" href="mobile-dashboard.html"><b>🏠</b><span>대시보드</span></a>
     <a class="nav-item" href="dashboard.html?tab=orders&desktop=1"><b>📋</b><span>주문</span></a>
+    <a class="nav-item" href="dashboard.html?tab=users&desktop=1"><b>👥</b><span>회원</span></a>
     <a class="nav-item" href="products.html"><b>📦</b><span>상품</span></a>
-    <a class="nav-item" href="dashboard.html?tab=revenue&desktop=1"><b>📊</b><span>통계</span></a>
-    <a class="nav-item" href="pwa-settings.html"><b>⚙️</b><span>설정</span></a>
+    <button class="nav-item" onclick="openDrawer()"><b>☰</b><span>전체</span></button>
   </div>
 </nav>
 
@@ -135,6 +134,15 @@ a{text-decoration:none;color:inherit}
   <div class="drawer-panel">
     <div class="drawer-brand"><img src="../images/logo.png" alt="">정육본가 관리자</div>
     <a href="mobile-dashboard.html">🏠 모바일 대시보드</a>
+    <a href="dashboard.html?tab=orders&desktop=1">📋 주문 관리</a>
+    <a href="dashboard.html?tab=users&desktop=1">👥 회원 관리</a>
+    <a href="products.html">📦 상품 관리</a>
+    <a href="dashboard.html?tab=cs&desktop=1">💬 CS 관리</a>
+    <a href="dashboard.html?tab=revenue&desktop=1">📊 매출 통계</a>
+    <a href="dashboard.html?tab=vendors&desktop=1">🏪 거래처 관리</a>
+    <a href="dashboard.html?tab=settlements&desktop=1">💰 정산 관리</a>
+    <a href="payment-settings.html">💳 결제 설정</a>
+    <a href="shipping-settings.html">🚚 배송비 설정</a>
     <a href="dashboard.html?desktop=1">💻 PC 관리자 보기</a>
     <a href="../index.html">🛒 쇼핑몰 바로가기</a>
     <button onclick="logout()">🚪 로그아웃</button>
