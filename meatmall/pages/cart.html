@@ -295,14 +295,16 @@ let userPoint = 0;
 let selectedAddr = null;
 
 // 유저 포인트 로드
-(async function(){
+async function refreshUserPoint(){
   const token=localStorage.getItem('mm_access_token');
-  if(!token) return;
+  if(!token) return 0;
   try{
     const r=await fetch(API+'/auth/me',{headers:{Authorization:'Bearer '+token}});
-    if(r.ok){const d=await r.json();userPoint=d.user?.point||0;}
+    if(r.ok){const d=await r.json();userPoint=Number(d.user?.point||0);}
   }catch(e){}
-})();
+  return userPoint;
+}
+refreshUserPoint();
 
 let cartAddrs=[];
 let _addrLoadSeq=0; // async race 방지용 시퀀스 번호
@@ -437,11 +439,12 @@ function removeItem(pid){ Store.cart=Store.cart.filter(c=>c.productId!==pid);sel
 function deleteSel(){ Store.cart=Store.cart.filter(c=>!selected.has(c.productId));selected.clear();Store.save();renderCart();updateCartBadge(); }
 
 // 결제 시트 — 단일 진입점
-function openCheckout(){
+async function openCheckout(){
   // 이미 열려있으면 중복 실행 방지
   const paySheet=document.getElementById('pay-sheet');
   if(paySheet.classList.contains('open'))return;
   if(!localStorage.getItem('mm_access_token')){ toast('로그인이 필요합니다');go('../login.html');return; }
+  await refreshUserPoint();
   selectedAddr=null; cartAddrs=[];
   // checkout-bar 숨김 (pay-sheet와 시각적 중복 방지)
   document.getElementById('checkout-bar').style.display='none';
@@ -492,7 +495,10 @@ function calcFinal(){
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
   const selTotal=selItems.reduce((s,c)=>s+c.price*c.qty,0);
   const delivery=calcShip(selTotal);
-  const pt=Math.min(Number(document.getElementById('point-use').value)||0,userPoint,selTotal+delivery-100);
+  const input=document.getElementById('point-use');
+  const raw=Math.max(0,Math.floor(Number(input.value)||0));
+  const pt=Math.max(0,Math.min(raw,userPoint,selTotal+delivery-100));
+  if(raw!==pt) input.value=pt||'';
   const final=Math.max(0,selTotal+delivery-pt);
   document.getElementById('sh-point').textContent=`-${fmt(pt)}원`;
   document.getElementById('sh-final').textContent=fmt(final)+'원';
@@ -542,6 +548,13 @@ function sendOrderAlimtalk(orderId, amount, name, phone, productName){
     }).catch(function(){});
   }catch(e){}
 }
+async function abandonOrder(orderId){
+  if(!orderId)return;
+  try{
+    await fetch(API+'/payment/abandon',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('mm_access_token')||'')},body:JSON.stringify({orderId})});
+    await refreshUserPoint();
+  }catch(e){}
+}
 
 async function doPay(){
   if(!selectedAddr || cartAddrs.length === 0){
@@ -569,7 +582,8 @@ async function doPay(){
   const selItems=Store.cart.filter(c=>selected.has(c.productId));
   if(!selItems.length){ toast('상품을 선택해주세요'); return; }
 
-  const pt=Number(document.getElementById('point-use').value)||0;
+  calcFinal();
+  const pt=Math.max(0,Math.floor(Number(document.getElementById('point-use').value)||0));
   const token=localStorage.getItem('mm_access_token');
 
   const btn=document.getElementById('pay-btn');
@@ -625,6 +639,7 @@ async function doPay(){
       });
       // 성공 시 successUrl로 이동하므로 이후 코드는 실행되지 않음
     }catch(e){
+      await abandonOrder(order.orderId);
       btn.disabled=false; btn.innerHTML='<span id="pay-btn-text">결제하기</span>';
       if(e && (e.code==='USER_CANCEL'||e.code==='PAY_PROCESS_CANCELED')) return;
       toast('결제 요청 실패: '+((e&&e.message)||'알 수 없는 오류'));

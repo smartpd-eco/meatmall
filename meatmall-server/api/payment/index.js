@@ -51,6 +51,46 @@ function shipFee(s, productTotal) {
   return productTotal >= shipThreshold(s.mode) ? 0 : Number(s.base_fee || 0);
 }
 
+// 회원 포인트 잔액과 로그를 함께 반영한다. 동시 요청은 현재 잔액 조건으로 재시도한다.
+async function adjustUserPoints(userId, amount, reason, orderId, options = {}) {
+  const delta = Number(amount);
+  if (!Number.isInteger(delta) || delta === 0) return null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data: user, error: readError } = await supabase
+      .from('users').select('point').eq('id', userId).single();
+    if (readError || !user) throw readError || new Error('회원을 찾을 수 없습니다');
+    const current = Number(user.point || 0);
+    const next = current + delta;
+    if (next < 0 && !options.allowNegative) {
+      const err = new Error(`보유 포인트(${current.toLocaleString('ko-KR')}P)가 부족합니다`);
+      err.code = 'INSUFFICIENT_POINTS';
+      throw err;
+    }
+    const { data: updated, error: updateError } = await supabase
+      .from('users')
+      .update({ point: next, updated_at: new Date().toISOString() })
+      .eq('id', userId).eq('point', current)
+      .select('point').maybeSingle();
+    if (updateError) throw updateError;
+    if (!updated) continue;
+    const { error: logError } = await supabase.from('point_logs').insert({
+      user_id: userId, amount: delta, reason: String(reason).slice(0, 100), order_id: orderId || null,
+    });
+    if (logError) throw logError;
+    return Number(updated.point);
+  }
+  throw new Error('포인트 처리 요청이 겹쳤습니다. 다시 시도해주세요');
+}
+
+function pointEarnForOrder(order) {
+  const eligible = Math.max(0,
+    Number(order.product_total || 0) -
+    Number(order.discount_amount || 0) -
+    Number(order.point_used || 0)
+  );
+  return Math.floor(eligible * 0.01);
+}
+
 // ── 무통장 계좌 (vbank_settings 테이블, 60초 캐시, 미설정 시 VBANK 기본값)
 let _vbCache = null, _vbAt = 0;
 async function getVbank() {
@@ -102,16 +142,31 @@ router.post('/ready', requireAuth, async (req, res) => {
 
     const userId = req.user.sub;
 
+    // 결제 금액과 적립 기준은 클라이언트 값이 아닌 현재 상품 DB 가격으로 확정한다.
+    const productIds = [...new Set(items.map(i => i.productId).filter(Boolean))];
+    if (productIds.length !== new Set(items.map(i => String(i.productId || ''))).size)
+      return res.status(400).json({ error:'상품 정보가 올바르지 않습니다' });
+    const { data: checkoutProducts, error: checkoutProductError } = await supabase
+      .from('products').select('id,name,price,stock,vendor_id,is_same_day').in('id', productIds);
+    if (checkoutProductError) throw checkoutProductError;
+    const checkoutById = new Map((checkoutProducts || []).map(product => [String(product.id), product]));
+    const safeItems = [];
+    for (const item of items) {
+      const product = checkoutById.get(String(item.productId));
+      const qty = Number(item.qty);
+      if (!product || !Number.isInteger(qty) || qty < 1 || qty > 99)
+        return res.status(400).json({ error:'상품 또는 수량 정보가 올바르지 않습니다' });
+      if (Number(product.stock || 0) < qty)
+        return res.status(400).json({ error:`${product.name} 재고가 부족합니다` });
+      safeItems.push({
+        productId: product.id, name: product.name,
+        option: item.option || null, price: Number(product.price), qty,
+      });
+    }
+
     if (deliveryTypeV === 'same_day') {
-      const productIds = [...new Set(items.map(i => i.productId).filter(Boolean))];
-      const { data: products, error: prodErr } = await supabase
-        .from('products')
-        .select('id, vendor_id, is_same_day')
-        .in('id', productIds);
-      if (prodErr) throw prodErr;
-      const byId = new Map((products || []).map(p => [String(p.id), p]));
-      const allSameDay = productIds.length > 0 && items.every(i => {
-        const p = byId.get(String(i.productId));
+      const allSameDay = productIds.length > 0 && safeItems.every(i => {
+        const p = checkoutById.get(String(i.productId));
         return p && p.vendor_id != null && p.is_same_day === true;
       });
       if (!allSameDay) {
@@ -132,11 +187,21 @@ router.post('/ready', requireAuth, async (req, res) => {
       }
     } catch (e) { console.error('[ready 계정 전화번호 자동등록 오류]', e.message); }
 
-    const productTotal = items.reduce((s,i) => s + i.price * i.qty, 0);
+    const productTotal = safeItems.reduce((sum,item) => sum + item.price * item.qty, 0);
     const deliveryFee  = shipFee(await getShipping(), productTotal);
     const vb           = await getVbank();
     const couponDisc   = 0; // 쿠폰 추후 적용
-    const finalAmount  = Math.max(100, productTotal + deliveryFee - couponDisc - Number(pointUse));
+    const requestedPoint = Number(pointUse || 0);
+    if (!Number.isInteger(requestedPoint) || requestedPoint < 0)
+      return res.status(400).json({ error:'사용 포인트가 올바르지 않습니다' });
+    const { data: pointUser, error: pointUserError } = await supabase
+      .from('users').select('point').eq('id', userId).single();
+    if (pointUserError || !pointUser) throw pointUserError || new Error('회원 포인트 조회 실패');
+    const availablePoint = Number(pointUser.point || 0);
+    const maxPointUse = Math.max(0, Math.min(availablePoint, productTotal + deliveryFee - couponDisc - 100));
+    if (requestedPoint > maxPointUse)
+      return res.status(400).json({ error:`사용 가능한 포인트는 최대 ${maxPointUse.toLocaleString('ko-KR')}P입니다` });
+    const finalAmount  = productTotal + deliveryFee - couponDisc - requestedPoint;
     const isVbank      = paymentMethod === 'VBANK';
     const orderNumber  = makeOrderNo();
 
@@ -151,7 +216,7 @@ router.post('/ready', requireAuth, async (req, res) => {
       product_total:   productTotal,
       delivery_fee:    deliveryFee,
       discount_amount: couponDisc,
-      point_used:      Number(pointUse),
+      point_used:      requestedPoint,
       final_amount:    finalAmount,
       payment_method:  paymentMethod,
       payment_status:  isVbank ? 'awaiting_deposit' : 'unpaid',
@@ -173,13 +238,17 @@ router.post('/ready', requireAuth, async (req, res) => {
 
     if (orderErr) throw orderErr;
 
-    await supabase.from('order_items').insert(
-      items.map(i => ({
+    const { error: itemInsertError } = await supabase.from('order_items').insert(
+      safeItems.map(i => ({
         order_id: order.id, product_id: i.productId||null,
         name: i.name, option: i.option||null,
         price: i.price, qty: i.qty, subtotal: i.price*i.qty,
       }))
     );
+    if (itemInsertError) {
+      await supabase.from('orders').delete().eq('id', order.id);
+      throw itemInsertError;
+    }
 
     // 무통장 주문은 접수 즉시 관리자 알림 (카드는 confirm에서 발송)
     if (isVbank) {
@@ -192,15 +261,18 @@ router.post('/ready', requireAuth, async (req, res) => {
     }
 
     // 포인트 차감
-    if (Number(pointUse) > 0) {
-      await supabase.from('point_logs').insert({
-        user_id:userId, amount:-Number(pointUse),
-        reason:`주문 ${orderNumber} 포인트 사용`, order_id:order.id,
-      });
+    if (requestedPoint > 0) {
+      try {
+        await adjustUserPoints(userId, -requestedPoint, `주문 ${orderNumber} 포인트 사용`, order.id);
+      } catch (pointError) {
+        await supabase.from('orders').delete().eq('id', order.id);
+        if (pointError.code === 'INSUFFICIENT_POINTS') return res.status(400).json({ error:pointError.message });
+        throw pointError;
+      }
     }
 
-    const orderName = items.length > 1
-      ? `${items[0].name} 외 ${items.length-1}건` : items[0].name;
+    const orderName = safeItems.length > 1
+      ? `${safeItems[0].name} 외 ${safeItems.length-1}건` : safeItems[0].name;
 
     res.json({
       ok: true,
@@ -226,6 +298,26 @@ router.post('/ready', requireAuth, async (req, res) => {
   }
 });
 
+// 결제창 이탈/실패 시 생성된 미결제 주문을 취소하고 사용 포인트를 즉시 돌려준다.
+router.post('/abandon', requireAuth, async (req, res) => {
+  try {
+    const orderId = String(req.body?.orderId || '');
+    const { data: order } = await supabase.from('orders')
+      .select('id,user_id,status,payment_status,point_used')
+      .eq('order_number', orderId).eq('user_id', req.user.sub).maybeSingle();
+    if (!order) return res.json({ ok:true, restored:0 });
+    if (order.payment_status === 'paid') return res.status(400).json({ error:'결제 완료 주문은 취소 처리할 수 없습니다' });
+    if (order.status === 'cancelled') return res.json({ ok:true, restored:0 });
+    await supabase.from('orders').update({ status:'cancelled', payment_status:'cancelled' }).eq('id', order.id);
+    const restored = Number(order.point_used || 0);
+    if (restored > 0) await adjustUserPoints(order.user_id, restored, `주문 ${orderId} 결제 이탈 포인트 환불`, order.id);
+    res.json({ ok:true, restored });
+  } catch (err) {
+    console.error('[payment/abandon]', err);
+    res.status(500).json({ error:'미결제 주문 정리 오류' });
+  }
+});
+
 // ══════════════════════════════════════════════════
 // POST /api/payment/confirm  — 카드/간편결제 승인
 // ══════════════════════════════════════════════════
@@ -236,7 +328,7 @@ router.post('/confirm', requireAuth, async (req, res) => {
       return res.status(400).json({ error:'결제 정보가 올바르지 않습니다' });
 
     const { data: order } = await supabase
-      .from('orders').select('id,final_amount,payment_status,user_id,phone,recipient,payment_method,address1')
+      .from('orders').select('id,final_amount,product_total,discount_amount,point_used,payment_status,user_id,phone,recipient,payment_method,address1')
       .eq('order_number', orderId).single();
 
     if (!order)            return res.status(404).json({ error:'주문을 찾을 수 없습니다' });
@@ -269,12 +361,9 @@ router.post('/confirm', requireAuth, async (req, res) => {
       payment_key:paymentKey, paid_at:new Date().toISOString(),
     }).eq('order_number', orderId);
 
-    const pt = Math.floor(Number(amount)*0.01);
+    const pt = pointEarnForOrder(order);
     if (pt > 0) {
-      await supabase.from('point_logs').insert({
-        user_id:order.user_id, amount:pt,
-        reason:`주문 ${orderId} 결제 포인트 적립`, order_id:order.id,
-      });
+      await adjustUserPoints(order.user_id, pt, `주문 ${orderId} 결제 포인트 적립`, order.id);
     }
 
     // ── 소비자 결제완료 알림 + 관리자 신규주문 알림 (비동기, 결제 응답에 영향 없음)
@@ -309,7 +398,7 @@ router.post('/vbank-confirm', requireAdmin, async (req, res) => {
   try {
     const { orderId, depositorName, depositAmount } = req.body;
     const { data:order } = await supabase
-      .from('orders').select('id,final_amount,payment_status,user_id,phone,recipient,payment_method')
+      .from('orders').select('id,final_amount,product_total,discount_amount,point_used,payment_status,user_id,phone,recipient,payment_method')
       .eq('order_number', orderId).single();
 
     if (!order) return res.status(404).json({ error:'주문 없음' });
@@ -322,11 +411,8 @@ router.post('/vbank-confirm', requireAdmin, async (req, res) => {
       depositor_name:depositorName||null, paid_at:new Date().toISOString(),
     }).eq('order_number', orderId);
 
-    const pt = Math.floor(order.final_amount*0.01);
-    if (pt>0) await supabase.from('point_logs').insert({
-      user_id:order.user_id, amount:pt,
-      reason:`주문 ${orderId} 무통장 입금 적립`, order_id:order.id,
-    });
+    const pt = pointEarnForOrder(order);
+    if (pt>0) await adjustUserPoints(order.user_id, pt, `주문 ${orderId} 무통장 입금 적립`, order.id);
 
     // ── 무통장 입금 확인 시 소비자·관리자 알림
     if (order.phone) {
@@ -359,7 +445,7 @@ router.post('/cancel', requireAuth, async (req, res) => {
   try {
     const { orderId, reason='고객 요청', cancelAmt } = req.body;
     const { data:order } = await supabase
-      .from('orders').select('id,payment_key,payment_status,final_amount,user_id,status,payment_method')
+      .from('orders').select('id,payment_key,payment_status,final_amount,user_id,status,payment_method,point_used')
       .eq('order_number', orderId).single();
 
     if (!order) return res.status(404).json({ error:'주문 없음' });
@@ -372,6 +458,9 @@ router.post('/cancel', requireAuth, async (req, res) => {
       await supabase.from('orders').update({
         status:'cancelled', payment_status:'cancelled'
       }).eq('order_number', orderId);
+      if (Number(order.point_used)>0) {
+        await adjustUserPoints(order.user_id, Number(order.point_used), `주문 ${orderId} 취소 포인트 환불`, order.id);
+      }
       return res.json({ ok:true, message:'주문이 취소됐습니다', orderId });
     }
 
@@ -394,11 +483,18 @@ router.post('/cancel', requireAuth, async (req, res) => {
     }).eq('order_number', orderId);
 
     // 포인트 환불
-    if (order.point_used > 0) {
-      await supabase.from('point_logs').insert({
-        user_id:order.user_id, amount:order.point_used,
-        reason:`주문 ${orderId} 취소 포인트 환불`, order_id:order.id,
-      });
+    const { data: earnedLogs } = await supabase.from('point_logs')
+      .select('amount').eq('order_id', order.id).gt('amount', 0).ilike('reason', '%포인트 적립%');
+    const earnedPoint = (earnedLogs || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
+    const pointSettlement = Number(order.point_used || 0) - earnedPoint;
+    if (pointSettlement !== 0) {
+      await adjustUserPoints(
+        order.user_id,
+        pointSettlement,
+        `주문 ${orderId} 취소 포인트 정산 (사용 ${Number(order.point_used||0)}P 환불 / 적립 ${earnedPoint}P 회수)`,
+        order.id,
+        { allowNegative:true }
+      );
     }
 
     res.json({ ok:true, message:'주문이 취소됐습니다', orderId });

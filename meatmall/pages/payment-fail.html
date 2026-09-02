@@ -28,9 +28,12 @@
   </div>
 </div>
 <script>
+const API='https://api.meatbonga.com/api';
 function q(k){return new URLSearchParams(location.search).get(k)}
 const code=q('code'), message=q('message');
 if(message){ document.getElementById('pc-msg').innerHTML=message.replace(/</g,'&lt;'); }
 if(code){ const c=document.getElementById('pc-code'); c.style.display='inline-block'; c.textContent='오류코드: '+code; }
+const failedOrderId=q('orderId'),token=localStorage.getItem('mm_access_token')||'';
+if(failedOrderId&&token){fetch(API+'/payment/abandon',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({orderId:failedOrderId})}).catch(()=>{});}
 </script>
 </body></html>
