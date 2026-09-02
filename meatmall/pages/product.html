@@ -88,6 +88,11 @@ body{background:var(--black)!important}.app-wrap{background:var(--black)!importa
 .reviewer-date{font-size:.74rem;color:var(--text-low)}
 .review-text{font-size:.84rem;color:var(--text-medium);line-height:1.65}
 .review-stars{color:var(--amber);font-size:.84rem}
+.review-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.review-write-btn{border:1px solid var(--gold-bdr);background:var(--gold-dim);color:var(--gold);border-radius:8px;padding:8px 11px;font-size:.76rem;font-weight:700;cursor:pointer}
+.rating-bars{flex:1;display:grid;gap:3px}.rating-row{display:grid;grid-template-columns:20px 1fr 28px;align-items:center;gap:6px;font-size:.68rem;color:var(--text-low)}
+.rating-track{height:5px;background:#2A2A2A;border-radius:99px;overflow:hidden}.rating-fill{height:100%;background:var(--amber);border-radius:99px}
+.verified-badge{font-size:.68rem;color:#22C55E;background:rgba(34,197,94,.1);padding:2px 6px;border-radius:999px;font-weight:700}
 
 /* 추천 상품 */
 .recommend-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
@@ -251,7 +256,7 @@ function renderProduct(){
   <div class="detail-tabs">
     <div class="detail-tab active" onclick="switchTab('info',this)">상품정보</div>
     <div class="detail-tab" onclick="switchTab('delivery',this)">배송안내</div>
-    <div class="detail-tab" onclick="switchTab('review',this)">리뷰(0)</div>
+    <div class="detail-tab" id="review-tab" onclick="switchTab('review',this)">리뷰(0)</div>
   </div>
 
   <!-- 상품정보 탭 -->
@@ -294,17 +299,8 @@ function renderProduct(){
 
   <!-- 리뷰 탭 -->
   <div class="detail-section" id="tab-review">
-    <div class="detail-title">⭐ 구매 리뷰</div>
-    <div class="review-summary">
-      <div class="review-score">5.0</div>
-      <div>
-        <div class="stars-big">★★★★★</div>
-        <div style="font-size:.78rem;color:var(--gray-500);margin-top:4px">리뷰 0개</div>
-      </div>
-    </div>
-    <div style="text-align:center;padding:40px;color:var(--gray-400);font-size:.88rem">
-      아직 리뷰가 없습니다.<br>첫 번째 리뷰를 작성해보세요!
-    </div>
+    <div class="review-head"><div class="detail-title" style="margin:0;flex:1">⭐ 구매 리뷰</div><button class="review-write-btn" onclick="go('../pages/orders.html')">리뷰 작성</button></div>
+    <div id="review-content"><div style="text-align:center;padding:34px;color:var(--gray-400);font-size:.84rem">리뷰를 불러오는 중입니다.</div></div>
   </div>
 
   <!-- 추천 상품 -->
@@ -316,6 +312,29 @@ function renderProduct(){
 
   if(typeof initLazyImages==='function') initLazyImages();
   loadRecommend(p.category, p.id);
+  loadReviews(p.id);
+}
+
+function escReview(value){
+  return String(value??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function starText(rating){ return '★'.repeat(Math.max(0,rating))+'☆'.repeat(Math.max(0,5-rating)); }
+async function loadReviews(id){
+  const box=document.getElementById('review-content');
+  if(!box)return;
+  try{
+    const r=await fetch(`${API}/reviews/product/${encodeURIComponent(id)}`);
+    const d=await r.json();if(!r.ok)throw new Error(d.error||'리뷰 조회 실패');
+    const s=d.summary||{count:0,average:0,distribution:[]};
+    const tab=document.getElementById('review-tab');if(tab)tab.textContent=`리뷰(${s.count||0})`;
+    const bars=(s.distribution||[]).map(x=>`<div class="rating-row"><span>${x.rating}점</span><div class="rating-track"><div class="rating-fill" style="width:${s.count?Math.round(x.count/s.count*100):0}%"></div></div><span>${x.count}</span></div>`).join('');
+    const items=(d.reviews||[]).map(v=>`<article class="review-item">
+      <div class="reviewer"><span class="reviewer-name">${escReview(v.reviewer_name)}</span><span class="verified-badge">구매확인</span><time class="reviewer-date">${new Date(v.created_at).toLocaleDateString('ko-KR')}</time></div>
+      <div class="review-stars" aria-label="별점 ${v.rating}점">${starText(v.rating)}</div>
+      <div class="review-text">${escReview(v.content).replace(/\n/g,'<br>')}</div>
+    </article>`).join('');
+    box.innerHTML=`<div class="review-summary"><div><div class="review-score">${Number(s.average||0).toFixed(1)}</div><div class="stars-big">${starText(Math.round(s.average||0))}</div><div style="font-size:.74rem;color:var(--text-low);margin-top:4px">${s.count||0}개의 구매 리뷰</div></div><div class="rating-bars">${bars}</div></div>${items||'<div style="text-align:center;padding:40px;color:var(--gray-400);font-size:.88rem">아직 리뷰가 없습니다.<br>배송 완료된 주문에서 첫 리뷰를 작성해보세요.</div>'}`;
+  }catch(e){box.innerHTML='<div style="text-align:center;padding:34px;color:var(--gray-400);font-size:.84rem">리뷰를 불러오지 못했습니다.</div>';}
 }
 
 async function loadRecommend(category, excludeId){

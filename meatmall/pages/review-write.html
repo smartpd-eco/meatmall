@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>구매 리뷰 작성 · 정육본가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+body{background:#F6F7F9;color:#111827;font-family:'Noto Sans KR',sans-serif}.app-wrap{background:#F6F7F9;min-height:100vh;padding-bottom:30px}.review-page{padding:16px}.review-card{background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.05)}
+.product-row{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid #EEF0F3}.product-thumb{width:64px;height:64px;border-radius:12px;background:#F3F4F6;object-fit:cover}.product-name{font-size:.95rem;font-weight:800;line-height:1.4}.purchase{font-size:.72rem;color:#16A34A;font-weight:700;margin-top:4px}
+.section-label{font-size:.86rem;font-weight:800;margin:20px 0 10px}.star-picker{display:flex;justify-content:center;gap:7px;padding:8px 0 12px}.star-picker button{border:0;background:none;font-size:2.5rem;color:#D1D5DB;padding:0;cursor:pointer;line-height:1}.star-picker button.on{color:#F59E0B}.rating-label{text-align:center;color:#B45309;font-size:.82rem;font-weight:700;min-height:20px}
+textarea{width:100%;min-height:170px;border:1px solid #D1D5DB;border-radius:12px;padding:14px;font:inherit;font-size:.88rem;line-height:1.65;resize:vertical;outline:none}textarea:focus{border-color:#3B82F6;box-shadow:0 0 0 3px #DBEAFE}.counter{text-align:right;color:#9CA3AF;font-size:.72rem;margin-top:5px}.guide{background:#F8FAFC;border-radius:10px;padding:11px;margin-top:12px;color:#64748B;font-size:.74rem;line-height:1.55}
+.submit{width:100%;height:50px;margin-top:18px;border:0;border-radius:12px;background:#2563EB;color:#fff;font-size:.95rem;font-weight:800;cursor:pointer}.submit:disabled{opacity:.45}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:white;padding:10px 16px;border-radius:999px;font-size:.82rem;display:none;z-index:50}.toast.show{display:block}
+</style></head><body>
+<div class="app-wrap"><header class="hdr"><button class="hdr-btn" onclick="history.back()">←</button><div class="hdr-title">구매 리뷰 작성</div><div style="width:38px"></div></header>
+<main class="review-page"><div class="review-card">
+  <div class="product-row"><div id="thumb-wrap"><div class="product-thumb" style="display:grid;place-items:center;font-size:2rem">🥩</div></div><div><div class="product-name" id="product-name">상품 확인 중...</div><div class="purchase">✓ 배송 완료 구매 상품</div></div></div>
+  <div class="section-label">상품은 어떠셨나요?</div><div class="star-picker" id="stars" aria-label="별점 선택"></div><div class="rating-label" id="rating-label">별점을 선택해주세요</div>
+  <div class="section-label">상품 리뷰</div><textarea id="content" maxlength="1000" placeholder="상품의 맛, 신선도, 포장 상태를 자세히 알려주세요." oninput="updateCount()"></textarea><div class="counter"><span id="count">0</span>/1,000</div>
+  <div class="guide">구매 고객에게 도움이 되는 솔직한 후기를 작성해주세요. 개인정보, 욕설, 광고성 내용은 노출이 제한될 수 있습니다.</div>
+  <button class="submit" id="submit" onclick="submitReview()">리뷰 등록하기</button>
+</div></main></div><div class="toast" id="toast"></div>
+<script>
+const API='https://api.meatbonga.com/api',params=new URLSearchParams(location.search),orderId=params.get('orderId'),productId=params.get('productId');let rating=0;
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2400)}
+function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
+function renderStars(){document.getElementById('stars').innerHTML=[1,2,3,4,5].map(n=>`<button type="button" class="${n<=rating?'on':''}" onclick="setRating(${n})" aria-label="${n}점">★</button>`).join('')}
+function setRating(n){rating=n;renderStars();document.getElementById('rating-label').textContent=['','별로예요','아쉬워요','보통이에요','좋아요','최고예요'][n]}
+function updateCount(){document.getElementById('count').textContent=document.getElementById('content').value.length}
+async function loadProduct(){if(!orderId||!productId){toast('주문 상품 정보가 없습니다');return}try{const r=await fetch(`${API}/products/${encodeURIComponent(productId)}`),d=await r.json();if(!r.ok)throw 0;const p=d.product||{};document.getElementById('product-name').textContent=p.name||'구매 상품';if(p.thumbnail_url)document.getElementById('thumb-wrap').innerHTML=`<img class="product-thumb" src="${esc(p.thumbnail_url)}" alt="">`;}catch(e){document.getElementById('product-name').textContent='구매 상품'}}
+async function submitReview(){const token=localStorage.getItem('mm_access_token')||'',content=document.getElementById('content').value.trim(),btn=document.getElementById('submit');if(!token){location.href='../login.html';return}if(!rating){toast('별점을 선택해주세요');return}if(content.length<10){toast('리뷰를 10자 이상 작성해주세요');return}btn.disabled=true;btn.textContent='등록 중...';try{const r=await fetch(API+'/reviews',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({orderId,productId,rating,content})}),d=await r.json();if(!r.ok)throw new Error(d.error||'등록 실패');toast('리뷰가 등록되었습니다');setTimeout(()=>location.href=`product.html?id=${encodeURIComponent(productId)}#review`,700)}catch(e){toast(e.message);btn.disabled=false;btn.textContent='리뷰 등록하기'}}
+renderStars();loadProduct();
+</script></body></html>

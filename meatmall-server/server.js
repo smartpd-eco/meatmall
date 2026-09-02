@@ -128,6 +128,7 @@ app.use('/api/auth/signup', authLimiter);
 app.use('/api/auth', require('./api/auth/email'));
 app.use('/api/auth', require('./api/auth/social'));
 app.use('/api/products',   require('./api/products/index'));
+app.use('/api/reviews',    require('./api/reviews/index'));
 app.use('/api/addresses',  require('./api/addresses/index'));
 app.use('/api/payment', require('./api/payment/index'));
 app.use('/api/admin/categories', require('./api/admin/categories'));

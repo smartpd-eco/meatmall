@@ -168,6 +168,19 @@ CREATE TABLE IF NOT EXISTS subscription_items (
   qty             INTEGER NOT NULL DEFAULT 1
 );
 
+-- ── 상품 구매 리뷰
+CREATE TABLE IF NOT EXISTS product_reviews (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id  UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  order_id    UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  rating      SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  content     TEXT NOT NULL CHECK (char_length(content) BETWEEN 10 AND 1000),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, order_id, product_id)
+);
+
 -- ════════════════════════════════════════════════════════════
 -- 5. CS 문의
 -- ════════════════════════════════════════════════════════════
@@ -226,6 +239,8 @@ CREATE INDEX IF NOT EXISTS idx_cs_tickets_user         ON cs_tickets(user_id);
 CREATE INDEX IF NOT EXISTS idx_point_logs_user         ON point_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_products_category       ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_active         ON products(is_active);
+CREATE INDEX IF NOT EXISTS idx_product_reviews_product ON product_reviews(product_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_product_reviews_user    ON product_reviews(user_id);
 
 -- ════════════════════════════════════════════════════════════
 -- 8. updated_at 자동 갱신 트리거
@@ -241,6 +256,7 @@ DO $$ BEGIN
   CREATE TRIGGER trg_products_updated    BEFORE UPDATE ON products    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
   CREATE TRIGGER trg_subscriptions_updated BEFORE UPDATE ON subscriptions FOR EACH ROW EXECUTE FUNCTION update_updated_at();
   CREATE TRIGGER trg_cs_tickets_updated  BEFORE UPDATE ON cs_tickets  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  CREATE TRIGGER trg_product_reviews_updated BEFORE UPDATE ON product_reviews FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -255,6 +271,7 @@ ALTER TABLE subscriptions   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cs_tickets      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coupons         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE point_logs      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_reviews ENABLE ROW LEVEL SECURITY;
 
 -- Service Role 은 RLS 우회 가능 (서버에서만 사용)
 -- 모든 조회/수정은 백엔드 API 통해서만 허용

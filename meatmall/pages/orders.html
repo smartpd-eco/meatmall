@@ -140,7 +140,7 @@ function render(orders){
       <div style="font-size:.9375rem;font-weight:700;color:var(--dark-txt)">총 <strong style="color:var(--gold);font-size:1.3125rem">${fmt(o.final_amount)}원</strong> <span style="font-size:.8125rem;color:var(--gray-txt);font-weight:400">${PL[o.payment_method]||''}</span> <span style="font-size:.75rem;font-weight:700;color:${o.delivery_type==='same_day'?'#EA580C':'var(--gray-txt)'}">${o.delivery_type==='same_day'?'⚡당일배송':'📦일반배송'}</span></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         ${isSh?`<button class="oabtn oabtn-g" onclick="openTracking('${o.carrier||DEFAULT_CARRIER}','${o.tracking_number||''}')">📦 배송조회</button>`:''}
-        ${isDone?`<button class="oabtn oabtn-o" onclick="toast('리뷰 준비 중')">⭐ 리뷰</button>`:''}
+        ${isDone?items.filter(i=>i.product_id).map((i,idx)=>`<button class="oabtn oabtn-o" onclick="writeReview('${o.id}','${i.product_id}')">⭐ 리뷰${items.length>1?' '+(idx+1):''}</button>`).join(''):''}
         ${isCancel||isVW?`<button class="oabtn oabtn-gray" onclick="cancelOrd('${o.order_number}')">✕ 취소</button>`:''}
         <button class="oabtn oabtn-gray" onclick="go('../pages/cs.html')">💬 문의</button>
       </div>
@@ -148,6 +148,7 @@ function render(orders){
   }).join('');
 }
 function filt(s,el){cur=s;document.querySelectorAll('.fpill').forEach(p=>p.classList.remove('on'));el.classList.add('on');load()}
+function writeReview(orderId,productId){go(`../pages/review-write.html?orderId=${encodeURIComponent(orderId)}&productId=${encodeURIComponent(productId)}`)}
 async function cancelOrd(orderId){
   if(!confirm('주문을 취소하시겠습니까?'))return;
   try{const r=await fetch(API+'/payment/cancel',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},body:JSON.stringify({orderId,reason:'고객 요청'})});const d=await r.json();if(!r.ok)throw new Error(d.error);toast('취소됐습니다');load()}
