@@ -22,7 +22,13 @@ function setRefreshCookie(res, token, expiresAt) {
 // ════════════════════════════════════════════
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, phone, zip_code, address1, address2, marketing_agree, push_agree } = req.body;
+    const { password, marketing_agree, push_agree } = req.body;
+    const name = String(req.body.name || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const phone = String(req.body.phone || '').trim();
+    const zip_code = String(req.body.zip_code || '').trim();
+    const address1 = String(req.body.address1 || '').trim();
+    const address2 = String(req.body.address2 || '').trim();
 
     // 입력 검증
     if (!name || !email || !password)
@@ -36,8 +42,9 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: '휴대폰, 우편번호, 기본 주소를 모두 입력해주세요' });
 
     // 중복 이메일 확인
-    const { data: existing } = await supabase
-      .from('users').select('id').eq('email', email).single();
+    const { data: existing, error: existingError } = await supabase
+      .from('users').select('id').ilike('email', email).maybeSingle();
+    if (existingError) throw existingError;
     if (existing)
       return res.status(409).json({ error: '이미 사용 중인 이메일입니다' });
 
@@ -47,11 +54,18 @@ router.post('/signup', async (req, res) => {
     // 사용자 생성
     const { data: user, error } = await supabase
       .from('users')
-      .insert({ name, email, password_hash, phone: phone || null, marketing_agree: !!marketing_agree, push_agree: !!push_agree })
+      .insert({ name, email, password_hash, phone: phone || null })
       .select('id, email, name, grade, point, is_admin')
       .single();
 
     if (error) throw error;
+
+    // 운영 DB가 구버전이어도 가입을 막지 않는다. 22_signup_preferences.sql 적용 후 정상 기록된다.
+    const { error: preferenceError } = await supabase.from('users').update({
+      marketing_agree: !!marketing_agree,
+      push_agree: !!push_agree,
+    }).eq('id', user.id);
+    if (preferenceError) console.warn('[signup/preferences]', preferenceError.message);
 
     // 신규 가입 화면에서 입력한 주소는 회원의 기본 배송지로 즉시 연결한다.
     // 주소 입력이 없는 구버전/캐시된 가입 화면 요청도 기존처럼 허용한다.
@@ -96,7 +110,8 @@ router.post('/signup', async (req, res) => {
 // ════════════════════════════════════════════
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const { password } = req.body;
     if (!email || !password)
       return res.status(400).json({ error: '이메일과 비밀번호를 입력해주세요' });
 
@@ -104,7 +119,7 @@ router.post('/login', async (req, res) => {
     const { data: user } = await supabase
       .from('users')
       .select('id, email, name, password_hash, grade, point, is_admin, is_active, vendor_id, role')
-      .eq('email', email)
+      .ilike('email', email)
       .single();
 
     if (!user || !user.password_hash)

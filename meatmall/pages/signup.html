@@ -90,14 +90,14 @@ function renderStep(){
   </div></div>`;
   else c.innerHTML=`<div style="padding:0 14px"><div class="form-wrap" style="text-align:center">
     <div style="font-size:3rem;margin-bottom:14px">👑</div>
-    <div style="font-family:var(--serif);font-size:1.15rem;font-weight:700;color:var(--dark-txt);margin-bottom:6px">가입 완료!</div>
-    <div style="font-size:.84rem;color:var(--gray-txt);margin-bottom:20px">정육본가 VVIP 회원이 됐습니다</div>
-    <button class="btn-gold" id="final-btn" onclick="doSignup()">시작하기</button>
+    <div style="font-family:var(--serif);font-size:1.15rem;font-weight:700;color:var(--dark-txt);margin-bottom:6px">가입 준비가 완료됐습니다</div>
+    <div style="font-size:.84rem;color:var(--gray-txt);margin-bottom:20px">아래 버튼을 누르면 회원정보가 안전하게 등록됩니다</div>
+    <button class="btn-gold" id="final-btn" onclick="doSignup()">회원가입 완료하기</button>
   </div></div>`;
 }
 function stepBack(){if(step===1){go('../login.html');return}step--;renderStep()}
 function toggleAll(cb){['ag1','ag2','ag3'].forEach(id=>document.getElementById(id).checked=cb.checked)}
-function step1Next(){if(!document.getElementById('ag1').checked||!document.getElementById('ag2').checked){toast('필수 약관에 동의해주세요');return}step=2;renderStep()}
+function step1Next(){if(!document.getElementById('ag1').checked||!document.getElementById('ag2').checked){toast('필수 약관에 동의해주세요');return}DATA.marketing_agree=document.getElementById('ag3').checked;DATA.push_agree=false;step=2;renderStep()}
 function formatSignupPhone(input){
   const n=input.value.replace(/\D/g,'').slice(0,11);
   input.value=n.length>7?n.replace(/(\d{3})(\d{4})(\d+)/,'$1-$2-$3'):n.length>3?n.replace(/(\d{3})(\d+)/,'$1-$2'):n;
@@ -111,7 +111,7 @@ function findSignupAddress(){
   }}).open();
 }
 function step2Next(){
-  const name=document.getElementById('s-name').value.trim(),email=document.getElementById('s-email').value.trim();
+  const name=document.getElementById('s-name').value.trim(),email=document.getElementById('s-email').value.trim().toLowerCase();
   const pw=document.getElementById('s-pw').value,pw2=document.getElementById('s-pw2').value;
   const phone=document.getElementById('s-phone').value.trim(),zip=document.getElementById('s-zip').value.trim();
   const address1=document.getElementById('s-address1').value.trim(),address2=document.getElementById('s-address2').value.trim();
@@ -124,13 +124,13 @@ function step2Next(){
   DATA.zip_code=zip;DATA.address1=address1;DATA.address2=address2;step=3;renderStep();
 }
 async function doSignup(){
-  const btn=document.getElementById('final-btn');btn.textContent='...';btn.disabled=true;
+  const btn=document.getElementById('final-btn');btn.textContent='가입 처리 중...';btn.disabled=true;
   try{const r=await fetch(API+'/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DATA)});
     const d=await r.json();if(!r.ok)throw new Error(d.error||'가입 실패');
     localStorage.setItem('mm_access_token',d.accessToken);localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
     localStorage.setItem('mm_last_active',String(Date.now()));
     go('../index.html');
-  }catch(e){toast('❌ '+e.message);btn.textContent='시작하기';btn.disabled=false}
+  }catch(e){toast('❌ '+e.message);btn.textContent='회원가입 완료하기';btn.disabled=false}
 }
 </script>
 </body></html>

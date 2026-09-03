@@ -10,6 +10,7 @@ const FRONTEND = 'https://meatbonga.com';
 // ── 소셜 로그인 사용자 확인/생성
 // 반환: { status: 'ok', user }  또는  { status: 'link_required', linkToken, existingEmail, reauthMethod }
 async function resolveSocialUser({ provider, providerId, email, name }) {
+  email = email ? String(email).trim().toLowerCase() : null;
   // 1. 이미 이 소셜 계정으로 연동된 유저가 있으면 정상 로그인
   const { data: existing } = await supabase
     .from('social_accounts')
@@ -28,7 +29,7 @@ async function resolveSocialUser({ provider, providerId, email, name }) {
     const { data: byEmail } = await supabase
       .from('users')
       .select('id, email, password_hash, is_active')
-      .eq('email', email)
+      .ilike('email', email)
       .single();
 
     if (byEmail) {
@@ -71,13 +72,21 @@ async function resolveSocialUser({ provider, providerId, email, name }) {
   if (error) throw error;
   const userId = newUser.id;
 
-  await supabase.from('point_logs').insert({
+  const { error: pointError } = await supabase.from('point_logs').insert({
     user_id: userId, amount: 1000, reason: '소셜 가입 축하 포인트'
   });
+  if (pointError) {
+    await supabase.from('users').delete().eq('id', userId);
+    throw pointError;
+  }
 
-  await supabase.from('social_accounts').upsert({
+  const { error: socialError } = await supabase.from('social_accounts').upsert({
     user_id: userId, provider, provider_id: String(providerId)
   }, { onConflict: 'provider,provider_id' });
+  if (socialError) {
+    await supabase.from('users').delete().eq('id', userId);
+    throw socialError;
+  }
 
   const { data: user } = await supabase
     .from('users')
