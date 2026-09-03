@@ -42,9 +42,10 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: '휴대폰, 우편번호, 기본 주소를 모두 입력해주세요' });
 
     // 중복 이메일 확인
-    const { data: existing, error: existingError } = await supabase
-      .from('users').select('id').ilike('email', email).maybeSingle();
+    const { data: existingRows, error: existingError } = await supabase
+      .from('users').select('id').ilike('email', email).limit(1);
     if (existingError) throw existingError;
+    const existing = existingRows?.[0];
     if (existing)
       return res.status(409).json({ error: '이미 사용 중인 이메일입니다' });
 

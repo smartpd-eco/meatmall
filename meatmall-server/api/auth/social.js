@@ -26,11 +26,13 @@ async function resolveSocialUser({ provider, providerId, email, name }) {
 
   // 2. 이메일로 기존 계정이 있는지 확인 (이메일이 제공된 경우만 — 카카오 등 이메일 미동의 시 스킵)
   if (email) {
-    const { data: byEmail } = await supabase
+    const { data: byEmailRows, error: byEmailError } = await supabase
       .from('users')
       .select('id, email, password_hash, is_active')
       .ilike('email', email)
-      .single();
+      .limit(1);
+    if (byEmailError) throw byEmailError;
+    const byEmail = byEmailRows?.[0];
 
     if (byEmail) {
       if (!byEmail.is_active) throw new Error('INACTIVE');
