@@ -129,6 +129,7 @@ async function doSignup(){
     const d=await r.json();if(!r.ok)throw new Error(d.error||'가입 실패');
     localStorage.setItem('mm_access_token',d.accessToken);localStorage.setItem('mm_user_cache',JSON.stringify(d.user));
     localStorage.setItem('mm_last_active',String(Date.now()));
+    if(d.needsAddress){toast('회원가입 완료 · 배송지를 다시 등록해주세요');setTimeout(()=>go('address.html?signup=1'),900);return}
     go('../index.html');
   }catch(e){toast('❌ '+e.message);btn.textContent='회원가입 완료하기';btn.disabled=false}
 }

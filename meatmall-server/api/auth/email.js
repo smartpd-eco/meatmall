@@ -70,20 +70,26 @@ router.post('/signup', async (req, res) => {
 
     // 신규 가입 화면에서 입력한 주소는 회원의 기본 배송지로 즉시 연결한다.
     // 주소 입력이 없는 구버전/캐시된 가입 화면 요청도 기존처럼 허용한다.
+    let addressSaved = !hasAddress;
     if (hasAddress) {
-      const { error: addressError } = await supabase.from('addresses').insert({
+      // 운영 DB별 선택 컬럼 차이를 피하기 위해 공통 핵심 컬럼부터 저장한다.
+      const { data: savedAddress, error: addressError } = await supabase.from('addresses').insert({
         user_id: user.id,
-        label: '집',
         recipient: name,
         phone,
         zip_code,
         address1,
-        address2: address2 || '',
-        is_default: true,
-      });
+      }).select('id').single();
       if (addressError) {
-        await supabase.from('users').delete().eq('id', user.id);
-        throw addressError;
+        // 배송지 스키마 문제 때문에 생성된 회원까지 취소하지 않는다.
+        console.error('[signup/address]', addressError);
+      } else {
+        addressSaved = true;
+        // 구버전 DB에 선택 컬럼이 없어도 핵심 배송지 저장은 유지한다.
+        const { error: defaultError } = await supabase.from('addresses')
+          .update({ label: '집', address2: address2 || '', is_default: true })
+          .eq('id', savedAddress.id);
+        if (defaultError) console.warn('[signup/address-default]', defaultError.message);
       }
     }
 
@@ -99,9 +105,17 @@ router.post('/signup', async (req, res) => {
     const { token: refreshToken, expiresAt } = await signRefreshToken(user.id);
     setRefreshCookie(res, refreshToken, expiresAt);
 
-    res.status(201).json({ ok: true, user: { id: user.id, name: user.name, email: user.email, grade: user.grade, point: user.point }, accessToken });
+    res.status(201).json({
+      ok: true,
+      user: { id: user.id, name: user.name, email: user.email, grade: user.grade, point: user.point },
+      accessToken,
+      addressSaved,
+      needsAddress: hasAddress && !addressSaved,
+    });
   } catch (err) {
     console.error('[signup]', err);
+    if (err?.code === '23505')
+      return res.status(409).json({ error: '이미 사용 중인 이메일입니다' });
     res.status(500).json({ error: '서버 오류가 발생했습니다' });
   }
 });
